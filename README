@@ -1,0 +1,9 @@
+
+cod is a simple ipc abstraction layer. It allows you to focus on interaction 
+between processes instead of having to think about interaction with the OS. 
+
+STATUS
+
+Very preliminary. Don't use it. 
+
+(c) 2011 Kaspar Schiess
