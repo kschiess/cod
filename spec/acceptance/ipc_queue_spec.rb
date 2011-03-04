@@ -13,6 +13,8 @@ describe "IPC queue" do
       mailbox.should have_data_waiting
       mailbox.read.should == 'foo'
       mailbox.read.should == 'bar'
+      
+      mailbox.should_not have_data_waiting
     end 
   end
 end
