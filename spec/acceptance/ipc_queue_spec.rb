@@ -10,11 +10,11 @@ describe "IPC queue" do
       mailbox.write('foo')
       mailbox.write('bar')
 
-      mailbox.should have_data_waiting
+      mailbox.should be_waiting
       mailbox.read.should == 'foo'
       mailbox.read.should == 'bar'
       
-      mailbox.should_not have_data_waiting
+      mailbox.should_not be_waiting
     end 
   end
 end

@@ -9,6 +9,6 @@ mbox = Cod::Mailbox.anonymous
 mbox.write('foo')
 mbox.write('bar')
 
-mbox.data_waiting?  # => true
+mbox.waiting?  # => true
 p mbox.read # => 'foo'
 p mbox.read # => 'bar'

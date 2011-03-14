@@ -23,14 +23,10 @@ class Cod::Mailbox
   
   # Returns true when the mailbox has messages waiting to be delivered. 
   #
-  def data_waiting?
-    @backend.data_waiting?
+  def waiting?
+    @backend.waiting?
   end
   
-  # Mainly for rspec and people who like to type.
-  #
-  alias has_data_waiting? data_waiting?
-
   # Returns one message from the mailbox.
   #
   def read
