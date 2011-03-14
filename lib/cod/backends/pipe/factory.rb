@@ -1,5 +1,7 @@
-class Cod::Backends::Pipe::Factory
-  def anonymous
-    Cod::Backends::Pipe::Mailbox.new
+module Cod::Backends::Pipe
+  class Factory
+    def anonymous
+      Mailbox.new
+    end
   end
 end
