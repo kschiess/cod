@@ -1,4 +1,7 @@
-module Cod; end
+module Cod
+  module Channel
+  end
+end
 
 require 'cod/channel/pipe'
 require 'cod/channel/fifo'
