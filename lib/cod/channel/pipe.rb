@@ -21,8 +21,16 @@ module Cod
     end
     
     def put(message)
+      close_read
+      
+      unless fds.w
+        direction_error 'Cannot put data to pipe. Already closed that end?'
+      end
+
       buffer = [message.size].pack('l') + message
       fds.w.write(buffer)
+    rescue Errno::EPIPE
+      direction_error "You should #dup before writing; Looks like no other copy exists currently."
     end
     
     def waiting?
@@ -31,6 +39,8 @@ module Cod
     end
     
     def get
+      close_write
+
       return @waiting_messages.shift if waiting?
 
       loop do
@@ -38,19 +48,57 @@ module Cod
         process_inbound_nonblock
         return @waiting_messages.shift if waiting?
       end
-      
       # NEVER REACHED
+
+    rescue Errno::EPIPE
+      direction_error 'Cannot get data from pipe. Already closed that end?'
     end
     
     def close
-      fds.w.close
-      fds.r.close
+      fds.w.close if fds.w
+      fds.r.close if fds.r
+    end
+
+    # Constructs a duplicate of the current channel, with working internal
+    # structures. 
+    #
+    # When you want to do intraprocess-communication, you will need two ends
+    # of a channel in the same process. Since writing (or reading) to (from) a
+    # channel closes the other end, you will need to make a duplicate of the
+    # channel before starting to work with it. 
+    #
+    def initialize_copy(old)
+      old_fds = old.fds
+
+      raise ArgumentError, 
+        "Dupping a pipe channel only makes sense if it is still unused." \
+          unless old_fds.r && old_fds.w
+
+      @fds = Fds.new(
+        old_fds.r.dup, 
+        old_fds.w.dup)
     end
     
   private
+    def direction_error(msg)
+      raise Cod::Channel::DirectionError, msg
+    end
+  
     def ready?
       ready = IO.select([fds.r], nil, nil, nil)
       ready && ready.first == fds.r
+    end
+  
+    def close_write
+      return unless fds.w
+      fds.w.close
+      fds.w = nil
+    end
+    
+    def close_read
+      return unless fds.r
+      fds.r.close
+      fds.r = nil
     end
   
     # Tries hard to empty the pipe and to store incoming messages in 
