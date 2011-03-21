@@ -39,5 +39,16 @@ describe Cod::Channel::Pipe do
         pipe.get
       }.should raise_error(Cod::Channel::DirectionError)
     end  
+    it "should work after a fork" do
+      child_pid = fork do
+        # pipe.put 'test'
+      end
+      
+      begin
+        # pipe.get.should == 'test'
+      ensure
+        Process.wait(child_pid)
+      end
+    end 
   end
 end
