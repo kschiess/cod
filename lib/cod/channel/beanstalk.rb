@@ -13,11 +13,11 @@ module Cod
     attr_reader :beanstalk
 
     # Name of the queue on the beanstalk server
-    attr_reader :queue_name
+    attr_reader :tube_name
     
     def initialize(url, name=nil)
-      @queue_name = name || gen_anonymous_name('beanstalk')
-      @beanstalk = Beanstalk::Connection.new(url, @queue_name)
+      @tube_name = name || gen_anonymous_name('beanstalk')
+      @beanstalk = Beanstalk::Connection.new(url, tube_name)
     end
     
     def put(message)
@@ -26,7 +26,7 @@ module Cod
     end
     
     def waiting?
-      beanstalk.peek_ready
+      !! beanstalk.peek_ready
     end
     
     def get
@@ -34,6 +34,11 @@ module Cod
       job.delete
       
       return deserialize(job.body)
+    end
+    
+    def close
+      beanstalk.close
+      @beanstalk = nil
     end
   private
     def gen_anonymous_name(base)
