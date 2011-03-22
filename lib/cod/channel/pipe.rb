@@ -109,7 +109,7 @@ module Cod
     #
     def process_inbound_nonblock
       buffer = fds.r.read_nonblock(1024*1024*1024)
-    
+
       while buffer.size > 0
         size = buffer.slice!(0...4).unpack('l').first
         serialized = buffer.slice!(0...size)
@@ -120,7 +120,7 @@ module Cod
       # ends have been closed. 
       communication_error "All write ends for this pipe have been closed. "+
         "Further #get's would block forever." \
-        unless waiting?
+        unless queued?
     rescue Errno::EAGAIN
       # Catch and ignore this: fds.r is not ready and read would block.
     end

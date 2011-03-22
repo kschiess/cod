@@ -63,5 +63,23 @@ describe Cod::Channel::Pipe do
       read.get.should == true
       read.get.should == :symbol
     end 
+    it "should error out in an EOF situation" do
+      a = pipe.dup
+      b = pipe.dup
+      
+      a.put 'test'
+      b.put 'test'
+      pipe.get
+      
+      # Should not error out early, b still isn't EOF
+      a.close
+      b.close
+      pipe.get
+
+      # Now we're EOF:
+      lambda {
+        pipe.get
+      }.should raise_error(Cod::Channel::CommunicationError)
+    end 
   end
 end
