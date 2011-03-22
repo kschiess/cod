@@ -27,7 +27,8 @@ module Cod
         direction_error 'Cannot put data to pipe. Already closed that end?'
       end
 
-      buffer = [message.size].pack('l') + message
+      serialized = Marshal.dump(message)
+      buffer = [serialized.size].pack('l') + serialized
       fds.w.write(buffer)
     rescue Errno::EPIPE
       direction_error "You should #dup before writing; Looks like no other copy exists currently."
@@ -109,7 +110,8 @@ module Cod
     
       while buffer.size > 0
         size = buffer.slice!(0...4).unpack('l').first
-        @waiting_messages << buffer.slice!(0...size)
+        serialized = buffer.slice!(0...size)
+        @waiting_messages << Marshal.load(serialized)
       end
     rescue Errno::EAGAIN
       # Catch and ignore this: fds.r is not ready and read would block.

@@ -50,5 +50,16 @@ describe Cod::Channel::Pipe do
         Process.wait(child_pid)
       end
     end 
+    it "should also transfer objects" do
+      read, write = pipe, pipe.dup
+      
+      write.put 1
+      write.put true
+      write.put :symbol
+      
+      read.get.should == 1
+      read.get.should == true
+      read.get.should == :symbol
+    end 
   end
 end
