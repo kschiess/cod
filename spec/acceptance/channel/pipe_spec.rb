@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Cod::Channel::Pipe do
   context "anonymous pipe" do
-    let(:pipe) { described_class.new }
+    let!(:pipe) { described_class.new }
     after(:each) { pipe.close }
     
     it "should have simple message semantics" do
@@ -41,11 +41,11 @@ describe Cod::Channel::Pipe do
     end  
     it "should work after a fork" do
       child_pid = fork do
-        # pipe.put 'test'
+        pipe.put 'test'
       end
       
       begin
-        # pipe.get.should == 'test'
+        pipe.get.should == 'test'
       ensure
         Process.wait(child_pid)
       end
