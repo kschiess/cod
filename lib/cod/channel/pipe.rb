@@ -20,6 +20,16 @@ module Cod
       @waiting_messages = []
     end
     
+    # Writes a Ruby object (the 'message') to the channel. This object will 
+    # be queued in the channel and become available for #get in a FIFO manner.
+    #
+    # Issuing a #put also closes the channel instance for subsequent #get's. 
+    #
+    # Example: 
+    #   chan.put 'test'
+    #   chan.put true
+    #   chan.put :symbol
+    #
     def put(message)
       close_read
       
@@ -34,9 +44,13 @@ module Cod
       direction_error "You should #dup before writing; Looks like no other copy exists currently."
     end
     
+    # Returns true if there are messages waiting in the channel. 
+    #
     def waiting?
       process_inbound_nonblock
       queued?
+    rescue Cod::Channel::CommunicationError
+      false
     end
     
     def queued?

@@ -75,6 +75,8 @@ describe Cod::Channel::Pipe do
       a.close
       b.close
       pipe.get
+      
+      pipe.should_not be_waiting
 
       # Now we're EOF:
       lambda {
