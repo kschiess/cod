@@ -50,11 +50,10 @@ module Cod
       process_inbound_nonblock
       queued?
     rescue Cod::Channel::CommunicationError
-      false
-    end
-    
-    def queued?
-      not @waiting_messages.empty?
+      # Gets raised whenever communication fails permanently. This means that
+      # we probably wont be able to return any more messages. The only messages
+      # remaining in such a situation would be those queued.
+      return queued?
     end
     
     def get
@@ -106,6 +105,10 @@ module Cod
       raise Cod::Channel::CommunicationError, msg
     end
   
+    def queued?
+      not @waiting_messages.empty?
+    end
+    
     def close_write
       return unless fds.w
       fds.w.close

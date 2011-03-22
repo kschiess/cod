@@ -74,14 +74,18 @@ describe Cod::Channel::Pipe do
       # Should not error out early, b still isn't EOF
       a.close
       b.close
+    
+      # We're now in EOF situation, but still have waiting messages
+      pipe.should be_waiting
+
       pipe.get
       
       pipe.should_not be_waiting
 
       # Now we're EOF:
-      lambda {
+      expect {
         pipe.get
-      }.should raise_error(Cod::Channel::CommunicationError)
+      }.to raise_error(Cod::Channel::CommunicationError)
     end 
   end
 end
