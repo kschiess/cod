@@ -3,7 +3,7 @@ module Cod
   # you can only communicate within a single process hierarchy using this, 
   # since the file descriptors are not visible to the outside world. 
   #
-  class Channel::Pipe
+  class Channel::Pipe < Channel::Base
     # A tuple storing the read and the write end of a IO.pipe. 
     #
     Fds = Struct.new(:r, :w)
@@ -36,9 +36,8 @@ module Cod
       unless fds.w
         direction_error 'Cannot put data to pipe. Already closed that end?'
       end
-
-      serialized = Marshal.dump(message)
-      buffer = [serialized.size].pack('l') + serialized
+            
+      buffer = transport_pack(message)
       fds.w.write(buffer)
     rescue Errno::EPIPE
       direction_error "You should #dup before writing; Looks like no other copy exists currently."
@@ -105,6 +104,22 @@ module Cod
       raise Cod::Channel::CommunicationError, msg
     end
   
+    # Turns the object into a buffer (simple transport layer that prefixes a
+    # size)
+    #
+    def transport_pack(message)
+      serialized = serialize(message)
+      buffer = [serialized.size].pack('l') + serialized
+    end
+    
+    # Slices one message from the front of buffer
+    #
+    def transport_unpack(buffer)
+      size = buffer.slice!(0...4).unpack('l').first
+      serialized = buffer.slice!(0...size)
+      deserialize(serialized)
+    end
+  
     def queued?
       not @waiting_messages.empty?
     end
@@ -128,9 +143,7 @@ module Cod
       buffer = fds.r.read_nonblock(1024*1024*1024)
 
       while buffer.size > 0
-        size = buffer.slice!(0...4).unpack('l').first
-        serialized = buffer.slice!(0...size)
-        @waiting_messages << Marshal.load(serialized)
+        @waiting_messages << transport_unpack(buffer)
       end
     rescue EOFError
       # We've just hit end of file in the pipe. That means that all write 
