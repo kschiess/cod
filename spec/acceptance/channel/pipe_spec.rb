@@ -42,10 +42,12 @@ describe Cod::Channel::Pipe do
     it "should work after a fork" do
       child_pid = fork do
         pipe.put 'test'
+        pipe.put Process.pid
       end
       
       begin
         pipe.get.should == 'test'
+        pipe.get.should == child_pid
       ensure
         Process.wait(child_pid)
       end

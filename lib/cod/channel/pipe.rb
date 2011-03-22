@@ -36,18 +36,22 @@ module Cod
     
     def waiting?
       process_inbound_nonblock
+      queued?
+    end
+    
+    def queued?
       not @waiting_messages.empty?
     end
     
     def get
       close_write
-
-      return @waiting_messages.shift if waiting?
+      
+      return @waiting_messages.shift if queued?
 
       loop do
-        IO.select([fds.r], nil, nil, 0)
+        IO.select([fds.r], nil, [fds.r], 1)
         process_inbound_nonblock
-        return @waiting_messages.shift if waiting?
+        return @waiting_messages.shift if queued?
       end
       # NEVER REACHED
 
@@ -56,8 +60,8 @@ module Cod
     end
     
     def close
-      fds.w.close if fds.w
-      fds.r.close if fds.r
+      close_write
+      close_read
     end
 
     # Constructs a duplicate of the current channel, with working internal
@@ -84,10 +88,8 @@ module Cod
     def direction_error(msg)
       raise Cod::Channel::DirectionError, msg
     end
-  
-    def ready?
-      ready = IO.select([fds.r], nil, nil, nil)
-      ready && ready.first == fds.r
+    def communication_error(msg)
+      raise Cod::Channel::CommunicationError, msg
     end
   
     def close_write
@@ -113,6 +115,12 @@ module Cod
         serialized = buffer.slice!(0...size)
         @waiting_messages << Marshal.load(serialized)
       end
+    rescue EOFError
+      # We've just hit end of file in the pipe. That means that all write 
+      # ends have been closed. 
+      communication_error "All write ends for this pipe have been closed. "+
+        "Further #get's would block forever." \
+        unless waiting?
     rescue Errno::EAGAIN
       # Catch and ignore this: fds.r is not ready and read would block.
     end
