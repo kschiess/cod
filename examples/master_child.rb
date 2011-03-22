@@ -9,8 +9,8 @@ child_pid = fork do
 end
 
 begin
-  puts pipe.get
-  puts pipe.get
+  p pipe.get
+  p pipe.get
 ensure
   Process.wait(child_pid)
 end
