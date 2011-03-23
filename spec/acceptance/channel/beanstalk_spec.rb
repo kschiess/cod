@@ -46,7 +46,7 @@ describe Cod::Channel::Beanstalk do
     let!(:channel) { produce_channel(tube_name) }
     after(:each) { channel.close }
     
-    it "should allow for simple messaging" do
+    it "should have simple message semantics" do
       channel.put 'test'
       
       # Construct another tube independently, the only common thing being the

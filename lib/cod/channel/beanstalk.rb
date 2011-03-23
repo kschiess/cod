@@ -9,6 +9,9 @@ module Cod
   class Channel::Beanstalk < Channel::Base
     NONBLOCK_TIMEOUT = 0.01
     
+    # Url that was used to connect to the beanstalk server
+    attr_reader :url
+    
     # Connection to the beanstalk server (Beanstalk::Connection)
     attr_reader :beanstalk
 
@@ -16,7 +19,8 @@ module Cod
     attr_reader :tube_name
     
     def initialize(url, name=nil)
-      @tube_name = name || gen_anonymous_name('beanstalk')
+      @url = url.freeze
+      @tube_name = (name || gen_anonymous_name('beanstalk')).freeze
       @beanstalk = Beanstalk::Connection.new(url, tube_name)
     end
     
