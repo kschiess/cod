@@ -3,13 +3,8 @@ module Cod
   # identifier. 
   #
   class Context
-    def initialize
-      @pipes = {}
-    end
-    
     def pipe(name=nil)
-      Cod::Channel::Pipe.new(name).
-        tap { |channel| register_pipe(channel) }
+      Cod::Channel::Pipe.new(name)
     end
     
     def beanstalk(url, name=nil)
@@ -17,12 +12,7 @@ module Cod
     end
     
     def create_reference(identifier)
-      @pipes.fetch(identifier)
-    end
-    
-  private
-    def register_pipe(pipe)
-      @pipes.store pipe.object_id, pipe
+      identifier.obtain_reference(self).dup
     end
   end
 end

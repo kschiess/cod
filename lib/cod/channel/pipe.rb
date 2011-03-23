@@ -70,11 +70,6 @@ module Cod
       close_write
       close_read
     end
-
-    def identifier
-      object_id
-    end
-    
   private
     def queued?
       not @waiting_messages.empty?
@@ -109,6 +104,20 @@ module Cod
         unless queued?
     rescue Errno::EAGAIN
       # Catch and ignore this: fds.r is not ready and read would block.
+    end
+  end
+  
+  class Channel::Pipe::Identifier
+    def initialize(channel)
+      @objid = channel.object_id
+    end
+    
+    def obtain_reference(context)
+      ObjectSpace._id2ref(@objid)
+    rescue RangeError
+      raise Cod::InvalidIdentifier, 
+        "Could not reference channel. Either it was garbage collected "+
+        "or it never existed in this process."
     end
   end
 end

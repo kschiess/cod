@@ -1,4 +1,11 @@
 module Cod
+  # This gets raised in #create_reference when the identifier passed in is
+  # either invalid (has never existed) or when it cannot be turned into an
+  # object instance. (Because it might have been garbage collected or other
+  # such reasons)
+  #
+  class InvalidIdentifier < StandardError; end
+  
   def beanstalk(url, name=nil)
     context.beanstalk(url, name)
   end

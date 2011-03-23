@@ -91,11 +91,22 @@ describe Cod::Channel::Pipe do
       # An identifier is something we can also send over the wire!
       identifier = pipe.identifier
       
-      duplicate = Cod.create_reference(identifier).dup
+      duplicate = Cod.create_reference(identifier)
       
       pipe.put :something
       duplicate.get.should == :something
     end 
-    it "are garbage collected once no one holds a reference" 
+    it "are garbage collected once no one holds a reference" do
+      identifier = pipe.identifier
+      
+      # NOTE: It is real hard to make Ruby garbage collect reliably on demand. 
+      # So we fake this #object_id that will never be valid in the current 
+      # process: 
+      identifier.instance_variable_set('@objid', Object.new.object_id+2)
+      
+      expect {
+        Cod.create_reference(identifier)
+      }.to raise_error(Cod::InvalidIdentifier)
+    end
   end
 end

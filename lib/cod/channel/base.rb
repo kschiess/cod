@@ -33,8 +33,9 @@ module Cod
     end
     
     def identifier
-      not_implemented
+      self.class.const_get(:Identifier).new(self)
     end
+    
   private
     def serialize(message)
       Marshal.dump(message)
