@@ -19,6 +19,8 @@ module Cod
     # server sends back. 
     #
     def call(message)
+      outgoing.put [message, incoming]
+      incoming.get
     end
     
     # Closes all resources that are held in the client. 

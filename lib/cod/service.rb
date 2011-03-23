@@ -10,17 +10,13 @@ module Cod
       @incoming = channel
     end
     
-    # Reads the next message from the service. This returns a <message,
-    # channel> tuple. You should answer by writing to the channel; clients may
-    # be waiting for the answer. 
-    #
-    def read
-    end
-    
     # Calls the given block with the next request and returns the block answer
     # to the service client. 
     #
     def one
+      request, outgoing = incoming.get
+      answer = yield(request)
+      outgoing.put answer
     end
     
     # Loops forever, yielding requests to the block given and returning the 
