@@ -44,9 +44,23 @@ module Cod
       beanstalk.close
       @beanstalk = nil
     end
+
+    def identifier
+      identifier_class.new(url, tube_name)
+    end
   private
     def gen_anonymous_name(base)
       base + ".anonymous"
+    end
+  end
+
+  class Channel::Beanstalk::Identifier
+    def initialize(url, tube_name)
+      @url, @tube_name = url, tube_name
+    end
+    
+    def obtain_reference(context)
+      Channel::Beanstalk.new(@url, @tube_name)
     end
   end
 end

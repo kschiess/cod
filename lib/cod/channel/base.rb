@@ -33,7 +33,14 @@ module Cod
     end
     
     def identifier
-      self.class.const_get(:Identifier).new(self)
+      not_implemented
+    end
+    
+    # Returns the Identifier class below the current channel class. This is 
+    # a helper function that should only be used by subclasses. 
+    #
+    def identifier_class
+      self.class.const_get(:Identifier)
     end
     
   private

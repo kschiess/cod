@@ -15,7 +15,7 @@ describe Cod::Channel::Beanstalk do
   def produce_channel(name=nil)
     Cod.beanstalk('localhost:11300', name)
   end
-  
+
   context "anonymous tubes" do
     let!(:channel) { produce_channel() }
     before(:each) { clear_tube(channel.tube_name) }
@@ -37,6 +37,16 @@ describe Cod::Channel::Beanstalk do
       read.get.should == 'message2'
 
       read.should_not be_waiting
+    end
+    context "references" do
+      it "should reconstruct from identifiers" do
+        identifier = channel.identifier
+        
+        other_channel = Cod.create_reference(identifier)
+        other_channel.put 'test'
+        
+        channel.get.should == 'test'
+      end 
     end
   end
   context "named tubes" do

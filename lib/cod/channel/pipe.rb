@@ -70,6 +70,10 @@ module Cod
       close_write
       close_read
     end
+
+    def identifier
+      identifier_class.new(self)
+    end
   private
     def queued?
       not @waiting_messages.empty?
