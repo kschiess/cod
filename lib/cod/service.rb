@@ -3,7 +3,11 @@ module Cod
   # A service that receives requests and answers. 
   #
   class Service
+    # Incoming channel for requests.
+    attr_reader :incoming
+    
     def initialize(channel)
+      @incoming = channel
     end
     
     # Reads the next message from the service. This returns a <message,
@@ -23,6 +27,12 @@ module Cod
     # answers to the client.
     #
     def each
+    end
+    
+    # Releases all resources held by the service. 
+    #
+    def close
+      incoming.close
     end
   end
 end

@@ -2,17 +2,19 @@
 require 'cod'
 
 RSpec.configure do |config|
+  config.mock_with :flexmock
+  
   config.before(:each) { Cod.reset }
 end
 
 def slet(name, &block)
   let(name, &block)
-  alias_method name, :subject
+  subject { self.send(name) }
 end
 
 def slet!(name, &block)
   let!(name, &block)
-  alias_method name, :subject
+  subject { self.send(name) }
 end
 
 RSpec::Matchers.define(:serialize) do

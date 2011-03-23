@@ -36,5 +36,6 @@ require 'cod/channel/fifo'
 require 'cod/channel/beanstalk'
 
 require 'cod/context'
+require 'cod/client'
 require 'cod/service'
 require 'cod/topic'
