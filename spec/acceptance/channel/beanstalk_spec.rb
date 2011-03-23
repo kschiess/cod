@@ -1,8 +1,9 @@
 require 'spec_helper'
 
 describe Cod::Channel::Beanstalk do
+  # Removes all jobs from a beanstalk tube by name
   def clear_tube(name)
-    conn = pipe.beanstalk
+    conn = channel.beanstalk
     loop do
       break unless conn.peek_ready
       job = conn.reserve
@@ -10,21 +11,22 @@ describe Cod::Channel::Beanstalk do
     end
   end
   
-  def channel(name=nil)
-    described_class.new('localhost:11300', name)
+  # Creates a channel of the type Beanstalk.
+  def produce_channel(name=nil)
+    Cod.beanstalk('localhost:11300', name)
   end
   
   context "anonymous tubes" do
-    let!(:pipe) { channel() }
-    before(:each) { clear_tube(pipe.tube_name) }
-    after(:each) { pipe.close }
+    let!(:channel) { produce_channel() }
+    before(:each) { clear_tube(channel.tube_name) }
+    after(:each) { channel.close }
     
     it "should have simple message semantics" do
       # Split the channel into a write end and a read end. Otherwise
       # reading / writing from the channel will close the other end, 
       # leaving us unable to perform all operations.
-      read = pipe
-      write = pipe.dup
+      read = channel
+      write = channel.dup
 
       write.put 'message1'
       write.put 'message2'
@@ -41,16 +43,16 @@ describe Cod::Channel::Beanstalk do
     let(:tube_name) { __FILE__ + ".named_tubes" }
     before(:each) { clear_tube(tube_name) }
 
-    let!(:pipe) { channel(tube_name) }
-    after(:each) { pipe.close }
+    let!(:channel) { produce_channel(tube_name) }
+    after(:each) { channel.close }
     
     it "should allow for simple messaging" do
-      pipe.put 'test'
+      channel.put 'test'
       
       # Construct another tube independently, the only common thing being the
       # tube_name
-      other_pipe = channel(tube_name)
-      other_pipe.get.should == 'test'
+      other_channel = produce_channel(tube_name)
+      other_channel.get.should == 'test'
     end 
   end
 end

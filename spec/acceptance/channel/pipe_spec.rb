@@ -1,11 +1,11 @@
 require 'spec_helper'
 
 describe Cod::Channel::Pipe do
-  context "anonymous pipe" do
-    let!(:pipe) { described_class.new }
+  context "anonymous pipes" do
+    let!(:pipe) { Cod.pipe }
     after(:each) { pipe.close }
     
-    it "should have simple message semantics" do
+    it "have simple message semantics" do
       # Split the channel into a write end and a read end. Otherwise
       # reading / writing from the channel will close the other end, 
       # leaving us unable to perform all operations.
@@ -22,7 +22,7 @@ describe Cod::Channel::Pipe do
       
       read.should_not be_waiting
     end 
-    it "should not allow writing after a read" do
+    it "don't allow write after read" do
       # Put to a duplicate, so that the test does what it says.
       pipe.dup.put 'foo'
       
@@ -32,7 +32,7 @@ describe Cod::Channel::Pipe do
         pipe.put 'test'
       }.should raise_error(Cod::Channel::DirectionError)
     end
-    it "should not allow reading after a write" do
+    it "don't allow read after write" do
       
       lambda {
         pipe.put 'test'
@@ -87,5 +87,15 @@ describe Cod::Channel::Pipe do
         pipe.get
       }.to raise_error(Cod::Channel::CommunicationError)
     end 
+    it "allow for simple disconnected messaging semantics" do
+      # An identifier is something we can also send over the wire!
+      identifier = pipe.identifier
+      
+      duplicate = Cod.create_reference(identifier).dup
+      
+      pipe.put :something
+      duplicate.get.should == :something
+    end 
+    it "are garbage collected once no one holds a reference" 
   end
 end

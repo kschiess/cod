@@ -10,26 +10,23 @@ module Cod
     
     attr_reader :fds
     
-    # Construct a channel. If you give the channel a name, it can be looked up
-    # and used using that name, otherwise the only way to achieve the same
-    # thing is either forking (which creates two identical copies) or #dup'ing. 
-    # the channel. 
-    #
     def initialize(name=nil)
       @fds = Fds.new(*IO.pipe)
       @waiting_messages = []
     end
+
+    def initialize_copy(old)
+      old_fds = old.fds
+
+      raise ArgumentError, 
+        "Dupping a pipe channel only makes sense if it is still unused." \
+          unless old_fds.r && old_fds.w
+
+      @fds = Fds.new(
+        old_fds.r.dup, 
+        old_fds.w.dup)
+    end
     
-    # Writes a Ruby object (the 'message') to the channel. This object will 
-    # be queued in the channel and become available for #get in a FIFO manner.
-    #
-    # Issuing a #put also closes the channel instance for subsequent #get's. 
-    #
-    # Example: 
-    #   chan.put 'test'
-    #   chan.put true
-    #   chan.put :symbol
-    #
     def put(message)
       close_read
       
@@ -43,8 +40,6 @@ module Cod
       direction_error "You should #dup before writing; Looks like no other copy exists currently."
     end
     
-    # Returns true if there are messages waiting in the channel. 
-    #
     def waiting?
       process_inbound_nonblock
       queued?
@@ -76,50 +71,11 @@ module Cod
       close_read
     end
 
-    # Constructs a duplicate of the current channel, with working internal
-    # structures. 
-    #
-    # When you want to do intraprocess-communication, you will need two ends
-    # of a channel in the same process. Since writing (or reading) to (from) a
-    # channel closes the other end, you will need to make a duplicate of the
-    # channel before starting to work with it. 
-    #
-    def initialize_copy(old)
-      old_fds = old.fds
-
-      raise ArgumentError, 
-        "Dupping a pipe channel only makes sense if it is still unused." \
-          unless old_fds.r && old_fds.w
-
-      @fds = Fds.new(
-        old_fds.r.dup, 
-        old_fds.w.dup)
+    def identifier
+      object_id
     end
     
   private
-    def direction_error(msg)
-      raise Cod::Channel::DirectionError, msg
-    end
-    def communication_error(msg)
-      raise Cod::Channel::CommunicationError, msg
-    end
-  
-    # Turns the object into a buffer (simple transport layer that prefixes a
-    # size)
-    #
-    def transport_pack(message)
-      serialized = serialize(message)
-      buffer = [serialized.size].pack('l') + serialized
-    end
-    
-    # Slices one message from the front of buffer
-    #
-    def transport_unpack(buffer)
-      size = buffer.slice!(0...4).unpack('l').first
-      serialized = buffer.slice!(0...size)
-      deserialize(serialized)
-    end
-  
     def queued?
       not @waiting_messages.empty?
     end
