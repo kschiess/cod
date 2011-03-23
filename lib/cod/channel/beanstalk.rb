@@ -59,7 +59,7 @@ module Cod
       @url, @tube_name = url, tube_name
     end
     
-    def obtain_reference(context)
+    def resolve
       Channel::Beanstalk.new(@url, @tube_name)
     end
   end

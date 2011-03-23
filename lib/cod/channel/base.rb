@@ -43,6 +43,15 @@ module Cod
       self.class.const_get(:Identifier)
     end
     
+    def marshal_dump
+      identifier
+    end
+    
+    def marshal_load(identifier)
+      temp = identifier.resolve
+      initialize_copy(temp)
+    end
+    
   private
     def serialize(message)
       Marshal.dump(message)

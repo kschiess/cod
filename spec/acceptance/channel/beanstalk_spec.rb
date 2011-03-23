@@ -42,7 +42,7 @@ describe Cod::Channel::Beanstalk do
       it "should reconstruct from identifiers" do
         identifier = channel.identifier
         
-        other_channel = Cod.create_reference(identifier)
+        other_channel = identifier.resolve
         other_channel.put 'test'
         
         channel.get.should == 'test'

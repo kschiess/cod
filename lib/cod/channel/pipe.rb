@@ -25,6 +25,8 @@ module Cod
       @fds = Fds.new(
         old_fds.r.dup, 
         old_fds.w.dup)
+      
+      @waiting_messages = []
     end
     
     def put(message)
@@ -116,7 +118,7 @@ module Cod
       @objid = channel.object_id
     end
     
-    def obtain_reference(context)
+    def resolve
       ObjectSpace._id2ref(@objid)
     rescue RangeError
       raise Cod::InvalidIdentifier, 

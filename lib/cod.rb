@@ -16,11 +16,6 @@ module Cod
   end
   module_function :pipe
   
-  def create_reference(identifier)
-    context.create_reference(identifier)
-  end
-  module_function :create_reference
-  
   def context
     @convenience_context ||= Context.new
   end

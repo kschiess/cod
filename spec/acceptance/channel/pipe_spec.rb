@@ -91,7 +91,7 @@ describe Cod::Channel::Pipe do
       # An identifier is something we can also send over the wire!
       identifier = pipe.identifier
       
-      duplicate = Cod.create_reference(identifier)
+      duplicate = identifier.resolve.dup
       
       pipe.put :something
       duplicate.get.should == :something
@@ -105,8 +105,20 @@ describe Cod::Channel::Pipe do
       identifier.instance_variable_set('@objid', Object.new.object_id+2)
       
       expect {
-        Cod.create_reference(identifier)
+        identifier.resolve
       }.to raise_error(Cod::InvalidIdentifier)
     end
+    it "can be sent through any channel" do
+      hodge = Cod.pipe
+      
+      # This sends hodge through the pipe and reads it back. It references the
+      # same pipes, but is a duplicate.
+      read, write = pipe, pipe.dup
+      write.put hodge
+      podge = read.get
+      
+      hodge.put 1234
+      podge.get.should == 1234
+    end 
   end
 end

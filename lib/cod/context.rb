@@ -10,9 +10,5 @@ module Cod
     def beanstalk(url, name=nil)
       Cod::Channel::Beanstalk.new(url, name)
     end
-    
-    def create_reference(identifier)
-      identifier.obtain_reference(self).dup
-    end
   end
 end
