@@ -14,9 +14,11 @@ module Cod
     # to the service client. 
     #
     def one
-      request, outgoing = incoming.get
-      answer = yield(request)
-      outgoing.put answer
+      call = incoming.get
+      
+      answer = yield(call.message)
+      
+      call.channel.put call.response(answer)
     end
     
     # Loops forever, yielding requests to the block given and returning the 

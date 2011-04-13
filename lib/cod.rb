@@ -37,5 +37,9 @@ require 'cod/channel/beanstalk'
 
 require 'cod/context'
 require 'cod/client'
+
 require 'cod/service'
+require 'cod/service/call'
+require 'cod/service/response'
+
 require 'cod/topic'
