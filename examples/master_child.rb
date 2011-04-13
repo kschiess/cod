@@ -1,7 +1,7 @@
 $:.unshift File.expand_path(File.dirname(__FILE__) + "/../lib")
 require 'cod'
 
-pipe = Cod::Channel::Pipe.new
+pipe = Cod.pipe
 
 child_pid = fork do
   pipe.put 'test'
