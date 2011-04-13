@@ -17,5 +17,10 @@ module Cod
     # 
     def subscribers(topic=nil)
     end
+    
+    # Closes all resources used by the directory. 
+    #
+    def close
+    end
   end
 end
