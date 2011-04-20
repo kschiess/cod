@@ -22,6 +22,7 @@ pids = ['foo.bar', /^foo\..+/].map { |match_expr|
   
 directory.publish 'foo.bar', 'Hi everyone!'
 directory.publish 'foo.baz', 'Hi you!'
+directory.publish 'no.one', 'echo?'
 
 directory.publish 'foo.bar', :shutdown  
 Process.waitall
