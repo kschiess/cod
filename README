@@ -2,8 +2,32 @@
 cod is a simple ipc abstraction layer. It allows you to focus on interaction 
 between processes instead of having to think about interaction with the OS. 
 
+SYNOPSIS
+
+  # Cod's basic elements are channels, unidirectional communication links. 
+  pipe = Cod.pipe
+  beanstalk = Cod.beanstalk('localhost:11300')
+  
+  # You can use those either directly: 
+  pipe.put :some_ruby_object        # Process A
+  pipe.get # => :some_ruby_object   # Process B
+  
+  # Or use them as bricks for more: 
+  service = Cod::Service.new(beanstalk)
+  client = Cod::Client.new(beanstalk, pipe)
+  
+  service.one { |msg| :response }               # Process A
+  client.call :ruby_object    # => :response    # Process B
+  
+  # And more: Publish/Subscribe, easy construction of more advanced distributed
+  # communication.
+  
 STATUS
 
-Very preliminary. Don't use it. 
+Becoming more useful by the day. Most things will work nicely already,
+although error handling is not production quality. Toy around with it now
+and give me feedback!
+
+At version 0.1 (unreleased)
 
 (c) 2011 Kaspar Schiess

@@ -1,4 +1,10 @@
 
-== 0.1 / ???
+== 0.2 / ?
 
-  * Initial release
+  
+
+== 0.1 / 2011-04-20
+
+  * Basic communication via Beanstalk and IO.pipe. 
+  * Client-Service communication
+  * Publish-Subscribe communication
