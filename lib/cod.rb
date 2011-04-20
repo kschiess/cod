@@ -32,7 +32,6 @@ end
 require 'cod/channel'
 require 'cod/channel/base'
 require 'cod/channel/pipe'
-require 'cod/channel/fifo'
 require 'cod/channel/beanstalk'
 
 require 'cod/context'
@@ -43,4 +42,5 @@ require 'cod/service/call'
 require 'cod/service/response'
 
 require 'cod/directory'
+require 'cod/directory/subscription'
 require 'cod/topic'

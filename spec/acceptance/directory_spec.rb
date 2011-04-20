@@ -8,7 +8,7 @@ describe "Directory & Topics" do
   
   context "subscribing to 'some.topic'" do
     let(:channel) { Cod.pipe }
-    let(:topic)   { Cod::Topic.new('some.topic', directory_channel.dup, channel) }
+    let!(:topic)   { Cod::Topic.new('some.topic', directory_channel.dup, channel) }
     after(:each)  { topic.close }
 
     specify "basic semantics" do
