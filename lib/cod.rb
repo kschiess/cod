@@ -29,6 +29,9 @@ module Cod
   module_function :reset
 end
 
+module Cod::Connection; end
+require 'cod/connection/beanstalk'
+
 require 'cod/channel'
 require 'cod/channel/base'
 require 'cod/channel/pipe'

@@ -9,44 +9,41 @@ module Cod
   class Channel::Beanstalk < Channel::Base
     NONBLOCK_TIMEOUT = 0.01
     
-    # Url that was used to connect to the beanstalk server
-    attr_reader :url
-    
-    # Connection to the beanstalk server (Beanstalk::Connection)
-    attr_reader :beanstalk
+    # Connection instance that is in use for this channel.
+    attr_reader :connection
 
     # Name of the queue on the beanstalk server
     attr_reader :tube_name
     
-    def initialize(url, name=nil)
-      @url = url.freeze
+    def initialize(reference, name=nil)
+      @reference = reference
+      @connection = reference.connection
       @tube_name = (name || gen_anonymous_name('beanstalk')).freeze
-      @beanstalk = Beanstalk::Connection.new(url, tube_name)
     end
     
     def put(message)
       buffer = serialize(message)
-      beanstalk.put(buffer)
+      connection.put(tube_name, buffer)
     end
     
     def waiting?
-      !! beanstalk.peek_ready
+      connection.waiting?(tube_name)
     end
     
     def get
-      job = beanstalk.reserve
-      job.delete
-      
-      return deserialize(job.body)
+      message = connection.get(tube_name)
+      return deserialize(message)
     end
     
     def close
-      beanstalk.close
-      @beanstalk = nil
+      # Free this reference to the connection. If the count drops to zero, 
+      # this will trigger a #close on the connection. 
+      @reference.close
+      @connection = @reference = nil
     end
 
     def identifier
-      identifier_class.new(url, tube_name)
+      identifier_class.new(connection.url, tube_name)
     end
   private
     def gen_anonymous_name(base)

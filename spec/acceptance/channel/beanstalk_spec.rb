@@ -1,19 +1,24 @@
 require 'spec_helper'
 
 describe Cod::Channel::Beanstalk do
+  let(:beanstalk_url) { 'localhost:11300' }
+  
   # Removes all jobs from a beanstalk tube by name
   def clear_tube(name)
-    conn = channel.beanstalk
+    conn = Beanstalk::Connection.new(beanstalk_url)
+    
     loop do
       break unless conn.peek_ready
       job = conn.reserve
       job.delete
     end
+    
+    conn.close
   end
   
   # Creates a channel of the type Beanstalk.
   def produce_channel(name=nil)
-    Cod.beanstalk('localhost:11300', name)
+    Cod.beanstalk(beanstalk_url, name)
   end
 
   context "anonymous tubes" do
@@ -38,6 +43,7 @@ describe Cod::Channel::Beanstalk do
 
       read.should_not be_waiting
     end
+    it "should try to reuse a closed connection and succeed" 
     context "references" do
       it "should reconstruct from identifiers" do
         identifier = channel.identifier
