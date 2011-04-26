@@ -1,7 +1,8 @@
 
 == 0.2 / ?
 
-  
+  * Cod::Client now allows both synchronous (with answer) and asynchronous
+    calls (#call vs. #notify).
 
 == 0.1 / 2011-04-20
 
