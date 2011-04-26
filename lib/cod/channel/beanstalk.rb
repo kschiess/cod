@@ -20,6 +20,11 @@ module Cod
       @tube_name = (name || gen_anonymous_name('beanstalk')).freeze
     end
     
+    def initialize_copy(from)
+      @connection = from.connection
+      @tube_name = from.tube_name
+    end
+    
     def put(message)
       buffer = serialize(message)
       connection.put(tube_name, buffer)

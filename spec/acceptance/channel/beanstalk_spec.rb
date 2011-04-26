@@ -51,6 +51,15 @@ describe Cod::Channel::Beanstalk do
         other_channel.put 'test'
         
         channel.get.should == 'test'
+      end
+      it "should allow sending a channel through a channel" do
+        foo = produce_channel('foo')
+        
+        channel.put foo
+        foo_dup = channel.get
+        
+        foo.put 'test'
+        foo_dup.get.should == 'test'
       end 
     end
   end
