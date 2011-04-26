@@ -19,8 +19,16 @@ module Cod
     # server sends back. 
     #
     def call(message)
-      outgoing.put [message, incoming]
+      outgoing.put [message, incoming, true]
       incoming.get
+    end
+    
+    # This sends the server a message without waiting for an answer. The
+    # server will throw away the answer produced. 
+    #
+    def notify(message)
+      outgoing.put [message, incoming, false]
+      nil
     end
     
     # Closes all resources that are held in the client. 

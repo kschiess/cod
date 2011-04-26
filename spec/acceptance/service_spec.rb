@@ -33,4 +33,14 @@ describe Cod::Service do
     Process.kill('TERM', pid)
     Process.wait(pid)
   end
+  it "should implement async notify (a simple put)" do
+    pid = fork do
+      service.one { |message| 'bar' }
+    end
+
+    client.notify('foo').should == nil
+    achannel.should_not be_waiting
+    
+    Process.waitall
+  end 
 end

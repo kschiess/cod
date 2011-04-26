@@ -33,8 +33,13 @@ module Cod
     # to the service client. 
     #
     def one
-      message, answer_channel = incoming.get      
-      answer_channel.put yield(message)
+      message, answer_channel, needs_answer = incoming.get      
+      
+      answer = yield(message)
+      
+      if needs_answer
+        answer_channel.put yield(message)
+      end
     end
     
     # Loops forever, yielding requests to the block given and returning the 
