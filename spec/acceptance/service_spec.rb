@@ -21,4 +21,16 @@ describe Cod::Service do
 
     Process.wait(pid)
   end
+  it "should implement #each (a looped one)" do
+    pid = fork do
+      service.each { |msg| msg }
+    end
+    
+    10.times do |i|
+      client.call(i).should == i
+    end
+
+    Process.kill('TERM', pid)
+    Process.wait(pid)
+  end
 end

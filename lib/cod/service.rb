@@ -33,17 +33,17 @@ module Cod
     # to the service client. 
     #
     def one
-      call = incoming.get
-      
-      answer = yield(call.message)
-      
-      call.channel.put call.response(answer)
+      message, answer_channel = incoming.get      
+      answer_channel.put yield(message)
     end
     
     # Loops forever, yielding requests to the block given and returning the 
     # answers to the client.
     #
-    def each
+    def each(&block)
+      loop do
+        one(&block)
+      end
     end
     
     # Releases all resources held by the service. 

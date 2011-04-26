@@ -19,11 +19,8 @@ module Cod
     # server sends back. 
     #
     def call(message)
-      call_msg = Service::Call.new(message, incoming)
-      outgoing.put call_msg
-      
-      answer_msg = incoming.get
-      answer_msg.message
+      outgoing.put [message, incoming]
+      incoming.get
     end
     
     # Closes all resources that are held in the client. 
