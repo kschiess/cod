@@ -15,9 +15,8 @@ module Cod
     # Name of the queue on the beanstalk server
     attr_reader :tube_name
     
-    def initialize(reference, name=nil)
-      @reference = reference
-      @connection = reference.connection
+    def initialize(connection, name=nil)
+      @connection = connection
       @tube_name = (name || gen_anonymous_name('beanstalk')).freeze
     end
     
@@ -36,9 +35,6 @@ module Cod
     end
     
     def close
-      # Free this reference to the connection. If the count drops to zero, 
-      # this will trigger a #close on the connection. 
-      @reference.close
       @connection = @reference = nil
     end
 
@@ -56,8 +52,11 @@ module Cod
       @url, @tube_name = url, tube_name
     end
     
-    def resolve
-      Channel::Beanstalk.new(@url, @tube_name)
+    def resolve(ctxt=nil)
+      raise NotImplementedError, "Explicit context not yet implemented." \
+        if ctxt
+          
+      Cod.beanstalk(@url, @tube_name)
     end
   end
 end

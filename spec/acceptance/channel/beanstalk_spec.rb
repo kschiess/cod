@@ -43,9 +43,8 @@ describe Cod::Channel::Beanstalk do
 
       read.should_not be_waiting
     end
-    it "should try to reuse a closed connection and succeed" 
     context "references" do
-      it "should reconstruct from identifiers" do
+      it "should resolve from an identifier (context is implicit)" do
         identifier = channel.identifier
         
         other_channel = identifier.resolve

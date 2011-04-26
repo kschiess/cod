@@ -21,37 +21,19 @@ module Cod
     end
     
   private
-    # Holds connections to other systems and a reference count. This helps in
-    # deciding when we should close the connection. 
-    #
-    ConnectionRef = Struct.new(:connection, :references) do
-      def use
-        self.references += 1
-      end
-      
-      def close
-        self.references -= 1
-        if self.references <= 0
-          connection.close
-          self.connection = nil
-        end
-      end
-    end
-  
-    # Returns a connection to a system identified by type and url. 
+    # Returns a connection to a system identified by type and url. Currently, 
+    # connections are never released or closed. This is only a minor drawback
+    # since there will be few of them. (considering we only use this for 
+    # beanstalk) 
     #
     def connection(type, url)
       key = connection_key(type, url)
-
-      if ref = @connections[key]
-        ref.use
-      else
-        connection = produce_connection(type, url)
-        ref = ConnectionRef.new(connection, 1)
-        @connections.store key, ConnectionRef.new(connection)
-      end
-
-      return ref
+      
+      connection = @connections[key]
+      return connection if connection
+    
+      produce_connection(type, url).tap { |connection|
+        @connections.store(key, connection) }
     end
     
     def connection_key(type, url)
