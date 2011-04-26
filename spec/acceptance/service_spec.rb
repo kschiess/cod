@@ -10,37 +10,56 @@ describe Cod::Service do
     service.close
     client.close
   }
-  
-  it "should implement simple call/response pattern" do
-    pid = fork do
-      service.one { |message| 'bar' }
-    end
-    
-    answer = client.call 'foo'
-    answer.should == 'bar'
 
-    Process.wait(pid)
+  context "(forked server)" do
+    it "should implement simple call/response pattern" do
+      pid = fork do
+        service.one { |message| 
+          'bar' }
+      end
+
+      answer = client.call 'foo'
+      answer.should == 'bar'
+
+      Process.wait(pid)
+    end
+    it "should implement #each (a looped one)" do
+      pid = fork do
+        service.each { |msg| msg }
+      end
+
+      10.times do |i|
+        client.call(i).should == i
+      end
+
+      Process.kill('TERM', pid)
+      Process.wait(pid)
+    end
+    it "should implement async notify (a simple put)" do
+      pid = fork do
+        service.one { |message| 'bar' }
+      end
+
+      client.notify('foo').should == nil
+      achannel.should_not be_waiting
+
+      Process.waitall
+    end 
   end
-  it "should implement #each (a looped one)" do
-    pid = fork do
-      service.each { |msg| msg }
-    end
-    
-    10.times do |i|
-      client.call(i).should == i
-    end
-
-    Process.kill('TERM', pid)
-    Process.wait(pid)
+  context "(forked client)" do
+    it "should call the server method only once" do
+      fork do
+        client.call 'message'
+      end
+      
+      calls = 0
+      service.one { |msg| 
+        msg.should == 'message' 
+        calls += 1 }
+        
+      calls.should == 1
+      
+      Process.waitall
+    end 
   end
-  it "should implement async notify (a simple put)" do
-    pid = fork do
-      service.one { |message| 'bar' }
-    end
-
-    client.notify('foo').should == nil
-    achannel.should_not be_waiting
-    
-    Process.waitall
-  end 
 end

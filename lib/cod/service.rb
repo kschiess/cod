@@ -38,7 +38,7 @@ module Cod
       answer = yield(message)
       
       if needs_answer
-        answer_channel.put yield(message)
+        answer_channel.put answer
       end
     end
     
