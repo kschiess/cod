@@ -24,11 +24,21 @@ module Cod
       expected_id = next_request_id
       outgoing.put envelope(expected_id, message, incoming, true)
       
+      start_time = Time.now
       loop do
         received_id, answer = incoming.get(:timeout => @timeout)
         return answer if received_id == expected_id
+        
+        # We're receiving answers with request_ids that are outside the 
+        # window that we would expect. Something is seriously amiss. 
         raise Cod::Channel::CommunicationError, 
           "Missed request." unless earlier?(expected_id, received_id)
+          
+        # We've been waiting (and consuming answers) for too long - overall
+        # timeout has elapsed. 
+        raise Cod::Channel::TimeoutError, 
+          "Timed out while waiting for service request answer." \
+            if (Time.now-start_time) > @timeout
       end
     end
     
