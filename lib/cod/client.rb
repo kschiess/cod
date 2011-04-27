@@ -11,6 +11,7 @@ module Cod
     # there. 
     #
     def initialize(requests, answers)
+      @timeout = 1
       @incoming = answers
       @outgoing = requests
     end
@@ -18,9 +19,9 @@ module Cod
     # Calls the service in a synchronous fashion. Returns the message the
     # server sends back. 
     #
-    def call(message)
+    def call(message=nil)
       outgoing.put [message, incoming, true]
-      incoming.get
+      incoming.get(:timeout => @timeout)
     end
     
     # This sends the server a message without waiting for an answer. The

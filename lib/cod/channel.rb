@@ -9,5 +9,11 @@ module Cod
     # Cod cannot recover from. 
     #
     class CommunicationError < StandardError; end
+
+    # When calling #get on a channel with a timeout (see :timeout option), 
+    # this may be raised. It means that the channel isn't ready for delivering
+    # a message in timeout seconds. 
+    #
+    class TimeoutError < StandardError; end
   end
 end

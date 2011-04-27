@@ -30,9 +30,9 @@ module Cod
     
     # Removes and returns the next message waiting in the tube given by name.
     #
-    def get(name)
+    def get(name, opts={})
       watch(name) do
-        job = connection.reserve
+        job = connection.reserve(opts[:timeout])
         job.delete
         
         job.body

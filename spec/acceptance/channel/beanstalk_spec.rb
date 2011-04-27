@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+require 'timeout'
+
 describe Cod::Channel::Beanstalk do
   let(:beanstalk_url) { 'localhost:11300' }
   
@@ -43,6 +45,11 @@ describe Cod::Channel::Beanstalk do
 
       read.should_not be_waiting
     end
+    it "should allow #get with timeout" do
+      expect {
+        channel.get(:timeout => 0.01)
+      }.to raise_error(Cod::Channel::TimeoutError)
+    end 
     context "references" do
       it "should resolve from an identifier (context is implicit)" do
         identifier = channel.identifier
@@ -77,6 +84,25 @@ describe Cod::Channel::Beanstalk do
       # tube_name
       other_channel = produce_channel(tube_name)
       other_channel.get.should == 'test'
+    end 
+  end
+
+  context "when used as transport for a Service" do
+    let(:service_channel) { produce_channel('foobar') }
+    let(:client_channel) { produce_channel }
+    
+    let(:service) { Cod::Service.new(service_channel) }
+    let(:client)  { Cod::Client.new(service_channel, client_channel) }
+    # after(:each) { service.close; client.close }
+    
+    it "should timeout on a server crash" do
+      fork do service.one { exit } end
+
+      expect {
+        client.call
+      }.to raise_error(Cod::Channel::TimeoutError)
+      
+      Process.waitall
     end 
   end
 end

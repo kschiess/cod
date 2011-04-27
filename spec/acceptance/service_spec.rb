@@ -12,16 +12,17 @@ describe Cod::Service do
   }
 
   context "(forked server)" do
+    
     it "should implement simple call/response pattern" do
-      pid = fork do
+      fork do
         service.one { |message| 
           'bar' }
       end
 
       answer = client.call 'foo'
       answer.should == 'bar'
-
-      Process.wait(pid)
+      
+      Process.waitall
     end
     it "should implement #each (a looped one)" do
       pid = fork do
@@ -33,16 +34,16 @@ describe Cod::Service do
       end
 
       Process.kill('TERM', pid)
-      Process.wait(pid)
+      Process.waitall
     end
     it "should implement async notify (a simple put)" do
-      pid = fork do
+      fork do
         service.one { |message| 'bar' }
       end
 
       client.notify('foo').should == nil
       achannel.should_not be_waiting
-
+      
       Process.waitall
     end 
   end

@@ -18,7 +18,12 @@ module Cod
       not_implemented
     end
     
-    def get
+    # Reads a Ruby object (a message) from the channel. Some channels may not
+    # allow reading after you've written to it once. Options that work: 
+    #
+    #   :timeout :: Time to wait before throwing a Cod::Channel::TimeoutError.
+    #
+    def get(opts={})
       not_implemented
     end
     

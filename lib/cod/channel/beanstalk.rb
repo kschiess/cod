@@ -34,9 +34,12 @@ module Cod
       connection.waiting?(tube_name)
     end
     
-    def get
-      message = connection.get(tube_name)
+    def get(opts={})
+      message = connection.get(tube_name, 
+        :timeout => opts[:timeout])
       return deserialize(message)
+    rescue Beanstalk::TimedOut
+      raise Channel::TimeoutError, "No messages waiting in #{tube_name}."
     end
     
     def close

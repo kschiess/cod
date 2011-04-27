@@ -52,7 +52,9 @@ module Cod
       return queued?
     end
     
-    def get
+    # TODO Make :timeout option work for this. Not so critical, since we 
+    # are notified once one end is closed.
+    def get(opts={})
       close_write
       
       return @waiting_messages.shift if queued?
