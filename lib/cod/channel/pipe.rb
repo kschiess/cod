@@ -59,7 +59,7 @@ module Cod
 
       start_time = Time.now
       loop do
-        IO.select([fds.r], nil, [fds.r], 1)
+        IO.select([fds.r], nil, [fds.r], 0.1)
         process_inbound_nonblock
         return @waiting_messages.shift if queued?
         
