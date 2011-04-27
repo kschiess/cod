@@ -1,5 +1,5 @@
 
-== 0.2 / ?
+== 0.2 / 2011-04-27
 
   * Cod::Client now allows both synchronous (with answer) and asynchronous
     calls (#call vs. #notify).

@@ -24,12 +24,12 @@ end
 desc 'Clear out RDoc'
 task :clean => [:clobber_rdoc, :clobber_package]
 
-# # This task actually builds the gem. 
-# task :gem => :spec
-# spec = eval(File.read('cod.gemspec'))
-# 
-# desc "Generate the gem package."
-# Rake::GemPackageTask.new(spec) do |pkg|
-#   pkg.gem_spec = spec
-# end
+# This task actually builds the gem. 
+task :gem => :spec
+spec = eval(File.read('cod.gemspec'))
+
+desc "Generate the gem package."
+Rake::GemPackageTask.new(spec) do |pkg|
+  pkg.gem_spec = spec
+end
 

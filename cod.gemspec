@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = 'cod'
-  s.version = '0.1'
+  s.version = '0.2.0'
 
   s.required_rubygems_version = Gem::Requirement.new('>= 0') if s.respond_to? :required_rubygems_version=
   s.authors = ['Kaspar Schiess']
-  s.date = '2011-04-11'
+  s.date = '2011-04-27'
   s.email = 'kaspar.schiess@absurd.li'
   s.extra_rdoc_files = ['README']
   s.files = %w(Gemfile HISTORY.txt LICENSE Rakefile README) + Dir.glob("{lib,examples}/**/*")
