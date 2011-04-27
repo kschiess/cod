@@ -120,5 +120,14 @@ describe Cod::Channel::Pipe do
       hodge.put 1234
       podge.get.should == 1234
     end 
+
+    describe "#get" do
+      it "times out after :timeout seconds" do
+        write_end = pipe.dup
+        expect {
+          pipe.get(:timeout => 0.1)
+        }.to raise_error(Cod::Channel::TimeoutError)
+      end 
+    end
   end
 end

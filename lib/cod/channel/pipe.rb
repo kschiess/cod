@@ -52,17 +52,21 @@ module Cod
       return queued?
     end
     
-    # TODO Make :timeout option work for this. Not so critical, since we 
-    # are notified once one end is closed.
     def get(opts={})
       close_write
       
       return @waiting_messages.shift if queued?
 
+      start_time = Time.now
       loop do
         IO.select([fds.r], nil, [fds.r], 1)
         process_inbound_nonblock
         return @waiting_messages.shift if queued?
+        
+        if opts[:timeout] && (Time.now-start_time) > opts[:timeout]
+          raise Cod::Channel::TimeoutError, 
+            "No messages waiting in pipe."
+        end
       end
       # NEVER REACHED
 
