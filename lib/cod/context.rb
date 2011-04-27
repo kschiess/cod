@@ -1,3 +1,5 @@
+require 'weakref'
+
 module Cod
   # Channels inside a context know each other and can be looked up by their
   # identifier. Context is also responsible for holding connections and for
@@ -7,8 +9,24 @@ module Cod
   #
   class Context
     
+    def self.install_at_fork(context)
+      ref = WeakRef.new(context)
+
+      at_fork do |old_handler|
+        old_handler.call rescue nil
+        
+        begin
+          ref.reset
+        rescue WeakRef::RefError
+          # IGNORED EXCEPTION
+        end
+      end
+    end
+    
     def initialize
       @connections = {}
+      
+      self.class.install_at_fork(self)
     end
     
     def pipe(name=nil)
@@ -18,6 +36,10 @@ module Cod
     def beanstalk(url, name=nil)
       Cod::Channel::Beanstalk.new(
         connection(:beanstalk, url), name)
+    end
+    
+    def reset
+      @connections = {}
     end
     
   private

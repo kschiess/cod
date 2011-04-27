@@ -1,3 +1,5 @@
+require 'at_fork'
+
 module Cod
   # This gets raised in #create_reference when the identifier passed in is
   # either invalid (has never existed) or when it cannot be turned into an
