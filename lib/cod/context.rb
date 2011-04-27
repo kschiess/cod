@@ -9,9 +9,7 @@ module Cod
   #
   class Context
     
-    def self.install_at_fork(context)
-      ref = WeakRef.new(context)
-
+    def self.install_at_fork(ref)
       at_fork do |old_handler|
         old_handler.call rescue nil
         
@@ -26,7 +24,7 @@ module Cod
     def initialize
       @connections = {}
       
-      self.class.install_at_fork(self)
+      self.class.install_at_fork(WeakRef.new(self))
     end
     
     def pipe(name=nil)
