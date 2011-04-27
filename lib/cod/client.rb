@@ -22,7 +22,7 @@ module Cod
     #
     def call(message=nil)
       expected_id = next_request_id
-      outgoing.put [expected_id, message, incoming, true]
+      outgoing.put envelope(expected_id, message, incoming, true)
       
       loop do
         received_id, answer = incoming.get(:timeout => @timeout)
@@ -35,8 +35,8 @@ module Cod
     # This sends the server a message without waiting for an answer. The
     # server will throw away the answer produced. 
     #
-    def notify(message)
-      outgoing.put [message, incoming, false]
+    def notify(message=nil)
+      outgoing.put envelope(next_request_id, message, incoming, false)
       nil
     end
     
@@ -48,6 +48,12 @@ module Cod
     end
     
   private
+  
+    # Creates a message to send to the service. 
+    #
+    def envelope(id, message, incoming_channel, needs_answer)
+      [id, message, incoming_channel, needs_answer]
+    end
   
     # Returns a sequence of request ids.
     #

@@ -89,6 +89,7 @@ describe Cod::Channel::Beanstalk do
 
   context "when used as transport for a Service" do
     let(:service_channel) { produce_channel('foobar') }
+    before(:each) { clear_tube('foobar') }
     let(:client_channel) { produce_channel }
     
     let(:service) { Cod::Service.new(service_channel) }
@@ -103,6 +104,21 @@ describe Cod::Channel::Beanstalk do
       }.to raise_error(Cod::Channel::TimeoutError)
       
       Process.waitall
-    end 
+    end
+    context "regression" do
+      it "should still allow notify sends (order of arguments between #notify and #call)" do
+        fork do
+          service.one { |m| m.should == :foo; 1 }
+          service.one { |m| m.should == :foo }
+          service.one { |m| m.should == :foo; 3 }
+        end
+
+        client.call(:foo).should == 1
+        client.notify(:foo)
+        client.call(:foo).should == 3
+
+        Process.waitall
+      end 
+    end
   end
 end
