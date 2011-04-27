@@ -10,18 +10,26 @@ module Cod
     # will often be anonymous - no one except the service needs to write
     # there. 
     #
-    def initialize(requests, answers)
-      @timeout = 1
+    def initialize(requests, answers, timeout=1)
+      @timeout = timeout
       @incoming = answers
       @outgoing = requests
+      @request_id = 0
     end
 
     # Calls the service in a synchronous fashion. Returns the message the
     # server sends back. 
     #
     def call(message=nil)
-      outgoing.put [message, incoming, true]
-      incoming.get(:timeout => @timeout)
+      expected_id = next_request_id
+      outgoing.put [expected_id, message, incoming, true]
+      
+      loop do
+        received_id, answer = incoming.get(:timeout => @timeout)
+        return answer if received_id == expected_id
+        raise Cod::Channel::CommunicationError, 
+          "Missed request." unless earlier?(expected_id, received_id)
+      end
     end
     
     # This sends the server a message without waiting for an answer. The
@@ -37,6 +45,21 @@ module Cod
     def close
       incoming.close
       outgoing.close
+    end
+    
+  private
+  
+    # Returns a sequence of request ids.
+    #
+    def next_request_id
+      @request_id += 1
+    end
+    
+    # True if the received request id answers a request that has been 
+    # earlier than the expected request id.
+    #
+    def earlier?(expected, received)
+      expected > received
     end
   end
 end

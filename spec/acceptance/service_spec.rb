@@ -4,7 +4,7 @@ describe Cod::Service do
   let!(:schannel) { Cod.pipe }
   let!(:achannel) { Cod.pipe }
   let!(:service)  { Cod::Service.new(schannel) }
-  let!(:client)   { Cod::Client.new(schannel, achannel) }
+  let!(:client)   { Cod::Client.new(schannel, achannel, 0.2) }
   
   after(:each) { 
     service.close
@@ -43,6 +43,23 @@ describe Cod::Service do
 
       client.notify('foo').should == nil
       achannel.should_not be_waiting
+      
+      Process.waitall
+    end 
+    it "should never return answers out of band" do
+      fork do
+        # This one takes too long - the client will not wait for this. 
+        service.one { sleep(0.3); :foo } 
+        # And this one takes only a short time - but the client might receive
+        # the previous answer: 
+        service.one { :bar } 
+      end
+      
+      expect {
+        client.call
+      }.to raise_error(Cod::Channel::TimeoutError)
+      
+      client.call.should == :bar
       
       Process.waitall
     end 

@@ -33,12 +33,12 @@ module Cod
     # to the service client. 
     #
     def one
-      message, answer_channel, needs_answer = incoming.get      
+      request_id, message, answer_channel, needs_answer = incoming.get      
       
       answer = yield(message)
       
       if needs_answer
-        answer_channel.put answer
+        answer_channel.put [request_id, answer]
       end
     end
     
