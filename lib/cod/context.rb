@@ -36,6 +36,14 @@ module Cod
         connection(:beanstalk, url), name)
     end
     
+    def tcp(destination)
+      Cod::Channel::TCPConnection.new(destination)
+    end
+
+    def tcpserver(bind_to)
+      Cod::Channel::TCPServer.new(bind_to)
+    end
+    
     def reset
       @connections = {}
     end

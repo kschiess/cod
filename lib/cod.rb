@@ -18,6 +18,16 @@ module Cod
   end
   module_function :pipe
   
+  def tcp(destination)
+    context.tcp(destination)
+  end
+  module_function :tcp
+  
+  def tcpserver(bind_to)
+    context.tcpserver(bind_to)
+  end
+  module_function :tcpserver
+  
   def context
     @convenience_context ||= Context.new
   end
@@ -38,6 +48,8 @@ require 'cod/channel'
 require 'cod/channel/base'
 require 'cod/channel/pipe'
 require 'cod/channel/beanstalk'
+require 'cod/channel/tcpconnection'
+require 'cod/channel/tcpserver'
 
 require 'cod/context'
 require 'cod/client'
