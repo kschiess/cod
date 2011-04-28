@@ -30,7 +30,7 @@ module Cod
     end
     
     def put(message)
-      not_implemented
+      communication_error "You cannot write to a server channel."
     end
     
     def get(opts={})
@@ -38,6 +38,7 @@ module Cod
 
       start_time = Time.now
       loop do
+        # p [:looping, @waiting_messages, connections.size]
         read_from_wire(opts)
         return @waiting_messages.shift if queued?
         
@@ -104,7 +105,7 @@ module Cod
         connection = server.accept_nonblock
         self.connections << connection
       end
-    rescue Errno::EAGAIN
+    rescue Errno::EAGAIN, Errno::EWOULDBLOCK, Errno::ECONNABORTED, Errno::EPROTO, Errno::EINTR
       # Means that no connects are pending. Ignore, since this is exactly
       # the termination condition for this method. 
     end

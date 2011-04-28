@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe "TCP based channels" do
   let(:url) { 'localhost:20000'}
-  let(:server) { Cod.tcpserver(url) }
+  let!(:server) { Cod.tcpserver(url) }
   let(:client) { Cod.tcp(url) }
   
   after(:each) { server.close; client.close }
