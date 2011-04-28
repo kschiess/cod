@@ -53,7 +53,7 @@ module Cod
     end
     
     def identifier
-      not_implemented
+      Identifier.new(destination)
     end
     
   private
@@ -72,6 +72,23 @@ module Cod
     def with_connection
       @connection = TCPSocket.new(*destination)
       yield connection
+    end
+  end
+  
+  class Channel::TCPConnection::Identifier
+    def initialize(destination)
+      @destination = destination
+    end
+    
+    def resolve
+      # If we've been sent to our own server end, assume the role of the
+      # socket on that side. 
+      
+      # Otherwise: Fail miserably. The expectation would be that if someone
+      # wrote to us, they would be able to connect to the read end on the
+      # other side. 
+      raise Channel::CommunicationError,
+        "Unable to find a way of communicating back through channel."
     end
   end
 end
