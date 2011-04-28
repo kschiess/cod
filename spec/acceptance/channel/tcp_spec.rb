@@ -37,7 +37,17 @@ describe "TCP based channels" do
       server_end.put 'test'
       client.get.should == 'test'
     end 
-    it "should transmit other connections as expected"
-    it "should refuse to transmit server channels"  
+    it "should refuse to transmit client ends to foreign servers" do
+      # Transmitting client to another server but the one that it's connected
+      # to makes no sense. The user would expect to be able to read messages
+      # from that server sent to it - but there is no such communication
+      # channel.
+      fail
+    end 
+    it "should refuse to transmit server ends" do
+      # Transmitting a server makes no sense either. A socket can only 
+      # be bound once. To transmit server channels, fork processes!
+      fail
+    end
   end
 end
