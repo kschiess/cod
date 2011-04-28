@@ -1,3 +1,5 @@
+require 'socket'
+
 module Cod
   module Channel::TCP
     def split_uri(uri)
