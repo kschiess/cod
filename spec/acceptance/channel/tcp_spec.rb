@@ -42,12 +42,19 @@ describe "TCP based channels" do
       # to makes no sense. The user would expect to be able to read messages
       # from that server sent to it - but there is no such communication
       # channel.
-      fail
+      expect {
+        # Let's hope no one is listening there...
+        other_server = Cod.tcpserver('localhost:12343')
+        other = Cod.tcp('localhost:12343')
+        other.put client
+      }.to raise_error(Cod::Channel::CommunicationError)
     end 
     it "should refuse to transmit server ends" do
       # Transmitting a server makes no sense either. A socket can only 
       # be bound once. To transmit server channels, fork processes!
-      fail
+      expect {
+        client.put server
+      }.to raise_error(Cod::Channel::CommunicationError)
     end
   end
 end

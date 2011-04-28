@@ -56,6 +56,10 @@ module Cod
       Identifier.new(destination)
     end
     
+    def may_transmit?(channel)
+      channel == self
+    end
+    
   private
     # Put a message into the send queue. 
     #

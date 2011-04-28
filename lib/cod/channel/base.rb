@@ -41,6 +41,12 @@ module Cod
       not_implemented
     end
     
+    # Returns true if the current channel permits transmission of channel.
+    #
+    def may_transmit?(channel)
+      true
+    end
+        
     # Returns the Identifier class below the current channel class. This is 
     # a helper function that should only be used by subclasses. 
     #
@@ -49,6 +55,14 @@ module Cod
     end
     
     def marshal_dump
+      # Do we know which channel we're being serialized through? Ask for
+      # permission. 
+      if serializing_channel = Thread.current[:cod_serializing_channel]
+        unless serializing_channel.may_transmit?(self)
+          communication_error "#{self} cannot be transmitted via this channel."
+        end
+      end
+      
       identifier
     end
     
@@ -59,7 +73,10 @@ module Cod
     
   private
     def serialize(message)
+      Thread.current[:cod_serializing_channel] = self
       Marshal.dump(message)
+    ensure
+      Thread.current[:cod_serializing_channel] = nil
     end
     
     def deserialize(buffer)
