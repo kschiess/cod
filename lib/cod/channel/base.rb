@@ -105,14 +105,6 @@ module Cod
     #   channel_equiv = Cod::Channel::Base.from_wire_data(obj)
     #
     def to_wire_data
-      # Do we know which channel we're being serialized through? Ask for
-      # permission. 
-      if serializing_channel = tls_get(:cod_serializing_channel)
-        unless serializing_channel.may_transmit?(self)
-          communication_error "#{self} cannot be transmitted via this channel."
-        end
-      end
-      
       identifier
     end
     
@@ -122,55 +114,7 @@ module Cod
     # here. 
     #
     def self.from_wire_data(obj)
-      if deserializing_channel=tls_get(:cod_deserializing_channel)
-        channel=deserializing_channel.replaces(obj)
-        return channel if channel
-      end
-      
       obj.resolve
-    end
-    
-    # Replaces the value of Thread.current[name] for the duration of the block
-    # with value. Makes sure that the old value gets written back. 
-    #
-    def with_tls(name, value)
-      old_val = Thread.current[name]
-      Thread.current[name] = value
-      
-      yield
-    ensure
-      Thread.current[name] = old_val
-    end
-    
-    # Returns the value of Thread.current[name]
-    #
-    def tls_get(name)
-      Thread.current[name]
-    end
-    def self.tls_get(name)
-      Thread.current[name]
-    end
-    
-    # ---------------------------------------------------------- serialization
-    
-
-  
-    # Turns the object into a buffer (simple transport layer that prefixes a
-    # size)
-    #
-    def transport_pack(message)
-      serialized = serialize(message)
-      buffer = [serialized.size].pack('l') + serialized
-    end
-    
-    # Slices one message from the front of buffer and returns it. This
-    # reverses the simple transport layer added to the string sent out by
-    # #transport_pack.
-    #
-    def transport_unpack(buffer)
-      size = buffer.slice!(0...4).unpack('l').first
-      serialized = buffer.slice!(0...size)
-      deserialize(serialized)
     end
     
     # ---------------------------------------------------------- error raising

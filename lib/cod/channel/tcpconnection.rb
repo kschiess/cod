@@ -10,13 +10,18 @@ module Cod
     #
     attr_reader :destination
     
-    def initialize(destination)
-      @destination = split_uri(destination)
-      
-      @connection = nil
-      
-      @writer = ObjectIO::Writer.new { reconnect }
-      @reader = ObjectIO::Reader.new { reconnect }
+    def initialize(destination_or_connection)
+      if destination_or_connection.respond_to?(:to_str)
+        @destination = split_uri(destination_or_connection)
+        @connection = nil
+      else
+        @destination = nil
+        @connection = destination_or_connection
+      end
+    
+      serializer = ObjectIO::Serializer.new(self)
+      @writer = ObjectIO::Writer.new(serializer) { reconnect }
+      @reader = ObjectIO::Reader.new(serializer) { reconnect }
     end
     
     def put(message)
@@ -52,17 +57,11 @@ module Cod
     
     def resolve
       # If we've been sent to our own server end, assume the role of the
-      # socket on that side. 
-      
-      # Otherwise: Fail miserably. The expectation would be that if someone
-      # wrote to us, they would be able to connect to the read end on the
-      # other side. 
-      raise Channel::CommunicationError,
-        "Unable to find a way of communicating back through channel."
-    end
-
-    def resolve_socket(socket)
-      Channel::TCPConnection::Simple.new(socket)
+      # socket on that side. This is achieved by inserting the self into 
+      # the stream of deserialized objects and having the transformer 
+      # (attached to the serializer, see ObjectIO::Serializer) transform
+      # it into a valid connection object. 
+      self
     end
   end
 end

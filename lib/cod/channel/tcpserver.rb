@@ -1,7 +1,7 @@
 require 'cod/channel/tcp'
 
 module Cod
-  # A channel based on a passive tcp server (listening).
+  # A channel based on a passive tcp server (listening). 
   #
   class Channel::TCPServer < Channel::Base
     include Channel::TCP
@@ -16,13 +16,18 @@ module Cod
     attr_reader :connections
     
     def initialize(bind_to)
-      @bind_to = split_uri(bind_to)
+      @bind_to = split_uri(bind_to)      
+      @server = TCPServer.new(*@bind_to)
       
-      connect
+      serializer = ObjectIO::Serializer.new(self)
+      @reader = ObjectIO::Reader.new(serializer) { 
+        accept_connections(server)
+      }
     end
     
     def get(opts={})
-      @oio.get(opts)
+      # Read a message from the wire and transform all contained objects.
+      @reader.get(opts) 
     end
     
     def put(message)
@@ -31,19 +36,32 @@ module Cod
     end
     
     def waiting?
-      @oio.waiting?
+      @reader.waiting?
     end
     
     def close
-      @oio.close
+      @reader.close
       server.close
 
       @server = nil
-      @oio = nil
+      @reader = nil
     end
-    
-  private
+
+    def transform(socket, obj)
+      p [:obj, obj]
+      if obj.kind_of?(Channel::TCPConnection::Identifier)
+        # We've been sent 'a' tcp channel. Assume that it's our own client end
+        # that we've been sent and turn it into a channel that communicates
+        # back there. 
+        p :replaced
+        return Channel::TCPConnection.new(socket)
+      end
+      
+      return obj
+    end
   
+  private
+    
     # Accept all pending connects and stores them in the connections array. 
     #
     def accept_connections(server)
@@ -56,13 +74,6 @@ module Cod
       # Means that no more connects are pending. Ignore, since this is exactly
       # one of the termination conditions for this method. 
       return connections
-    end
-  
-    def connect
-      @server = TCPServer.new(*bind_to)
-      @oio = ObjectIO::Reader.new { 
-        accept_connections(server)
-      }
     end
   end
 end
