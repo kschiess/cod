@@ -48,16 +48,19 @@ module Cod
     end
 
     def transform(socket, obj)
-      p [:obj, obj]
+      # p [:tcp_server_deserialize, obj]
       if obj.kind_of?(Channel::TCPConnection::Identifier)
         # We've been sent 'a' tcp channel. Assume that it's our own client end
         # that we've been sent and turn it into a channel that communicates
         # back there. 
-        p :replaced
         return Channel::TCPConnection.new(socket)
       end
       
       return obj
+    end
+    
+    def identifier
+      communication_error "TCP server channels cannot be transmitted."
     end
   
   private

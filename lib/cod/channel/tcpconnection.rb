@@ -19,7 +19,7 @@ module Cod
         @connection = destination_or_connection
       end
     
-      serializer = ObjectIO::Serializer.new(self)
+      serializer = ObjectIO::Serializer.new
       @writer = ObjectIO::Writer.new(serializer) { reconnect }
       @reader = ObjectIO::Reader.new(serializer) { reconnect }
     end

@@ -2,7 +2,7 @@ module Cod::ObjectIO
   class Serializer
     attr_reader :transformer
     
-    def initialize(transformer)
+    def initialize(transformer=nil)
       @transformer = transformer
     end
     
@@ -11,8 +11,12 @@ module Cod::ObjectIO
     # you. 
     #
     def deserialize(source_io, buffer_io)
-      Marshal.load(buffer_io, proc { 
-        |obj| transformer.transform(source_io, obj) }) 
+      if @transformer
+        Marshal.load(buffer_io, proc { 
+          |obj| transformer.transform(source_io, obj) }) 
+      else
+        Marshal.load(buffer_io)
+      end
     end
     
     def serialize(message)

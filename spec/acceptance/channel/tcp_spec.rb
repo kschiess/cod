@@ -38,6 +38,7 @@ describe "TCP based channels" do
       client.get.should == 'test'
     end 
     it "should refuse to transmit client ends to foreign servers" do
+      pending "Is this really useful?"
       # Transmitting client to another server but the one that it's connected
       # to makes no sense. The user would expect to be able to read messages
       # from that server sent to it - but there is no such communication

@@ -27,8 +27,10 @@ module Cod::ObjectIO
     # the IO objects that need to be considered when reading. 
     #
     def establish
-      @establish_block && @establish_block.call(@io) ||
+      sockets = @establish_block && @establish_block.call(@io) ||
         nil
+      
+      [sockets].flatten
     end
     
     def register(ios)
