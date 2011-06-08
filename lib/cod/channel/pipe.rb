@@ -125,7 +125,7 @@ module Cod
     end
     
     def resolve
-      ObjectSpace._id2ref(@objid)
+      ObjectSpace._id2ref(@objid).dup
     rescue RangeError
       raise Cod::InvalidIdentifier, 
         "Could not reference channel. Either it was garbage collected "+

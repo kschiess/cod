@@ -69,6 +69,18 @@ module Cod
       not_implemented
     end
     
+    def replaces(identifier)
+      return nil unless socket=tls_get(:cod_socket)
+
+      # We're deserializing a channel identifier (of any kind) and we know
+      # which socket that was sent through. 
+      return nil unless identifier.respond_to?(:resolve_socket)
+      
+      # Looks like this is the identifier of a channel that knows about 
+      # sockets: Assume the user wants to send messages back through that 
+      # socket.
+      identifier.resolve_socket(socket)
+    end
   private
   
     # Accepts new connections and processes (tries to) messages from all 
@@ -92,8 +104,12 @@ module Cod
       sockets.each do |socket|
         buffer = socket.read_nonblock(1024*1024*1024)
 
-        while buffer.size > 0
-          @waiting_messages << transport_unpack(buffer)
+        # TODO Is there a way to replace this tls stuff with normal method
+        # parameters? What infrastructure would be needed for this?
+        with_tls(:cod_socket, socket) do
+          while buffer.size > 0
+            @waiting_messages << transport_unpack(buffer)
+          end
         end
       end
     end
@@ -106,8 +122,8 @@ module Cod
         self.connections << connection
       end
     rescue Errno::EAGAIN, Errno::EWOULDBLOCK, Errno::ECONNABORTED, Errno::EPROTO, Errno::EINTR
-      # Means that no connects are pending. Ignore, since this is exactly
-      # the termination condition for this method. 
+      # Means that no connects are pending. Ignore, since this is exactly one
+      # of the termination conditions for this method. 
     end
   
     def queued?

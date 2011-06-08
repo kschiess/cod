@@ -42,9 +42,26 @@ module Cod
     end
     
     # Returns true if the current channel permits transmission of channel.
+    # This gets called while serializing a channel as part of a message. If
+    # the answer here is false, an error is raised. 
+    #
+    # Overwrite this method if you want to forbid some channels from being 
+    # transmitted over the wire. 
     #
     def may_transmit?(channel)
       true
+    end
+    
+    # Returns a channel that is to be put instead of identifier into the
+    # message that is currently being deserialized. If this method returns
+    # nil, the identifier is #resolve'd normally and the result returned. 
+    #
+    # Overwrite this method if you have special deserialization needs, like 
+    # replacing the client end of a channel with the servers corresponding 
+    # entity. 
+    # 
+    def replaces(identifier)
+      nil
     end
         
     # Returns the Identifier class below the current channel class. This is 
@@ -54,33 +71,68 @@ module Cod
       self.class.const_get(:Identifier)
     end
     
-    def marshal_dump
+    # ------------------------------------------------------------ marshalling
+    
+    def _dump(depth)
+      # TODO should be: Marshal.dump(to_wire_data)
+      
       # Do we know which channel we're being serialized through? Ask for
       # permission. 
-      if serializing_channel = Thread.current[:cod_serializing_channel]
+      if serializing_channel = tls_get(:cod_serializing_channel)
         unless serializing_channel.may_transmit?(self)
           communication_error "#{self} cannot be transmitted via this channel."
         end
       end
       
-      identifier
+      Marshal.dump(identifier)
     end
-    
-    def marshal_load(identifier)
-      temp = identifier.resolve
-      initialize_copy(temp)
+        
+    def self._load(string)
+      # TODO should be: from_wire_data(Marshal.load(string))
+      
+      identifier = Marshal.load(string)
+      
+      if deserializing_channel=tls_get(:cod_deserializing_channel)
+        channel=deserializing_channel.replaces(identifier)
+        return channel if channel
+      end
+      
+      identifier.resolve
     end
     
   private
-    def serialize(message)
-      Thread.current[:cod_serializing_channel] = self
-      Marshal.dump(message)
+    
+    # Replaces the value of Thread.current[name] for the duration of the block
+    # with value. Makes sure that the old value gets written back. 
+    #
+    def with_tls(name, value)
+      old_val = Thread.current[name]
+      Thread.current[name] = value
+      
+      yield
     ensure
-      Thread.current[:cod_serializing_channel] = nil
+      Thread.current[name] = old_val
+    end
+    
+    # Returns the value of Thread.current[name]
+    #
+    def tls_get(name)
+      Thread.current[name]
+    end
+    def self.tls_get(name)
+      Thread.current[name]
+    end
+  
+    def serialize(message)
+      with_tls(:cod_serializing_channel, self) do
+        Marshal.dump(message)
+      end
     end
     
     def deserialize(buffer)
-      Marshal.load(buffer)
+      with_tls(:cod_deserializing_channel, self) do
+        Marshal.load(buffer)
+      end
     end
   
     # Turns the object into a buffer (simple transport layer that prefixes a

@@ -10,10 +10,6 @@ module Cod
     #
     attr_reader :destination
     
-    # The tcp connection to the target
-    #
-    attr_reader :connection
-    
     def initialize(destination)
       @destination = split_uri(destination)
       @waiting_messages = []
@@ -29,8 +25,7 @@ module Cod
       with_connection do |conn|
         loop do
           message = @waiting_messages.shift
-          buffer = transport_pack(message)
-          conn.write(buffer)
+          conn.put(message)
           
           break unless queued?
         end
@@ -48,7 +43,7 @@ module Cod
     end
     
     def close
-      connection.close if connection
+      @connection.close if @connection
       @connection = nil
     end
     
@@ -73,9 +68,37 @@ module Cod
       ! @waiting_messages.empty?
     end
   
+    # Yields a working TCPConnection::Simple instance to the block given. 
+    #
     def with_connection
-      @connection = TCPSocket.new(*destination)
-      yield connection
+      @connection ||= begin
+        socket = TCPSocket.new(*destination)
+        Simple.new(socket)
+      end
+      yield @connection
+    end
+  end
+
+  # A simple TCP connection that only works as long as the socket it stores
+  # is connected. Once the connection breaks, expect nothing but exceptions. 
+  #
+  class Channel::TCPConnection::Simple < Channel::Base
+    # The tcp connection to the target
+    #
+    attr_reader :socket
+    
+    def initialize(socket)
+      @socket = socket
+    end
+    
+    def put(message)
+      buffer = transport_pack(message)
+      socket.write(buffer)
+    end
+    
+    def close
+      socket.close if socket
+      @socket = nil
     end
   end
   
@@ -93,6 +116,10 @@ module Cod
       # other side. 
       raise Channel::CommunicationError,
         "Unable to find a way of communicating back through channel."
+    end
+
+    def resolve_socket(socket)
+      Channel::TCPConnection::Simple.new(socket)
     end
   end
 end
