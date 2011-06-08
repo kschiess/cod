@@ -10,6 +10,9 @@ module Cod
     #
     attr_reader :destination
     
+    # The current connection. This will be renewed on reconnect.
+    attr_reader :connection
+    
     def initialize(destination)
       @destination = split_uri(destination)
       @waiting_messages = []
@@ -35,11 +38,9 @@ module Cod
     end
     
     def get(opts={})
-      not_implemented
-    end
-    
-    def waiting?
-      not_implemented
+      with_connection do |conn|
+        conn.get
+      end
     end
     
     def close
@@ -49,10 +50,6 @@ module Cod
     
     def identifier
       Identifier.new(destination)
-    end
-    
-    def may_transmit?(channel)
-      channel == self
     end
     
   private
@@ -81,6 +78,8 @@ module Cod
 
   # A simple TCP connection that only works as long as the socket it stores
   # is connected. Once the connection breaks, expect nothing but exceptions. 
+  # Normally, you would rather use TCPConnection, but internally this class
+  # is used in some places where a simpler behaviour is needed. 
   #
   class Channel::TCPConnection::Simple < Channel::Base
     # The tcp connection to the target
@@ -89,6 +88,7 @@ module Cod
     
     def initialize(socket)
       @socket = socket
+      @waiting_messages = []
     end
     
     def put(message)
@@ -96,9 +96,48 @@ module Cod
       socket.write(buffer)
     end
     
+    def get(opts={})
+      start_time = Time.now
+      
+      loop do
+        IO.select([socket], nil, [socket], 0.1)
+        
+        process_incoming
+        
+        return @waiting_messages.shift if queued?
+
+        if opts[:timeout] && (Time.now-start_time) > opts[:timeout]
+          raise Cod::Channel::TimeoutError, 
+            "No messages waiting in pipe."
+        end
+      end
+    end
+    
     def close
       socket.close if socket
       @socket = nil
+    end
+
+    def may_transmit?(channel)
+      channel == self ||
+      channel.respond_to?(:connection) && channel.connection == self
+    end
+
+  private
+  
+    # TODO dedup
+    # Are there messages queued?
+    # 
+    def queued?
+      ! @waiting_messages.empty?
+    end
+  
+    def process_incoming
+      buffer = socket.read_nonblock(1024*1024*1024)
+
+      while buffer.size > 0
+        @waiting_messages << transport_unpack(buffer)
+      end
     end
   end
   

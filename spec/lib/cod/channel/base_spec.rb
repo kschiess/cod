@@ -28,7 +28,7 @@ describe Cod::Channel::Base do
       deserializer.
         should_receive(:replaces).with(:wire_str).and_return(:replaced_channel)
       
-      described_class._load(:wire_str)
+      described_class._load(Marshal.dump(:wire_str))
     end 
   end
 end

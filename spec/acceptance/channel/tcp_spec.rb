@@ -45,8 +45,8 @@ describe "TCP based channels" do
       expect {
         # Let's hope no one is listening there...
         other_server = Cod.tcpserver('localhost:12343')
-        other = Cod.tcp('localhost:12343')
-        other.put client
+        other_client = Cod.tcp('localhost:12343')
+        other_client.put client
       }.to raise_error(Cod::Channel::CommunicationError)
     end 
     it "should refuse to transmit server ends" do
