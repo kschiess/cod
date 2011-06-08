@@ -12,7 +12,8 @@ module Cod
     
     def initialize(name=nil)
       @fds = Fds.new(*IO.pipe)
-      @waiting_messages = []
+      
+      init_in_and_out
     end
 
     def initialize_copy(old)
@@ -26,7 +27,7 @@ module Cod
         old_fds.r.dup, 
         old_fds.w.dup)
       
-      @waiting_messages = []
+      init_in_and_out
     end
     
     def put(message)
@@ -35,40 +36,31 @@ module Cod
       unless fds.w
         direction_error 'Cannot put data to pipe. Already closed that end?'
       end
-            
-      buffer = transport_pack(message)
-      fds.w.write(buffer)
+      
+      @out.put(message)
     rescue Errno::EPIPE
       direction_error "You should #dup before writing; Looks like no other copy exists currently."
     end
     
     def waiting?
-      process_inbound_nonblock
-      queued?
-    rescue Cod::Channel::CommunicationError
-      # Gets raised whenever communication fails permanently. This means that
-      # we probably wont be able to return any more messages. The only messages
-      # remaining in such a situation would be those queued.
-      return queued?
+      @in.waiting?
+    rescue EOFError
+      # We've just hit end of file in the pipe. That means that all write 
+      # ends have been closed. 
+      @in.queued?
     end
     
     def get(opts={})
       close_write
       
-      return @waiting_messages.shift if queued?
+      @in.get(opts)
 
-      start_time = Time.now
-      loop do
-        IO.select([fds.r], nil, [fds.r], 0.1)
-        process_inbound_nonblock
-        return @waiting_messages.shift if queued?
-        
-        if opts[:timeout] && (Time.now-start_time) > opts[:timeout]
-          raise Cod::Channel::TimeoutError, 
-            "No messages waiting in pipe."
-        end
-      end
-      # NEVER REACHED
+    rescue EOFError
+      # We've just hit end of file in the pipe. That means that all write 
+      # ends have been closed. 
+      communication_error "All write ends for this pipe have been closed. "+
+        "Further #get's would block forever." \
+        unless @in.queued?
 
     rescue Errno::EPIPE
       direction_error 'Cannot get data from pipe. Already closed that end?'
@@ -79,44 +71,47 @@ module Cod
       close_read
     end
 
-    def identifier
-      identifier_class.new(self)
-    end
   private
-    def queued?
-      not @waiting_messages.empty?
+    def init_in_and_out
+      serializer = ObjectIO::Serializer.new
+      @in = ObjectIO::Reader.new(serializer) { fds.r }
+      @out = ObjectIO::Writer.new(serializer) { fds.w }
     end
-    
+      
     def close_write
       return unless fds.w
       fds.w.close
+
       fds.w = nil
+      @out = nil
     end
     
     def close_read
       return unless fds.r
       fds.r.close
+
       fds.r = nil
+      @in = nil
     end
   
-    # Tries hard to empty the pipe and to store incoming messages in 
-    # @waiting_messages.
-    #
-    def process_inbound_nonblock
-      buffer = fds.r.read_nonblock(1024*1024*1024)
-
-      while buffer.size > 0
-        @waiting_messages << transport_unpack(buffer)
-      end
+    # # Tries hard to empty the pipe and to store incoming messages in 
+    # # @waiting_messages.
+    # #
+    # def process_inbound_nonblock
+    #   buffer = fds.r.read_nonblock(1024*1024*1024)
+    # 
+    #   while buffer.size > 0
+    #     @waiting_messages << transport_unpack(buffer)
+    #   end
     rescue EOFError
       # We've just hit end of file in the pipe. That means that all write 
       # ends have been closed. 
       communication_error "All write ends for this pipe have been closed. "+
         "Further #get's would block forever." \
         unless queued?
-    rescue Errno::EAGAIN
-      # Catch and ignore this: fds.r is not ready and read would block.
-    end
+    # rescue Errno::EAGAIN
+    #   # Catch and ignore this: fds.r is not ready and read would block.
+    # end
   end
   
   class Channel::Pipe::Identifier

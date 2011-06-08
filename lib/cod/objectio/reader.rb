@@ -46,11 +46,12 @@ module Cod::ObjectIO
       end
     end
     
-    def get(transformer, opts={})
+    def get(opts={})
       return waiting_messages.shift if queued?
       
       start_time = Time.now
       loop do
+        # p [:looping, opts]
         read_from_wire opts
         
         # Early return in case we have a message waiting

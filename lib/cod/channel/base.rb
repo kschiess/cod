@@ -37,38 +37,28 @@ module Cod
       not_implemented
     end
     
-    def identifier
-      not_implemented
-    end
-    
-    # Returns true if the current channel permits transmission of channel.
-    # This gets called while serializing a channel as part of a message. If
-    # the answer here is false, an error is raised. 
-    #
-    # Overwrite this method if you want to forbid some channels from being 
-    # transmitted over the wire. 
-    #
-    def may_transmit?(channel)
-      true
-    end
-    
-    # Returns a channel that is to be put instead of identifier into the
-    # message that is currently being deserialized. If this method returns
-    # nil, the identifier is #resolve'd normally and the result returned. 
-    #
-    # Overwrite this method if you have special deserialization needs, like 
-    # replacing the client end of a channel with the servers corresponding 
-    # entity. 
-    # 
-    def replaces(identifier)
-      nil
-    end
-        
     # Returns the Identifier class below the current channel class. This is 
     # a helper function that should only be used by subclasses. 
     #
     def identifier_class
       self.class.const_get(:Identifier)
+    end
+
+    # Something to put into the data stream that is transmitted through a 
+    # channel that allows reconstitution of the channel at the other end. 
+    # The invariant is this: 
+    #
+    #   # channel1 and channel2 are abstract channels that illustrate my 
+    #   # meaning
+    #   channel1.put channel2
+    #   channel2a = channel1.get
+    #   channel2a.put 'foo'
+    #   channel2.get # => 'foo'
+    #   
+    # Note that this should also work if channel1 and channel2 are the same. 
+    #
+    def identifier
+      identifier_class.new(self)
     end
     
     # ------------------------------------------------------------ marshalling
