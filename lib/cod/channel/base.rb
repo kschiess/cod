@@ -72,10 +72,39 @@ module Cod
     end
     
     # ------------------------------------------------------------ marshalling
+
+    # Makes sure that we don't marshal this object, but the memento object
+    # returned by identifier. 
+    #
+    def _dump(d)
+      wire_data = to_wire_data
+      Marshal.dump(wire_data)
+    end
+     
+    # Loads the object from string. This doesn't always return the same kind
+    # of object that was serialized. 
+    #
+    def self._load(string)
+      wire_data = Marshal.load(string)
+      from_wire_data(wire_data)
+    end
     
-    def _dump(depth)
-      # TODO should be: Marshal.dump(to_wire_data)
-      
+  private
+  
+    # Returns the objects that need to be transmitted in order to reconstruct
+    # this object after transmission through the wire. 
+    #
+    # If you're using a serialisation method other than the Ruby built in 
+    # one, use this to obtain something in lieu of a channel that can be sent
+    # through the wire and reinterpreted at the other end. 
+    #
+    # Example: 
+    #
+    #   # this should work: 
+    #   obj = channel.to_wire_data
+    #   channel_equiv = Cod::Channel::Base.from_wire_data(obj)
+    #
+    def to_wire_data
       # Do we know which channel we're being serialized through? Ask for
       # permission. 
       if serializing_channel = tls_get(:cod_serializing_channel)
@@ -84,23 +113,22 @@ module Cod
         end
       end
       
-      Marshal.dump(identifier)
+      identifier
     end
-        
-    def self._load(string)
-      # TODO should be: from_wire_data(Marshal.load(string))
-      
-      identifier = Marshal.load(string)
-      
+    
+    # Using an object previously returned by #to_wire_data, reconstitute the
+    # original channel or something that is alike it. What you send to this
+    # second channel (#put) you should be able to #get from this copy returned
+    # here. 
+    #
+    def self.from_wire_data(obj)
       if deserializing_channel=tls_get(:cod_deserializing_channel)
-        channel=deserializing_channel.replaces(identifier)
+        channel=deserializing_channel.replaces(obj)
         return channel if channel
       end
       
-      identifier.resolve
+      obj.resolve
     end
-    
-  private
     
     # Replaces the value of Thread.current[name] for the duration of the block
     # with value. Makes sure that the old value gets written back. 
@@ -122,7 +150,9 @@ module Cod
     def self.tls_get(name)
       Thread.current[name]
     end
-  
+    
+    # ---------------------------------------------------------- serialization
+    
     def serialize(message)
       with_tls(:cod_serializing_channel, self) do
         Marshal.dump(message)
@@ -150,6 +180,8 @@ module Cod
       serialized = buffer.slice!(0...size)
       deserialize(serialized)
     end
+    
+    # ---------------------------------------------------------- error raising
    
     def direction_error(msg)
       raise Cod::Channel::DirectionError, msg
