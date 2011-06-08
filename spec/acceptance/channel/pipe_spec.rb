@@ -33,11 +33,11 @@ describe Cod::Channel::Pipe do
       }.should raise_error(Cod::Channel::DirectionError)
     end
     it "don't allow read after write" do
-      
-      lambda {
+      other = pipe.dup
+      expect {
         pipe.put 'test'
         pipe.get
-      }.should raise_error(Cod::Channel::DirectionError)
+      }.to raise_error(Cod::Channel::DirectionError)
     end  
     it "should work after a fork" do
       child_pid = fork do

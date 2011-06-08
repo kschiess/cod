@@ -53,8 +53,11 @@ module Cod
     def get(opts={})
       close_write
       
+      unless fds.r
+        direction_error 'Cannot get data from pipe. Already closed that end?'
+      end
+      
       @in.get(opts)
-
     rescue EOFError
       # We've just hit end of file in the pipe. That means that all write 
       # ends have been closed. 
@@ -62,8 +65,8 @@ module Cod
         "Further #get's would block forever." \
         unless @in.queued?
 
-    rescue Errno::EPIPE
-      direction_error 'Cannot get data from pipe. Already closed that end?'
+    # rescue Errno::EPIPE
+    #   direction_error 'Cannot get data from pipe. Already closed that end?'
     end
     
     def close
