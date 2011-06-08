@@ -59,6 +59,8 @@ describe Cod::Service do
         client.call
       }.to raise_error(Cod::Channel::TimeoutError)
       
+      # Wait a little while for the first call to return on the server.
+      sleep 0.3
       client.call.should == :bar
       
       Process.waitall
