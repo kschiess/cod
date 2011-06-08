@@ -18,6 +18,7 @@ module Cod
     def initialize(connection, name=nil)
       @connection = connection
       @tube_name = (name || gen_anonymous_name('beanstalk')).freeze
+      @serializer = ObjectIO::Serializer.new
     end
     
     def initialize_copy(from)
@@ -26,7 +27,7 @@ module Cod
     end
     
     def put(message)
-      buffer = serialize(message)
+      buffer = @serializer.serialize(message)
       connection.put(tube_name, buffer)
     end
     
@@ -37,7 +38,7 @@ module Cod
     def get(opts={})
       message = connection.get(tube_name, 
         :timeout => opts[:timeout])
-      return deserialize(message)
+      return @serializer.deserialize(nil, message)
     rescue Beanstalk::TimedOut
       raise Channel::TimeoutError, "No messages waiting in #{tube_name}."
     end
