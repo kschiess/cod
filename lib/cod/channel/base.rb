@@ -153,24 +153,7 @@ module Cod
     
     # ---------------------------------------------------------- serialization
     
-    # Serialize the message into a string. Overwrite this message if you want
-    # to control the message format. 
-    #
-    def serialize(message)
-      with_tls(:cod_serializing_channel, self) do
-        Marshal.dump(message)
-      end
-    end
-    
-    # Deserializes a message (in message format, string) into the object that
-    # was transmitted. Overwrite this message if you want to control the 
-    # message format. 
-    #
-    def deserialize(buffer)
-      with_tls(:cod_deserializing_channel, self) do
-        Marshal.load(buffer)
-      end
-    end
+
   
     # Turns the object into a buffer (simple transport layer that prefixes a
     # size)

@@ -10,37 +10,21 @@ module Cod
     #
     attr_reader :destination
     
-    # The current connection. This will be renewed on reconnect.
-    attr_reader :connection
-    
     def initialize(destination)
       @destination = split_uri(destination)
-      @waiting_messages = []
-    end
-    
-    def initialize_copy(from)
-      not_implemented
+      
+      @connection = nil
+      
+      @writer = ObjectIO::Writer.new { reconnect }
+      @reader = ObjectIO::Reader.new { reconnect }
     end
     
     def put(message)
-      queue message
-      
-      with_connection do |conn|
-        loop do
-          message = @waiting_messages.shift
-          conn.put(message)
-          
-          break unless queued?
-        end
-      end
-    rescue Errno::ECONNREFUSED
-      # No listening end at destination. Wait until a connection can be made.
+      @writer.put(message)
     end
     
     def get(opts={})
-      with_connection do |conn|
-        conn.get
-      end
+      @reader.get(opts)
     end
     
     def close
@@ -53,94 +37,14 @@ module Cod
     end
     
   private
-    # Put a message into the send queue. 
+    # Establishes connection in @connection. If a previous connection is 
+    # in error state, it attempts to make a new connection. 
     #
-    def queue(message)
-      @waiting_messages << message
-    end
-    
-    # Are there messages queued?
-    # 
-    def queued?
-      ! @waiting_messages.empty?
-    end
-  
-    # Yields a working TCPConnection::Simple instance to the block given. 
-    #
-    def with_connection
-      @connection ||= begin
-        socket = TCPSocket.new(*destination)
-        Simple.new(socket)
-      end
-      yield @connection
+    def reconnect
+      @connection ||= TCPSocket.new(*destination)
     end
   end
 
-  # A simple TCP connection that only works as long as the socket it stores
-  # is connected. Once the connection breaks, expect nothing but exceptions. 
-  # Normally, you would rather use TCPConnection, but internally this class
-  # is used in some places where a simpler behaviour is needed. 
-  #
-  class Channel::TCPConnection::Simple < Channel::Base
-    # The tcp connection to the target
-    #
-    attr_reader :socket
-    
-    def initialize(socket)
-      @socket = socket
-      @waiting_messages = []
-    end
-    
-    def put(message)
-      buffer = transport_pack(message)
-      socket.write(buffer)
-    end
-    
-    def get(opts={})
-      start_time = Time.now
-      
-      loop do
-        IO.select([socket], nil, [socket], 0.1)
-        
-        process_incoming
-        
-        return @waiting_messages.shift if queued?
-
-        if opts[:timeout] && (Time.now-start_time) > opts[:timeout]
-          raise Cod::Channel::TimeoutError, 
-            "No messages waiting in pipe."
-        end
-      end
-    end
-    
-    def close
-      socket.close if socket
-      @socket = nil
-    end
-
-    def may_transmit?(channel)
-      channel == self ||
-      channel.respond_to?(:connection) && channel.connection == self
-    end
-
-  private
-  
-    # TODO dedup
-    # Are there messages queued?
-    # 
-    def queued?
-      ! @waiting_messages.empty?
-    end
-  
-    def process_incoming
-      buffer = socket.read_nonblock(1024*1024*1024)
-
-      while buffer.size > 0
-        @waiting_messages << transport_unpack(buffer)
-      end
-    end
-  end
-  
   class Channel::TCPConnection::Identifier
     def initialize(destination)
       @destination = destination

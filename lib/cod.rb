@@ -44,6 +44,8 @@ end
 module Cod::Connection; end
 require 'cod/connection/beanstalk'
 
+require 'cod/object_io'
+
 require 'cod/channel'
 require 'cod/channel/base'
 require 'cod/channel/pipe'
