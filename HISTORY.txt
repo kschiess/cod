@@ -1,4 +1,9 @@
 
+== 0.3 / ???
+
+  + Cod.tcpserver and Cod.tcp channels. Allows direct connection via TCP/IP 
+    with the same semantics.
+
 == 0.2 / 2011-04-27
 
   * Cod::Client now allows both synchronous (with answer) and asynchronous
