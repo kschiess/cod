@@ -44,7 +44,6 @@ module Cod
     def close
       @connection = nil
     end
-    
   private
     def watch(name)
       connection.watch(name)

@@ -1,8 +1,12 @@
 
 == 0.3 / ???
 
-  + Cod.tcpserver and Cod.tcp channels. Allows direct connection via TCP/IP 
-    with the same semantics.
+  + Cod.tcpserver and Cod.tcp channels. Allows direct connection via 
+    TCP/IP with the same semantics.
+  
+  - You will now need to always provide a name for beanstalk channels. There
+    is currently no reliable way to generate unique names at the library 
+    level.
 
 == 0.2 / 2011-04-27
 

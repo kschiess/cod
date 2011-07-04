@@ -15,9 +15,9 @@ module Cod
     # Name of the queue on the beanstalk server
     attr_reader :tube_name
     
-    def initialize(connection, name=nil)
+    def initialize(connection, name)
       @connection = connection
-      @tube_name = (name || gen_anonymous_name('beanstalk')).freeze
+      @tube_name = name.freeze
       @serializer = ObjectIO::Serializer.new
     end
     
@@ -49,10 +49,6 @@ module Cod
 
     def identifier
       identifier_class.new(connection.url, tube_name)
-    end
-  private
-    def gen_anonymous_name(base)
-      base + ".anonymous"
     end
   end
 

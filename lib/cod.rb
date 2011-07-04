@@ -8,7 +8,7 @@ module Cod
   #
   class InvalidIdentifier < StandardError; end
   
-  def beanstalk(url, name=nil)
+  def beanstalk(url, name)
     context.beanstalk(url, name)
   end
   module_function :beanstalk

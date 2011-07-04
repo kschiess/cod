@@ -19,13 +19,15 @@ describe Cod::Channel::Beanstalk do
   end
   
   # Creates a channel of the type Beanstalk.
-  def produce_channel(name=nil)
+  def produce_channel(name)
     Cod.beanstalk(beanstalk_url, name)
   end
 
-  context "anonymous tubes" do
-    let!(:channel) { produce_channel() }
-    before(:each) { clear_tube(channel.tube_name) }
+  context "named tubes" do
+    let(:tube_name) { __FILE__ + ".named_tubes" }
+    before(:each) { clear_tube(tube_name) }
+
+    let!(:channel) { produce_channel(tube_name) }
     after(:each) { channel.close }
     
     it "should have simple message semantics" do
@@ -70,27 +72,11 @@ describe Cod::Channel::Beanstalk do
       end 
     end
   end
-  context "named tubes" do
-    let(:tube_name) { __FILE__ + ".named_tubes" }
-    before(:each) { clear_tube(tube_name) }
-
-    let!(:channel) { produce_channel(tube_name) }
-    after(:each) { channel.close }
-    
-    it "should have simple message semantics" do
-      channel.put 'test'
-      
-      # Construct another tube independently, the only common thing being the
-      # tube_name
-      other_channel = produce_channel(tube_name)
-      other_channel.get.should == 'test'
-    end 
-  end
 
   context "when used as transport for a Service" do
     let(:service_channel) { produce_channel('foobar') }
     before(:each) { clear_tube('foobar') }
-    let(:client_channel) { produce_channel }
+    let(:client_channel) { produce_channel('client') }
     
     let(:service) { Cod::Service.new(service_channel) }
     let(:client)  { Cod::Client.new(service_channel, client_channel) }
