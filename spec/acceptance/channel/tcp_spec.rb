@@ -37,19 +37,6 @@ describe "TCP based channels" do
       server_end.put 'test'
       client.get.should == 'test'
     end 
-    it "should refuse to transmit client ends to foreign servers" do
-      pending "Is this really useful?"
-      # Transmitting client to another server but the one that it's connected
-      # to makes no sense. The user would expect to be able to read messages
-      # from that server sent to it - but there is no such communication
-      # channel.
-      expect {
-        # Let's hope no one is listening there...
-        other_server = Cod.tcpserver('localhost:12343')
-        other_client = Cod.tcp('localhost:12343')
-        other_client.put client
-      }.to raise_error(Cod::Channel::CommunicationError)
-    end 
     it "should refuse to transmit server ends" do
       # Transmitting a server makes no sense either. A socket can only 
       # be bound once. To transmit server channels, fork processes!
