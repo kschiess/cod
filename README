@@ -6,7 +6,7 @@ SYNOPSIS
 
   # Cod's basic elements are channels, unidirectional communication links. 
   pipe = Cod.pipe
-  beanstalk = Cod.beanstalk('localhost:11300')
+  beanstalk = Cod.beanstalk('localhost:11300', 'a_channel')
   
   # You can use those either directly: 
   pipe.put :some_ruby_object        # Process A
@@ -28,6 +28,6 @@ Becoming more useful by the day. Most things will work nicely already,
 although error handling is not production quality. Toy around with it now
 and give me feedback!
 
-At version 0.1 (unreleased)
+At version 0.3 (unreleased)
 
 (c) 2011 Kaspar Schiess
