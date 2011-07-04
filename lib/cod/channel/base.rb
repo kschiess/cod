@@ -1,8 +1,33 @@
 
 module Cod
-  # TODO document write/read semantics
-  # TODO document dup behaviour
-  # TODO document object serialisation
+  # Channels are the communication primitives you've always wanted (secretly).
+  # They are simple to use, abstract most of the OS away and allow direct 
+  # communication using language objects, not just strings. (Although you can
+  # fall back to just strings if you want to)
+  #
+  # == Construction
+  #
+  # The simplest way to obtain a new channel is through the Module Cod. It 
+  # provides the following channel types: 
+  #
+  # Cod.beanstalk(url, name)  :: connects to beanstalkd daemon
+  # Cod.pipe                  :: abstracts IO.pipe
+  # Cod.tcp(url)              :: connects to a tcp socket somewhere
+  # Cod.tcpserver(url)        :: the counterpart to Cod.tcp
+  #
+  # Please refer to the documentation of these methods for more information. 
+  #
+  # == Basic Interaction
+  #
+  # You can #put messages (Ruby objects) into a channel on one side: 
+  #
+  #   channel.put("some message")
+  #
+  # and #get messages on the other side: 
+  #
+  #   channel.get # => "some message"
+  #
+  #
   class Channel::Base
     # Writes a Ruby object (the 'message') to the channel. This object will 
     # be queued in the channel and become available for #get in a FIFO manner.
