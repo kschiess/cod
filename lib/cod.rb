@@ -80,14 +80,14 @@ module Cod
   end
   module_function :tcpserver
   
-  def context
+  def context # :nodoc: 
     @convenience_context ||= Context.new
   end
   module_function :context
   
   # For testing mainly
   #
-  def reset
+  def reset # :nodoc: 
     @convenience_context = nil
   end
   module_function :reset
