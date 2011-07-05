@@ -10,11 +10,32 @@ module Cod
   #
   class InvalidIdentifier < StandardError; end
   
+  # Creates a beanstalkd based channel. Messages are written to a tube and 
+  # read from it. This channel is read/write. Multiple readers will obtain
+  # messages in a round-robin fashion from the beanstalk server. 
+  #
+  # Example: 
+  #   chan = Cod.beanstalk('localhost:11300', 'my_tube')
+  #
   def beanstalk(url, name)
     context.beanstalk(url, name)
   end
   module_function :beanstalk
   
+  # Creates a IO.pipe based channel. Messages are written to one end of the 
+  # pipe and come out on the other end. This channel can have only one reader, 
+  # but of course multiple writers. Also, once you either write or read from 
+  # such a channel, it will not be available for the other operation anymore. 
+  #
+  # A common trick is to #dup the channel before using it to either read or
+  # write, so that the copy can still be used for both operations. 
+  #
+  # Note that Cod.pipe channels are usable from process childs (#fork) as 
+  # well. As such, they are ideally suited for process control. 
+  #
+  # Example: 
+  #   chan = Cod.pipe
+  # 
   def pipe(name=nil)
     context.pipe(name)
   end
