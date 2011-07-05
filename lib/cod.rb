@@ -14,6 +14,8 @@ module Cod
   # read from it. This channel is read/write. Multiple readers will obtain
   # messages in a round-robin fashion from the beanstalk server. 
   #
+  # Returns an instance of the Cod::Channel::Beanstalk class.
+  #
   # Example: 
   #   chan = Cod.beanstalk('localhost:11300', 'my_tube')
   #
@@ -32,6 +34,8 @@ module Cod
   #
   # Note that Cod.pipe channels are usable from process childs (#fork) as 
   # well. As such, they are ideally suited for process control. 
+  #
+  # Returns an instance of the Cod::Channel::Pipe class.
   #
   # Example: 
   #   chan = Cod.pipe

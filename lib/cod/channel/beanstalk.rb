@@ -6,6 +6,8 @@ rescue LoadError
 end
 
 module Cod
+  # Also see Channel::Base for more documentation. 
+  #
   class Channel::Beanstalk < Channel::Base
     NONBLOCK_TIMEOUT = 0.01
     

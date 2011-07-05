@@ -3,6 +3,8 @@ require 'cod/channel/tcp'
 module Cod
   # A channel based on a tcp connection.
   #
+  # Also see Channel::Base for more documentation. 
+  #
   class Channel::TCPConnection < Channel::Base
     include Channel::TCP
     

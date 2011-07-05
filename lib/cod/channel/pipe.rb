@@ -3,6 +3,8 @@ module Cod
   # you can only communicate within a single process hierarchy using this, 
   # since the file descriptors are not visible to the outside world. 
   #
+  # Also see Channel::Base for more documentation. 
+  #
   class Channel::Pipe < Channel::Base
     # A tuple storing the read and the write end of a IO.pipe. 
     #

@@ -3,6 +3,8 @@ require 'cod/channel/tcp'
 module Cod
   # A channel based on a passive tcp server (listening). 
   #
+  # Also see Channel::Base for more documentation. 
+  #
   class Channel::TCPServer < Channel::Base
     include Channel::TCP
     
