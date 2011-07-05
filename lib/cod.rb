@@ -13,6 +13,11 @@ require 'at_fork'
 # information using a filter. They then get information that matches their
 # filter written to their inbound channel. (also called pub/sub)
 #
+# Cod channels are serializable whereever possible. If you want to tell
+# somebody where to write his answers and/or questions to, send him the
+# channel! This is really powerful and used extensively in constructing the
+# higher order primitives. 
+#
 # The goal of Cod is that you have to know only very few things about the
 # network (the various transports) to be able to construct complex things. It
 # handles reconnection and reliability for you. It also translates cryptic OS
