@@ -76,7 +76,7 @@ module Cod
     # Returns the Identifier class below the current channel class. This is 
     # a helper function that should only be used by subclasses. 
     #
-    def identifier_class
+    def identifier_class # :nodoc: 
       self.class.const_get(:Identifier)
     end
 
@@ -93,7 +93,7 @@ module Cod
     #   
     # Note that this should also work if channel1 and channel2 are the same. 
     #
-    def identifier
+    def identifier # :nodoc: 
       identifier_class.new(self)
     end
     
@@ -102,7 +102,7 @@ module Cod
     # Makes sure that we don't marshal this object, but the memento object
     # returned by identifier. 
     #
-    def _dump(d)
+    def _dump(d) # :nodoc: 
       wire_data = to_wire_data
       Marshal.dump(wire_data)
     end
@@ -110,7 +110,7 @@ module Cod
     # Loads the object from string. This doesn't always return the same kind
     # of object that was serialized. 
     #
-    def self._load(string)
+    def self._load(string) # :nodoc: 
       wire_data = Marshal.load(string)
       from_wire_data(wire_data)
     end
