@@ -27,12 +27,23 @@ module Cod
   #
   #   channel.get # => "some message"
   #
+  # == Querying
+  #
+  # Are there messages waiting to be read from the channel? Use #waiting?: 
+  # 
+  #   channel.waiting? # => true or false
+  #
+  # == Cleaning up
+  #
+  # Be sure to #close the channel once you're done with it.
+  #
+  #   channel.close
   #
   class Channel::Base
     # Writes a Ruby object (the 'message') to the channel. This object will 
     # be queued in the channel and become available for #get in a FIFO manner.
     #
-    # Issuing a #put also closes the channel instance for subsequent #get's. 
+    # Issuing a #put may also close the channel instance for subsequent #get's. 
     #
     # Example: 
     #   chan.put 'test'
@@ -46,7 +57,7 @@ module Cod
     # Reads a Ruby object (a message) from the channel. Some channels may not
     # allow reading after you've written to it once. Options that work: 
     #
-    #   :timeout :: Time to wait before throwing a Cod::Channel::TimeoutError.
+    # <code>:timeout</code> :: Time to wait before throwing Cod::Channel::TimeoutError.
     #
     def get(opts={})
       not_implemented
