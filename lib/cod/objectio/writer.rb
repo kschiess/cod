@@ -10,8 +10,8 @@ module Cod::ObjectIO
     
     def put(message)
       attempt_reconnect
-      
-      @io.write(serialize(message))
+
+      @io.write(serialize(message)) if @io
     end
     
     def close
@@ -23,7 +23,6 @@ module Cod::ObjectIO
       if @reconnect_block && !@io
         @io = @reconnect_block[]
       end
-      fail "Reconnect failed" unless @io
     end
   
     def serialize(message)
