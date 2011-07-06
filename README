@@ -28,9 +28,6 @@ Becoming more useful by the day. Most things will work nicely already,
 although error handling is not production quality. Toy around with it now
 and give me feedback!
 
-I plan to extend Cod with messaging via mkfifo, UDP and pidgeon carrier. This
-should be your go to tool for anything not involving innovation in protocol.
-
 At version 0.3 (unreleased)
 
 (c) 2011 Kaspar Schiess
