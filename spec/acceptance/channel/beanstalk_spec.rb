@@ -5,12 +5,19 @@ require 'timeout'
 describe Cod::Channel::Beanstalk do
   let(:beanstalk_url) { 'localhost:11300' }
   
+  def ready_count(connection, name)
+    connection.stats_tube(name)['current-jobs-ready']
+  rescue Beanstalk::NotFoundError
+    0
+  end
+  
   # Removes all jobs from a beanstalk tube by name
   def clear_tube(name)
     conn = Beanstalk::Connection.new(beanstalk_url)
     
+    conn.watch(name)
     loop do
-      break unless conn.peek_ready
+      break if ready_count(conn, name) == 0
       job = conn.reserve
       job.delete
     end
@@ -30,6 +37,16 @@ describe Cod::Channel::Beanstalk do
     let!(:channel) { produce_channel(tube_name) }
     after(:each) { channel.close }
     
+    describe "test harness" do
+      it "should really clear tubes" do
+        channel.put :test
+        channel.should be_waiting
+        
+        clear_tube(tube_name)
+        
+        channel.should_not be_waiting
+      end
+    end
     it "should have simple message semantics" do
       # Split the channel into a write end and a read end. Otherwise
       # reading / writing from the channel will close the other end, 
