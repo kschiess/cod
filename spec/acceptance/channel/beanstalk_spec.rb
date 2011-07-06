@@ -70,6 +70,10 @@ describe Cod::Channel::Beanstalk do
       }.to raise_error(Cod::Channel::TimeoutError)
     end 
     it "should play pingpong" do
+      # This is a stress test and has been known to fail for the following
+      # reasons: 
+      #   - Connection sharing between master and child. Beanstalk responses
+      #     come out of band with other communication. 
       write = channel
       read = channel.dup
       message_count = 1_000
