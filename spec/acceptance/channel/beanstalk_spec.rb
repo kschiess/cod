@@ -48,11 +48,8 @@ describe Cod::Channel::Beanstalk do
       end
     end
     it "should have simple message semantics" do
-      # Split the channel into a write end and a read end. Otherwise
-      # reading / writing from the channel will close the other end, 
-      # leaving us unable to perform all operations.
       read = channel
-      write = channel.dup
+      write = channel
 
       write.put 'message1'
       write.put 'message2'
@@ -79,18 +76,21 @@ describe Cod::Channel::Beanstalk do
       message_count = 1_000
       
       fork do
-        message_count.times do 
-          write.put :ping
+        begin
+          message_count.times do 
+            write.put :ping
+          end
+        rescue Beanstalk::UnexpectedResponse
         end
       end
       
       sleep 0.01 until read.waiting?
-      n = 0 
+      messages_seen = 0 
       while read.waiting?
-        n += 1
+        messages_seen += 1
         read.get
       end
-      n.should == message_count
+      messages_seen.should == message_count
       
       Process.waitall
     end 
