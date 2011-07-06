@@ -28,10 +28,10 @@ module Cod
     
     # Returns true if there are jobs waiting in the tube given by 'name'
     def waiting?(name)
-      watch(name) do  
-        # TODO throws EOFError when beanstalkd goes away.
-        !! connection.peek_ready
-      end
+      connection.stats_tube(name)['current-jobs-ready'] > 0
+    rescue Beanstalk::NotFoundError
+      # Tube could not be found. No one has written to it! Nothing is waiting.
+      false
     end
     
     # Removes and returns the next message waiting in the tube given by name.

@@ -56,7 +56,7 @@ describe Cod::Channel::Beanstalk do
 
       write.put 'message1'
       write.put 'message2'
-
+      
       read.should be_waiting
       read.get.should == 'message1'
       read.should be_waiting
@@ -68,6 +68,27 @@ describe Cod::Channel::Beanstalk do
       expect {
         channel.get(:timeout => 0.01)
       }.to raise_error(Cod::Channel::TimeoutError)
+    end 
+    it "should play pingpong" do
+      write = channel
+      read = channel.dup
+      message_count = 1_000
+      
+      fork do
+        message_count.times do 
+          write.put :ping
+        end
+      end
+      
+      sleep 0.01 until read.waiting?
+      n = 0 
+      while read.waiting?
+        n += 1
+        read.get
+      end
+      n.should == message_count
+      
+      Process.waitall
     end 
     context "references" do
       it "should resolve from an identifier (context is implicit)" do
