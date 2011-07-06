@@ -8,11 +8,8 @@ module Cod
   # and call methods there. 
   #
   class Context
-    
     def self.install_at_fork(ref)
-      at_fork do |old_handler|
-        old_handler.call rescue nil
-        
+      at_fork do
         begin
           ref.reset
         rescue WeakRef::RefError
@@ -45,6 +42,13 @@ module Cod
     end
     
     def reset
+      @connections.each do |(type, url), conn|
+        case type
+          when :beanstalk
+            conn.connection.close
+        end
+      end
+      
       @connections = {}
     end
     

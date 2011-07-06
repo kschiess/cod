@@ -48,6 +48,7 @@ module Cod
     # Closes the connection
     #
     def close
+      connection.close
       @connection = nil
     end
   private
