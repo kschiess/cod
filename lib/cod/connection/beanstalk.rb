@@ -13,9 +13,12 @@ module Cod
     
     def initialize(url)
       @url = url
-      # TODO throws Errno::ECONNREFUSED if the beanstalkd doesn't answer
-      @connection = Beanstalk::Connection.new(url)
-      @watching = nil
+      connect
+    end
+    
+    def initialize_copy(from)
+      @url = from.url
+      connect
     end
     
     # Writes a raw message as a job to the tube given by name. 
@@ -50,6 +53,14 @@ module Cod
     def close
       connection.close
       @connection = nil
+    end
+    
+    # Creates a connection 
+    # 
+    def connect
+      # TODO throws Errno::ECONNREFUSED if the beanstalkd doesn't answer
+      @connection = Beanstalk::Connection.new(url)
+      @watching = nil
     end
   private
     def watch(name)

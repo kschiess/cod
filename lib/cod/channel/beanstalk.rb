@@ -24,7 +24,7 @@ module Cod
     end
     
     def initialize_copy(from)
-      @connection = from.connection
+      @connection = from.connection.dup
       @tube_name = from.tube_name
     end
     
