@@ -41,6 +41,7 @@ module Cod
     #
     def get(name, opts={})
       watch(name) do
+        # TODO throws EOFError when the beanstalkd queue goes away.
         job = connection.reserve(opts[:timeout])
         job.delete
         

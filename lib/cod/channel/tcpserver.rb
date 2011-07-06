@@ -42,8 +42,8 @@ module Cod
     end
     
     def close
-      @reader.close
-      server.close
+      @reader.close if @reader
+      server.close if server
 
       @server = nil
       @reader = nil
