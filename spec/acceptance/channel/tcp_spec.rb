@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+require 'support/debug_proxy'
+
 describe "TCP based channels" do
   let(:url) { 'localhost:20000'}
   let!(:server) { Cod.tcpserver(url) }
@@ -44,5 +46,29 @@ describe "TCP based channels" do
         client.put server
       }.to raise_error(Cod::Channel::CommunicationError)
     end
+  end
+
+  context 'when linked by a proxy' do
+    let(:from) { '127.0.0.1:33000' }
+    let(:to)   { '127.0.0.1:33001' }
+
+    let!(:debug_proxy) { DebugProxy.new(from, to) }
+
+    let(:server) { Cod.tcpserver(to) } 
+    let(:client) { Cod.tcp(from) }
+    
+    after(:each) {
+      server.close
+      client.close
+      debug_proxy.kill
+    }
+    
+    it "proxies requests" do
+      p :put
+      client.put 'test'
+      p :get
+      server.get.should == 'test'
+      p :done
+    end 
   end
 end

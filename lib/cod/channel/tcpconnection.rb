@@ -49,6 +49,7 @@ module Cod
     #
     def reconnect
       # TODO throws Errno::ECONNREFUSED if the other end doesn't exist (yet)
+      # p :reconnect
       @connection ||= TCPSocket.new(*destination)
     rescue Errno::ECONNREFUSED
       nil
