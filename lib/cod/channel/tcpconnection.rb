@@ -48,6 +48,7 @@ module Cod
     # in error state, it attempts to make a new connection. 
     #
     def reconnect
+      p [:reconnect, @connection]
       # TODO throws Errno::ECONNREFUSED if the other end doesn't exist (yet)
       # p :reconnect
       @connection ||= TCPSocket.new(*destination)

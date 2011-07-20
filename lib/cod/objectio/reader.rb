@@ -98,13 +98,24 @@ module Cod::ObjectIO
     #
     def process_nonblock(ios)
       ios.each do |io|
-        buffer = io.read_nonblock(1024*1024*1024)
-
-        sio = StringIO.new(buffer)
-        while not sio.eof?
-          waiting_messages << deserialize(io, sio)
-        end
+        process_nonblock_single(io)
       end
+    end
+    
+    # Reads all data waiting in a single io. 
+    #
+    def process_nonblock_single(io)
+      # TODO throws EOFError when the socket goes away
+      buffer = io.read_nonblock(1024*1024*1024)
+
+      sio = StringIO.new(buffer)
+      while not sio.eof?
+        waiting_messages << deserialize(io, sio)
+      end
+    rescue EOFError
+      # Connection has failed. We will need to reconnect this. 
+      p [:conn_failure, registered_ios.size]
+      registered_ios.delete(io)
     end
         
     # Deserializes a message (in message format, string) into the object that

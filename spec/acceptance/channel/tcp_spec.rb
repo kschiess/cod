@@ -69,5 +69,21 @@ describe "TCP based channels" do
       client.put 'test'
       server.get.should == 'test'
     end 
+    context 'when connection fails' do
+      it "reconnects" do
+        p :test1
+        client.put 'test1'
+        sleep 0.01 while debug_proxy.conn_count == 0
+        debug_proxy.kill_all_connections
+        p :test2
+        client.put 'test2'
+        
+        p :rtest1
+        server.get.should == 'test1'
+        p :rtest2
+        server.get.should == 'test2'
+      end
+      it "looses messages"  
+    end
   end
 end
