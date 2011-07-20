@@ -1,7 +1,7 @@
 require "rubygems"
 require "rake/rdoctask"
 require 'rspec/core/rake_task'
-require "rake/gempackagetask"
+require 'rubygems/package_task'
 
 desc "Run all tests: Exhaustive."
 RSpec::Core::RakeTask.new
@@ -29,7 +29,6 @@ task :gem => :spec
 spec = eval(File.read('cod.gemspec'))
 
 desc "Generate the gem package."
-Rake::GemPackageTask.new(spec) do |pkg|
-  pkg.gem_spec = spec
+Gem::PackageTask.new(spec) do |pkg|
+  # pkg.need_tar = true
 end
-
