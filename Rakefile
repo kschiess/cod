@@ -1,3 +1,4 @@
+require 'psych'
 require "rubygems"
 require "rake/rdoctask"
 require 'rspec/core/rake_task'
