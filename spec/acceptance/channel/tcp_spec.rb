@@ -71,11 +71,13 @@ describe "TCP based channels" do
     end 
     context 'when connection fails' do
       it "reconnects" do
+        pending "Find a way to properly detect closed sockets"
         p :test1
         client.put 'test1'
         sleep 0.01 while debug_proxy.conn_count == 0
         debug_proxy.kill_all_connections
         p :test2
+        client.waiting?
         client.put 'test2'
         
         p :rtest1

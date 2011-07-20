@@ -20,7 +20,7 @@ module Cod::ObjectIO
     
   private
     def attempt_reconnect
-      if @reconnect_block && !@io
+      if @reconnect_block
         @io = @reconnect_block[]
       end
     end

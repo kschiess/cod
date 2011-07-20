@@ -22,7 +22,7 @@ module Cod
       end
     
       serializer = ObjectIO::Serializer.new
-      @writer = ObjectIO::Writer.new(serializer) { reconnect }
+      @writer = ObjectIO::Writer.new(serializer, &method(:reconnect))
       @reader = ObjectIO::Reader.new(serializer) { reconnect }
     end
     
@@ -48,11 +48,10 @@ module Cod
     # in error state, it attempts to make a new connection. 
     #
     def reconnect
-      p [:reconnect, @connection]
-      # TODO throws Errno::ECONNREFUSED if the other end doesn't exist (yet)
-      # p :reconnect
       @connection ||= TCPSocket.new(*destination)
     rescue Errno::ECONNREFUSED
+      # The other end doesn't exist as of this moment. Have the caller retry
+      # later on. 
       nil
     end
   end

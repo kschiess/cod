@@ -8,7 +8,11 @@ describe "TCP" do
     server_end = server.accept
     
     client.write('.')
-    server_end.read_nonblock(100).should == '.'
+    begin
+      server_end.read_nonblock(100).should == '.'
+    rescue Errno::EAGAIN
+      retry
+    end
     
     server_end.close
    
