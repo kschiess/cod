@@ -20,9 +20,10 @@ describe "TCP" do
     client.write('.').should == 1
 
     # We get an exception if we try to read from it. 
+    # Either EOFError or Errno::ECONNRESET.
     expect {
       client.read_nonblock(1)
-    }.to raise_error(Errno::ECONNRESET)
+    }.to raise_error
     
     # Selecting the socket will flag it as ready for write/read
     ready = IO.select([client], [client], [client])
