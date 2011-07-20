@@ -21,9 +21,11 @@ class DebugProxy
   
   def spawn_proxy
     @child = Cod.pipe
+    @master = Cod.pipe
+    
+    @ready = false
     @pid = fork do
-      @master = @child.dup
-      @child = nil
+      @master, @child = @child.dup, @master.dup
 
       proxy_main
     end
@@ -38,8 +40,18 @@ class DebugProxy
     child.put :kill_all if child
   end
   
+  def ready?
+    if not @ready && child.waiting?
+      @ready = true
+      child.get
+    end
+    @ready
+  end
+  
   # ------------------------------------------------ executed in child process 
   def proxy_main
+    master.put :ready
+    
     @proxy_server = TCPServer.new(*@from)
     @proxied_sockets = {}
     
@@ -53,7 +65,7 @@ class DebugProxy
         proxied_sockets.keys, 
         0.1)
       
-      while master.waiting?
+      while child.waiting?
         case cmd=master.get
           when :kill_all
             # TODO

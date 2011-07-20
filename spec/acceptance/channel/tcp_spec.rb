@@ -62,13 +62,12 @@ describe "TCP based channels" do
       client.close
       debug_proxy.kill
     }
+
+    before(:each) { sleep 0.01 until debug_proxy.ready? }
     
     it "proxies requests" do
-      p :put
       client.put 'test'
-      p :get
       server.get.should == 'test'
-      p :done
     end 
   end
 end
