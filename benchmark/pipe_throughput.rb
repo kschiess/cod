@@ -73,8 +73,10 @@ def queue
 end
 
 (1..8).each do |n|
-  print "#{n} threads, pipe:  "
-  PipeThroughput.run(n, Cod.pipe)
   print "#{n} threads, queue: "
   PipeThroughput.run(n, queue)
+end
+(1..8).each do |n|
+  print "#{n} threads, pipe:  "
+  PipeThroughput.run(n, Cod.pipe)
 end
