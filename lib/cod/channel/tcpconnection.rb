@@ -27,6 +27,7 @@ module Cod
     end
     
     def put(message)
+      # TODO Errno::EPIPE raised after a while when the receiver goes away. 
       @writer.put(message)
     end
     
