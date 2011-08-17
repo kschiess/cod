@@ -1,6 +1,6 @@
 require 'psych'
 require "rubygems"
-require "rake/rdoctask"
+require "rdoc/task"
 require 'rspec/core/rake_task'
 require 'rubygems/package_task'
 
@@ -12,7 +12,7 @@ task :default => :spec
 require 'sdoc'
 
 # Generate documentation
-Rake::RDocTask.new do |rdoc|
+RDoc::Task.new do |rdoc|
   rdoc.title    = "parslet - construction of parsers made easy"
   rdoc.options << '--line-numbers'
   rdoc.options << '--fmt' << 'shtml' # explictly set shtml generator

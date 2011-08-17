@@ -43,5 +43,6 @@ DEPENDENCIES
   guard
   guard-rspec
   rb-fsevent
+  rdoc
   rspec
   sdoc

@@ -17,4 +17,26 @@ describe "Directory & Topics" do
       topic.get.should == 'message'
     end 
   end
+  
+  describe 'when encountering stale subscriptions' do
+    let(:channel) { Cod.pipe }
+    let!(:topic)   { Cod::Topic.new('', directory_channel.dup, channel) }
+
+    it "should never subscribe when a channel cannot be extracted" do
+      # No exception raised when rehydrating pipes
+      # serialized over pipes when the original pipes are closed already 
+      topic.close
+      directory.publish('', 'test')
+
+      directory.subscriptions.size.should == 0
+    end 
+    it "should unsubscribe channels that fail" do
+      directory.publish('', 'test')
+      directory.subscriptions.size.should == 1
+
+      topic.close
+      directory.publish('', 'test')
+      directory.subscriptions.size.should == 0
+    end
+  end
 end

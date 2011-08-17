@@ -8,6 +8,10 @@ module Cod
     #
     attr_reader :channel
     
+    # Subscriptions this directory handles. 
+    #
+    attr_reader :subscriptions
+    
     def initialize(channel)
       @channel = channel
       @subscriptions = []
@@ -18,9 +22,17 @@ module Cod
     def publish(topic, message)
       handle_subscriptions
       
+      failed_subscriptions = []
       for subscription in @subscriptions
-        subscription.put message if subscription === topic
+        begin
+          subscription.put message if subscription === topic
+        rescue => exception
+          # Writing message failed; remove the subscription. 
+          failed_subscriptions << subscription
+        end
       end
+      
+      remove_subscriptions(failed_subscriptions)
     end
     
     # Closes all resources used by the directory. 
@@ -31,10 +43,17 @@ module Cod
     
   private
   
+    def remove_subscriptions(failed)
+      @subscriptions.delete_if { |e| failed.include?(e) }
+    end
+  
     def handle_subscriptions
       while channel.waiting?
         subscribe channel.get
       end
+    rescue ArgumentError
+      # Probably we could not create a duplicate of a serialized channel. 
+      # Ignore this round of subscriptions. 
     end
     
     def subscribe(subscription)
