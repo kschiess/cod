@@ -1,4 +1,11 @@
 
+== 0.3.1 / ???
+
+  + tcp channels now have a #connected? method that indicates permanent 
+    unrecoverable disconnection.
+    
+  - at_fork extension is now permanently gone. 
+
 == 0.3 / 20Jul2011
 
   + Cod.tcpserver and Cod.tcp channels. Allows direct connection via 
