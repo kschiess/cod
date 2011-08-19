@@ -22,9 +22,9 @@ module Cod
       end
       
       serializer = ObjectIO::Serializer.new
-      connection_pool = ObjectIO::Connection::Single.new { connect }
-      @writer = ObjectIO::Writer.new(serializer, connection_pool)
-      @reader = ObjectIO::Reader.new(serializer, connection_pool) 
+      @connection_pool = ObjectIO::Connection::Single.new { connect }
+      @writer = ObjectIO::Writer.new(serializer, @connection_pool)
+      @reader = ObjectIO::Reader.new(serializer, @connection_pool) 
     end
     
     def put(message)
@@ -47,7 +47,7 @@ module Cod
       # then fails, connection is set to nil.
       @reader.waiting?
       
-      @connection != nil
+      @connection_pool.size == 0
     end
     
     def close
