@@ -58,10 +58,11 @@ module Cod::ObjectIO
       @pool.accept
 
       # Wait for sockets to have data
-      ready_read, _, _ = IO.select(Array(@pool.connections), nil, nil, 0.1)
+      # ready_read, _, _ = IO.select(Array(@pool.connections), nil, nil, 0.1)
       
       # Read all ready sockets
-      process_nonblock(ready_read) if ready_read
+      # process_nonblock(ready_read) if ready_read
+      process_nonblock(@pool.connections)
     end
     
     # Reads all data waiting in each io in the ios array. 
@@ -81,10 +82,12 @@ module Cod::ObjectIO
       while not sio.eof?
         waiting_messages << deserialize(io, sio)
       end
+    rescue Errno::EAGAIN
+      # read failed because there was no data. This is expected. 
+      return
     rescue EOFError
       @pool.report_failed(io)
-      
-      raise
+      warn "EOFError in reader"
     end
         
     # Deserializes a message (in message format, string) into the object that

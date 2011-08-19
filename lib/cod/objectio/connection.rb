@@ -59,9 +59,6 @@ module Cod::ObjectIO::Connection
   class Single < Pool
     MAX_FAILURES = 10
     
-    class GivingUp < StandardError
-    end
-    
     def initialize(&connect_action)
       super
       
@@ -80,7 +77,7 @@ module Cod::ObjectIO::Connection
       return nil if @connected
       
       # How many times have we reconnected? Maybe just give up. 
-      raise GivingUp if @failures >= MAX_FAILURES
+      permanent_connection_error if @failures >= MAX_FAILURES
 
       # Try and make a new connection: Returns it on success.
       new_connection = call_connect
@@ -93,6 +90,12 @@ module Cod::ObjectIO::Connection
       # No new connection could be made. Count this as a failure. 
       @failures += 1
       return nil
+    end
+    
+  private
+    def permanent_connection_error
+      raise Cod::Channel::CommunicationError, 
+        "Permanent connection failure: Giving up."
     end
   end
 end

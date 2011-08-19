@@ -12,6 +12,8 @@ module Cod
     #
     attr_reader :destination
     
+    attr_reader :connection_pool
+    
     def initialize(destination_or_connection)
       if destination_or_connection.respond_to?(:to_str)
         @destination = split_uri(destination_or_connection)
@@ -42,12 +44,8 @@ module Cod
     end
     
     def connected?
-      # Trigger an attempt to read from the socket. If it has been
-      # disconnected, this should throw an error. If the call to reconnect
-      # then fails, connection is set to nil.
-      @reader.waiting?
-      
-      @connection_pool.size == 0
+      waiting?
+      @connection_pool.size > 0
     end
     
     def close
