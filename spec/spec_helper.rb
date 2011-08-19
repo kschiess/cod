@@ -3,8 +3,6 @@ require 'cod'
 
 RSpec.configure do |config|
   config.mock_with :flexmock
-  
-  config.before(:each) { Cod.reset }
 end
 
 def slet(name, &block)

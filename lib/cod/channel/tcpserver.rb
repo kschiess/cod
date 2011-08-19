@@ -20,16 +20,15 @@ module Cod
     def initialize(bind_to)
       @bind_to = split_uri(bind_to)      
       @server = TCPServer.new(*@bind_to)
-      
+
+      connection_pool = ObjectIO::Connection::Pool.new { accept_connections(server) }
       serializer = ObjectIO::Serializer.new(self)
-      @reader = ObjectIO::Reader.new(serializer) { 
-        accept_connections(server)
-      }
+      @reader = ObjectIO::Reader.new(serializer, connection_pool)
     end
     
     def get(opts={})
       # Read a message from the wire and transform all contained objects.
-      @reader.get(opts) 
+      @reader.get(opts)
     end
     
     def put(message)
@@ -50,7 +49,6 @@ module Cod
     end
 
     def transform(socket, obj)
-      # p [:tcp_server_deserialize, obj]
       if obj.kind_of?(Channel::TCPConnection::Identifier)
         # We've been sent 'a' tcp channel. Assume that it's our own client end
         # that we've been sent and turn it into a channel that communicates
@@ -72,13 +70,17 @@ module Cod
     def accept_connections(server)
       connections = []
       loop do
-        connection = server.accept_nonblock
-        connections << connection
+        # Try connecting more sockets. 
+        begin
+          connections << server.accept_nonblock
+        rescue Errno::EAGAIN, Errno::EWOULDBLOCK, Errno::ECONNABORTED, Errno::EPROTO, Errno::EINTR  
+          # Means that no more connects are pending. Ignore, since this is exactly
+          # one of the termination conditions for this method. 
+          return connections
+        end
       end
-    rescue Errno::EAGAIN, Errno::EWOULDBLOCK, Errno::ECONNABORTED, Errno::EPROTO, Errno::EINTR
-      # Means that no more connects are pending. Ignore, since this is exactly
-      # one of the termination conditions for this method. 
-      return connections
+      
+      fail "NOTREACHED: return should be from loop."
     end
   end
 end

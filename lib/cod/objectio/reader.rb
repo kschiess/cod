@@ -3,55 +3,25 @@ module Cod::ObjectIO
   #
   class Reader
     attr_reader :waiting_messages
-    attr_reader :registered_ios
+    attr_reader :pool
     
     # Initializes an object reader that reads from one or several IO objects. 
-    # You can either pass the io object in the constructor (io) or you can 
-    # provide the instance with a block that is called each time a read is
-    # attempted. The block should return an array of IO objects to also read
-    # from. 
     #
     # Example: 
-    #   reader = Reader.new { make_connection }
+    #   connection = Connection::Pool.new { make_new_connection }
+    #   reader = Reader.new(serializer, connection)
     #    
-    def initialize(serializer, io=nil, &block)
+    def initialize(serializer, conn_pool)
       @serializer = serializer
       @waiting_messages = []
-      @establish_block = block
-      @registered_ios = Set.new
-      
-      register io if io
+      @pool = conn_pool
     end    
-    
-    # Called before each attempt to read from the wire. This should return 
-    # the IO objects that need to be considered when reading. 
-    #
-    def establish
-      sockets = @establish_block && @establish_block.call(@io) ||
-        nil
-      
-      [sockets].flatten
-    end
-    
-    def register(ios)
-      return unless ios
-      ios.each do |io|
-        registered_ios << io
-      end
-    end
-    
-    def unregister(ios)
-      ios.each do |io|
-        registered_ios.delete(io)
-      end
-    end
     
     def get(opts={})
       return waiting_messages.shift if queued?
       
       start_time = Time.now
       loop do
-        # p [:looping, opts]
         read_from_wire opts
         
         # Early return in case we have a message waiting
@@ -76,7 +46,7 @@ module Cod::ObjectIO
     end
     
     def close
-      @registered_ios.each { |io| io.close }
+      @pool.close
     end
     
   private 
@@ -85,10 +55,10 @@ module Cod::ObjectIO
     #
     def read_from_wire(opts={})
       # Establish new connections and register them
-      register establish
+      @pool.accept
 
       # Wait for sockets to have data
-      ready_read, _, _ = IO.select(Array(registered_ios), nil, nil, 0.1)
+      ready_read, _, _ = IO.select(Array(@pool.connections), nil, nil, 0.1)
       
       # Read all ready sockets
       process_nonblock(ready_read) if ready_read
@@ -112,9 +82,8 @@ module Cod::ObjectIO
         waiting_messages << deserialize(io, sio)
       end
     rescue EOFError
-      # Connection has failed/ been disconnected. 
-      # We will need to reconnect this. If possible. 
-      registered_ios.delete(io)
+      @pool.report_failed(io)
+      
       raise
     end
         

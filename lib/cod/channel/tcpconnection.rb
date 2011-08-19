@@ -20,10 +20,11 @@ module Cod
         @destination = nil
         @connection = destination_or_connection
       end
-    
+      
       serializer = ObjectIO::Serializer.new
-      @writer = ObjectIO::Writer.new(serializer, &method(:reconnect))
-      @reader = ObjectIO::Reader.new(serializer) { reconnect }
+      connection_pool = ObjectIO::Connection::Single.new { connect }
+      @writer = ObjectIO::Writer.new(serializer, connection_pool)
+      @reader = ObjectIO::Reader.new(serializer, connection_pool) 
     end
     
     def put(message)
@@ -33,6 +34,20 @@ module Cod
     
     def get(opts={})
       @reader.get(opts)
+    end
+    
+    def waiting?
+      # TODO EOFError is thrown when the other end has gone away
+      @reader.waiting?
+    end
+    
+    def connected?
+      # Trigger an attempt to read from the socket. If it has been
+      # disconnected, this should throw an error. If the call to reconnect
+      # then fails, connection is set to nil.
+      @reader.waiting?
+      
+      @connection != nil
     end
     
     def close
@@ -45,15 +60,12 @@ module Cod
     end
     
   private
-    # Establishes connection in @connection. If a previous connection is 
-    # in error state, it attempts to make a new connection. 
-    #
-    def reconnect
-      @connection ||= TCPSocket.new(*destination)
-    rescue Errno::ECONNREFUSED
-      # The other end doesn't exist as of this moment. Have the caller retry
-      # later on. 
-      nil
+    def connect
+      if destination
+        TCPSocket.new(*destination) 
+      else
+        @connection
+      end
     end
   end
 

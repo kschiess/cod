@@ -68,6 +68,13 @@ module Cod
     def waiting?
       not_implemented
     end
+  
+    # Returns true if the channel is connected, and false if all hope must be
+    # given up of reconnecting this channel. 
+    #
+    def connected?
+      not_implemented
+    end
     
     def close
       not_implemented
@@ -154,9 +161,13 @@ module Cod
     end
     
     def not_implemented
-      raise NotImplementedError, 
+      trace = caller.reject {|l| l =~ %r{#{Regexp.escape(__FILE__)}}} # blatantly stolen from dependencies.rb in activesupport
+      exception = NotImplementedError.new(
         "You called a method in Cod::Channel::Base. Missing implementation in "+
-        "the subclass!"
+        "the subclass #{self.class.name}!")
+      exception.set_backtrace trace
+      
+      raise exception
     end
   end
 end

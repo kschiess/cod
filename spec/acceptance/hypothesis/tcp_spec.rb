@@ -35,12 +35,10 @@ describe "TCP" do
     ready[1].should have(1).element
   end 
   it "detects closing of a client socket when reading from it" do
-    client.write('.')
-    begin
-      server_end.read_nonblock(100).should == '.'
-    rescue Errno::EAGAIN
-      retry
-    end
+    expect {
+      server_end.read_nonblock(1)
+    }.to raise_error(Errno::EAGAIN)
+
     client.close
 
     # IO select doesn't know about closed client ends.

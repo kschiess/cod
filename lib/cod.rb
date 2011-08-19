@@ -1,5 +1,3 @@
-require 'at_fork'
-
 # The core concept of Cod are 'channels'. (Cod::Channel::Base) You can create
 # such channels on top of the various transport layers. Once you have such a
 # channel, you #put messages into it and you #get messages out of it. Messages
@@ -45,7 +43,9 @@ module Cod
   #   chan = Cod.beanstalk('localhost:11300', 'my_tube')
   #
   def beanstalk(url, name)
-    context.beanstalk(url, name)
+    Cod::Channel::Beanstalk.new(
+      Connection::Beanstalk.new(url), 
+      name)
   end
   module_function :beanstalk
   
@@ -66,31 +66,19 @@ module Cod
   #   chan = Cod.pipe
   # 
   def pipe(name=nil)
-    context.pipe(name)
+    Cod::Channel::Pipe.new(name)
   end
   module_function :pipe
   
   def tcp(destination)
-    context.tcp(destination)
+    Cod::Channel::TCPConnection.new(destination)
   end
   module_function :tcp
   
   def tcpserver(bind_to)
-    context.tcpserver(bind_to)
+    Cod::Channel::TCPServer.new(bind_to)
   end
   module_function :tcpserver
-  
-  def context # :nodoc: 
-    @convenience_context ||= Context.new
-  end
-  module_function :context
-  
-  # For testing mainly
-  #
-  def reset # :nodoc: 
-    @convenience_context = nil
-  end
-  module_function :reset
 end
 
 module Cod::Connection; end
@@ -105,7 +93,6 @@ require 'cod/channel/beanstalk'
 require 'cod/channel/tcpconnection'
 require 'cod/channel/tcpserver'
 
-require 'cod/context'
 require 'cod/client'
 
 require 'cod/service'

@@ -79,8 +79,10 @@ module Cod
   private
     def init_in_and_out
       serializer = ObjectIO::Serializer.new
-      @in = ObjectIO::Reader.new(serializer) { fds.r }
-      @out = ObjectIO::Writer.new(serializer) { fds.w }
+      read_pool = ObjectIO::Connection::Single.new { fds.r }
+      write_pool = ObjectIO::Connection::Single.new { fds.w }
+      @in = ObjectIO::Reader.new(serializer, read_pool)
+      @out = ObjectIO::Writer.new(serializer, write_pool) { fds.w }
     end
       
     def close_write

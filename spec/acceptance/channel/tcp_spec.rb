@@ -16,6 +16,7 @@ describe "TCP based channels" do
     server.should be_waiting
     server.get.should == :foo
   end 
+
   describe "server part" do
     let(:second_client) { Cod.tcp(url) }
     it "should act as fan-in" do
@@ -47,6 +48,20 @@ describe "TCP based channels" do
       }.to raise_error(Cod::Channel::CommunicationError)
     end
   end
+  describe 'close behaviour' do
+    describe 'of serialized server end after the client has disconnected' do
+      slet!(:server_end) { 
+        client.put(client)
+        server.get
+      }
+      before(:each) { client.close }
+      
+      it "has no messages waiting?" do
+        server_end.waiting?.should == false
+      end
+      it { should_not be_connected }
+    end
+  end
 
   context 'when linked by a proxy' do
     let(:from) { '127.0.0.1:33000' }
@@ -72,17 +87,13 @@ describe "TCP based channels" do
     context 'when connection fails' do
       it "reconnects" do
         pending "Find a way to properly detect closed sockets"
-        p :test1
         client.put 'test1'
         sleep 0.01 while debug_proxy.conn_count == 0
         debug_proxy.kill_all_connections
-        p :test2
         client.waiting?
         client.put 'test2'
         
-        p :rtest1
         server.get.should == 'test1'
-        p :rtest2
         server.get.should == 'test2'
       end
       it "looses messages"  

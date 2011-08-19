@@ -2,29 +2,24 @@ module Cod::ObjectIO
   # Writes objects to an IO stream. 
   #
   class Writer    
-    def initialize(serializer, io=nil, &block)
+    def initialize(serializer, pool)
       @serializer = serializer
-      @io = io
-      @reconnect_block = block
+      @pool = pool
     end
     
     def put(message)
-      attempt_reconnect
+      @pool.accept
 
-      @io.write(serialize(message)) if @io
+      @pool.each do |connection|
+        connection.write(serialize(message))
+      end
     end
     
     def close
-      @io.close
+      @pool.close
     end
     
   private
-    def attempt_reconnect
-      if @reconnect_block
-        @io = @reconnect_block[]
-      end
-    end
-  
     def serialize(message)
       @serializer.serialize(message)
     end
