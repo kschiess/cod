@@ -9,4 +9,7 @@ client.put [client, ARGV.first]
 
 puts "Waiting..."
 $stdin.gets
+client.close
+$stdin.gets
+
 

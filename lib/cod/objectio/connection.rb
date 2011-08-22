@@ -74,7 +74,7 @@ module Cod::ObjectIO::Connection
     end
     
     def accept
-      return nil if @connected
+      return if @connected
       
       # How many times have we reconnected? Maybe just give up. 
       permanent_connection_error if @failures >= MAX_FAILURES
@@ -89,7 +89,7 @@ module Cod::ObjectIO::Connection
       
       # No new connection could be made. Count this as a failure. 
       @failures += 1
-      return nil
+      return
     end
     
   private

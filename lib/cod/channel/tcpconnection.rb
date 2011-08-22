@@ -45,12 +45,12 @@ module Cod
     
     def connected?
       waiting?
-      @connection_pool.size > 0
+      connection_pool.size > 0
     end
     
     def close
-      @connection.close if @connection
-      @connection = nil
+      connection_pool.close
+      @connection_pool = nil
     end
     
     def identifier
