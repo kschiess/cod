@@ -1,12 +1,11 @@
 require 'spec_helper'
 
 describe "Directory & Topics" do
-  let!(:directory_channel) { Cod.pipe }
-  let(:directory) { Cod::Directory.new(directory_channel) }
-  
-  after(:each) { directory.close }
-  
   context "subscribing to 'some.topic'" do
+    let!(:directory_channel) { Cod.pipe }
+    let(:directory) { Cod::Directory.new(directory_channel) }
+    after(:each) { directory.close }
+    
     let(:channel) { Cod.pipe }
     let!(:topic)   { Cod::Topic.new('some.topic', directory_channel.dup, channel) }
     after(:each)  { topic.close }
@@ -18,9 +17,14 @@ describe "Directory & Topics" do
     end 
   end
   describe 'subscription management:' do
-    describe 'stale subscriptions' do
+    describe 'stale subscriptions (exceptions)' do
+      let!(:directory_channel) { Cod.pipe }
+      let(:directory) { Cod::Directory.new(directory_channel) }
+      after(:each) { directory.close }
+      
       let(:channel) { Cod.pipe }
       let!(:topic)   { Cod::Topic.new('', directory_channel.dup, channel) }
+      after(:each) { topic.close }
 
       it "should never subscribe when a channel cannot be extracted" do
         # No exception raised when rehydrating pipes
@@ -38,6 +42,29 @@ describe "Directory & Topics" do
         directory.publish('', 'test')
         directory.subscriptions.size.should == 0
       end
+    end
+    describe 'stale subscriptions (topic not answering)' do
+      let(:directory_channel) { Cod.beanstalk('localhost:11300', 'dspec1') }
+      let(:topic_channel) { Cod.beanstalk('localhost:11300', 'dspec2') }
+      
+      let!(:directory) { Cod::Directory.new(directory_channel.dup) }
+      let!(:topic) { Cod::Topic.new('', directory_channel, topic_channel) }
+      
+      after(:each) { directory.close; topic.close }
+      
+      it "unsubscribe stale subscriptions after 30 minutes" do
+        topic.close
+        directory.publish '', :holler
+        
+        t = Time.now + 31*60
+        
+        # If we look at time t, the only subscription should be stale: 
+        subscription = directory.subscriptions.first
+        subscription.should be_stale(t)
+        
+        directory.process_control_messages(t)
+        directory.subscriptions.should have(0).elements
+      end 
     end
   end
   

@@ -54,13 +54,12 @@ module Cod
     def subscribe(subscription)
       @subscriptions << subscription
     end
-
-  private
-    def remove_subscriptions(failed)
-      @subscriptions.delete_if { |e| failed.include?(e) }
-    end
-  
-    def process_control_messages
+    
+    # Internal method to process messages that are inbound on the directory 
+    # control channel. 
+    #
+    def process_control_messages(now = Time.now)
+      # Handle incoming messages on channel
       while channel.waiting?
         cmd, *rest = channel.get(timeout: 0.1)
         case cmd
@@ -76,9 +75,17 @@ module Cod
           warn "Unknown command received: #{cmd.inspect} (#{rest.inspect})"
         end
       end
+
+      # Remove all stale subscriptions
+      remove_subscriptions subscriptions.select { |sub| sub.stale?(now) }
     rescue ArgumentError
       # Probably we could not create a duplicate of a serialized channel. 
       # Ignore this round of subscriptions. 
+    end
+
+  private
+    def remove_subscriptions(failed)
+      @subscriptions.delete_if { |e| failed.include?(e) }
     end
   end
 end

@@ -25,6 +25,7 @@ describe Cod::Directory do
             backchannel.put [:ping, identifier]
           end
           def identifier; 42 end
+          def stale?; false end
         end
       }
       let(:subscription) { ping_subscription_klass.new(directory_channel.dup) }
