@@ -17,26 +17,49 @@ describe "Directory & Topics" do
       topic.get(timeout: 1).should == 'message'
     end 
   end
-  
-  describe 'when encountering stale subscriptions' do
-    let(:channel) { Cod.pipe }
-    let!(:topic)   { Cod::Topic.new('', directory_channel.dup, channel) }
+  describe 'subscription management:' do
+    describe 'stale subscriptions' do
+      let(:channel) { Cod.pipe }
+      let!(:topic)   { Cod::Topic.new('', directory_channel.dup, channel) }
 
-    it "should never subscribe when a channel cannot be extracted" do
-      # No exception raised when rehydrating pipes
-      # serialized over pipes when the original pipes are closed already 
-      topic.close
-      directory.publish('', 'test')
+      it "should never subscribe when a channel cannot be extracted" do
+        # No exception raised when rehydrating pipes
+        # serialized over pipes when the original pipes are closed already 
+        topic.close
+        directory.publish('', 'test')
 
-      directory.subscriptions.size.should == 0
-    end 
-    it "should unsubscribe channels that fail" do
-      directory.publish('', 'test')
-      directory.subscriptions.size.should == 1
+        directory.subscriptions.size.should == 0
+      end 
+      it "should unsubscribe channels that fail" do
+        directory.publish('', 'test')
+        directory.subscriptions.size.should == 1
 
-      topic.close
-      directory.publish('', 'test')
-      directory.subscriptions.size.should == 0
+        topic.close
+        directory.publish('', 'test')
+        directory.subscriptions.size.should == 0
+      end
+    end
+    describe 'ping handling' do
+      let(:ping_subscription_klass) {
+        Struct.new(:backchannel) do
+          def ===(o); true end
+          def put(msg)
+            backchannel.put [:ping, msg.first]
+          end
+        end
+      }
+      let(:subscription) { ping_subscription_klass.new(directory_channel.dup) }
+      
+      before(:each) { 
+        directory.subscribe subscription
+      }
+      
+      it "directs pings back to the subscription" do
+        flexmock(subscription).should_receive(:ping).once
+        
+        directory.publish 'foo', 'bar'
+      end 
     end
   end
+  
 end

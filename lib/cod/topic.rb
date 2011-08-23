@@ -22,7 +22,8 @@ module Cod
     # Reads the next message from the directory that matches this topic. 
     #
     def get(opts={})
-      answers.get(opts)
+      subscription_id, message = answers.get(opts)
+      return message
     end
     
     # Closes all resources used by the topic. 

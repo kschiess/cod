@@ -28,7 +28,7 @@ module Cod
       for subscription in @subscriptions
         begin
           if subscription === topic
-            subscription.put message 
+            subscription.put [subscription.object_id, message] 
             n += 1
           end
         # TODO reenable this with more specific exception list.
@@ -37,6 +37,8 @@ module Cod
           failed_subscriptions << subscription
         end
       end
+      
+      process_control_messages
       
       remove_subscriptions(failed_subscriptions)
       return n
@@ -47,9 +49,13 @@ module Cod
     def close
       channel.close
     end
-    
+
+    # Mostly for use during tests. 
+    def subscribe(subscription)
+      @subscriptions << subscription
+    end
+
   private
-  
     def remove_subscriptions(failed)
       @subscriptions.delete_if { |e| failed.include?(e) }
     end
@@ -61,6 +67,11 @@ module Cod
           when :subscribe
             subscription = rest.first
             subscribe subscription
+          when :ping
+            ping_id = rest.first
+            subscriptions.
+              find { |sub| sub.object_id == ping_id }.
+              ping
         else 
           warn "Unknown command received: #{cmd.inspect} (#{rest.inspect})"
         end
@@ -68,10 +79,6 @@ module Cod
     rescue ArgumentError
       # Probably we could not create a duplicate of a serialized channel. 
       # Ignore this round of subscriptions. 
-    end
-    
-    def subscribe(subscription)
-      @subscriptions << subscription
     end
   end
 end
