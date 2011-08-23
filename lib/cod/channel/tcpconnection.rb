@@ -25,32 +25,15 @@ module Cod
       
       serializer = ObjectIO::Serializer.new
       @connection_pool = ObjectIO::Connection::Single.new { connect }
-      @writer = ObjectIO::Writer.new(serializer, @connection_pool)
-      @reader = ObjectIO::Reader.new(serializer, @connection_pool) 
+      
+      super(
+        ObjectIO::Reader.new(serializer, @connection_pool), 
+        ObjectIO::Writer.new(serializer, @connection_pool))
     end
-    
-    def put(message)
-      # TODO Errno::EPIPE raised after a while when the receiver goes away. 
-      @writer.put(message)
-    end
-    
-    def get(opts={})
-      @reader.get(opts)
-    end
-    
-    def waiting?
-      # TODO EOFError is thrown when the other end has gone away
-      @reader.waiting?
-    end
-    
+        
     def connected?
       waiting?
       connection_pool.size > 0
-    end
-    
-    def close
-      connection_pool.close
-      @connection_pool = nil
     end
     
     def identifier

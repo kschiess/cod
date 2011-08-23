@@ -23,29 +23,27 @@ module Cod
 
       connection_pool = ObjectIO::Connection::Pool.new { accept_connections(server) }
       serializer = ObjectIO::Serializer.new(self)
-      @reader = ObjectIO::Reader.new(serializer, connection_pool)
+      
+      super(
+        ObjectIO::Reader.new(serializer, connection_pool), 
+        nil)
     end
-    
-    def get(opts={})
-      # Read a message from the wire and transform all contained objects.
-      @reader.get(opts)
-    end
-    
+        
+    # Sending a message to the server side of a socket is not supported.
+    # Transmit the client side channel instance to be able to write back to it
+    # on the server side. This overwrites #put in Base for the sole purpose of
+    # raising a better error. 
+    #
     def put(message)
       communication_error "You cannot write to the server directly, transmit a "
                           "channel to the server instead."
     end
     
-    def waiting?
-      @reader.waiting?
-    end
-    
     def close
-      @reader.close if @reader
+      super
+      
       server.close if server
-
       @server = nil
-      @reader = nil
     end
 
     def transform(socket, obj)

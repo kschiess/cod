@@ -111,9 +111,14 @@ class DebugProxy
   
   def relay_pending(sockets)
     sockets.each do |socket|
-      buffer = socket.read_nonblock(1024)
-      # p [:relay, buffer.size]
-      proxied_sockets[socket].write(buffer)
+      begin
+        buffer = socket.read_nonblock(1024)
+        # p [:relay, buffer.size]
+        proxied_sockets[socket].write(buffer)
+      rescue EOFError
+        # This means one or the other socket is already closed. 
+        # DO NOTHING
+      end
     end
   end
 end

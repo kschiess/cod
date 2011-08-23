@@ -36,7 +36,12 @@ module Cod::ObjectIO::Connection
     #
     def close
       self.each do |connection|
-        connection.close
+        begin
+          connection.close 
+        rescue IOError
+          # Maybe someone else that shares this connection closed it already?
+          # DO NOTHING
+        end
       end
     end
   private

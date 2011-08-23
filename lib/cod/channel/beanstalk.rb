@@ -24,7 +24,6 @@ module Cod
     end
     
     def initialize_copy(from)
-      raise ArgumentError, "Can't dup closed channel." unless from.connection
       @connection = from.connection.dup
       @tube_name = from.tube_name
     end
@@ -47,7 +46,7 @@ module Cod
     end
     
     def close
-      @connection = @reference = nil
+      connection.close
     end
 
     def identifier

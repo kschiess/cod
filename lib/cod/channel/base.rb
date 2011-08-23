@@ -40,6 +40,11 @@ module Cod
   #   channel.close
   #
   class Channel::Base
+    def initialize(reader, writer)
+      @reader = reader
+      @writer = writer
+    end
+    
     # Writes a Ruby object (the 'message') to the channel. This object will 
     # be queued in the channel and become available for #get in a FIFO manner.
     #
@@ -51,7 +56,8 @@ module Cod
     #   chan.put :symbol
     #
     def put(message)
-      not_implemented
+      # TODO Errno::EPIPE raised after a while when the receiver goes away. 
+      @writer.put(message)
     end
     
     # Reads a Ruby object (a message) from the channel. Some channels may not
@@ -60,13 +66,14 @@ module Cod
     # <code>:timeout</code> :: Time to wait before throwing Cod::Channel::TimeoutError.
     #
     def get(opts={})
-      not_implemented
+      @reader.get(opts)
     end
     
     # Returns true if there are messages waiting in the channel. 
     #
     def waiting?
-      not_implemented
+      # TODO EOFError is thrown when the other end has gone away
+      @reader.waiting?
     end
   
     # Returns true if the channel is connected, and false if all hope must be
@@ -76,8 +83,13 @@ module Cod
       not_implemented
     end
     
+    # Closes reader and writer. 
+    #
     def close
-      not_implemented
+      @reader.close if @reader
+      @writer.close if @writer
+      
+      @reader = @writer = nil
     end
     
     # Returns the Identifier class below the current channel class. This is 
