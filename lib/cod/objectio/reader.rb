@@ -57,11 +57,7 @@ module Cod::ObjectIO
       # Establish new connections and register them
       @pool.accept
 
-      # Wait for sockets to have data
-      # ready_read, _, _ = IO.select(Array(@pool.connections), nil, nil, 0.1)
-      
-      # Read all ready sockets
-      # process_nonblock(ready_read) if ready_read
+      # Process all waiting data
       process_nonblock(@pool.connections)
     end
     
@@ -87,7 +83,6 @@ module Cod::ObjectIO
       return
     rescue EOFError
       @pool.report_failed(io)
-      warn "EOFError in reader"
     end
         
     # Deserializes a message (in message format, string) into the object that
