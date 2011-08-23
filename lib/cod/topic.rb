@@ -15,13 +15,14 @@ module Cod
     # initialization and must not be called again. 
     #
     def subscribe
-      directory.put Directory::Subscription.new(match_expr, answers)
+      directory.put [
+        :subscribe, Directory::Subscription.new(match_expr, answers)]
     end
 
     # Reads the next message from the directory that matches this topic. 
     #
-    def get
-      answers.get
+    def get(opts={})
+      answers.get(opts)
     end
     
     # Closes all resources used by the topic. 

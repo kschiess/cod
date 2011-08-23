@@ -12,9 +12,9 @@ describe "Directory & Topics" do
     after(:each)  { topic.close }
 
     specify "basic semantics" do
-      directory.publish('other.topic', 'other_message')
-      directory.publish('some.topic', 'message')
-      topic.get.should == 'message'
+      directory.publish('other.topic', 'other_message').should == 0
+      directory.publish('some.topic', 'message').should == 1
+      topic.get(timeout: 1).should == 'message'
     end 
   end
   
