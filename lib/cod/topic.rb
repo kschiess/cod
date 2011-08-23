@@ -23,6 +23,7 @@ module Cod
     #
     def get(opts={})
       subscription_id, message = answers.get(opts)
+      directory.put [:ping, subscription_id]
       return message
     end
     
