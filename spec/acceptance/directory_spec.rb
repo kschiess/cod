@@ -39,28 +39,6 @@ describe "Directory & Topics" do
         directory.subscriptions.size.should == 0
       end
     end
-    describe 'ping handling' do
-      let(:ping_subscription_klass) {
-        Struct.new(:backchannel) do
-          def ===(o); true end
-          def put(msg)
-            backchannel.put [:ping, identifier]
-          end
-          def identifier; 42 end
-        end
-      }
-      let(:subscription) { ping_subscription_klass.new(directory_channel.dup) }
-      
-      before(:each) { 
-        directory.subscribe subscription
-      }
-      
-      it "directs pings back to the subscription" do
-        flexmock(subscription).should_receive(:ping).once
-        
-        directory.publish 'foo', 'bar'
-      end 
-    end
   end
   
 end
