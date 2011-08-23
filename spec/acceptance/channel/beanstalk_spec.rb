@@ -113,6 +113,14 @@ describe Cod::Channel::Beanstalk do
         foo_dup.get.should == 'test'
       end 
     end
+    describe '#dup' do
+      it "raises ArgumentError when already closed" do
+        channel.close
+        expect {
+          channel.dup
+        }.to raise_error(ArgumentError)
+      end 
+    end
   end
 
   context "when used as transport for a Service" do
