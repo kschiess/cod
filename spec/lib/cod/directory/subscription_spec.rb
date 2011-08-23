@@ -5,6 +5,11 @@ describe Cod::Directory::Subscription do
   let(:channel)    { flexmock(:channel) }
   slet(:subscription) { described_class.new(match_expr, channel) }
   
+  # Defaults for channel
+  before(:each) { channel.
+    should_receive(:put).by_default
+  }
+  
   describe "#===" do
     it "should delegate to the match_expr's ===" do
       match_expr.should_receive(:===).and_return(:result).once
@@ -13,10 +18,46 @@ describe Cod::Directory::Subscription do
     end 
   end
   describe "#put" do
+    before(:each) { channel.should_receive(:put).by_default }
+    
     it "should delegate to the channel" do
       channel.should_receive(:put).once
       
       subscription.put 'foobar'
     end 
+    it "should send <ping_id, message>" do
+      channel.should_receive(:put).with([subscription.identifier, :message])
+      
+      subscription.put :message
+    end
+    it "should start the countdown" do
+      flexmock(subscription.countdown).should_receive(:start).once
+      
+      subscription.put :test
+    end 
+  end
+  describe '#ping' do
+    it "should stop the countdown" do
+      flexmock(subscription.countdown).should_receive(:stop).once
+      
+      subscription.ping
+    end
+  end
+
+  describe 'when no ping arrives for a long time' do
+    let(:last_reset) { Time.now }
+    let(:late) { last_reset + 40*60 }
+    before(:each) { 
+      subscription.put :test 
+    }
+    
+    it "goes stale" do
+      subscription.should be_stale(late)
+    end
+    it "doesn't go stale when a ping arrives late" do
+      subscription.ping(late)
+      subscription.countdown.should be_elapsed(late)
+      subscription.should_not be_stale(late)
+    end
   end
 end

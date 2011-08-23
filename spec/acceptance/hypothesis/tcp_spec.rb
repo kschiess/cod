@@ -40,11 +40,6 @@ describe "TCP" do
     }.to raise_error(Errno::EAGAIN)
 
     client.close
-
-    # IO select doesn't know about closed client ends.
-    ready = IO.select([server_end], [server_end], [server_end])
-    ready[0].should have(1).element
-    ready[1].should have(1).element
     
     # Writing doesn't fail.
     server_end.write('.')

@@ -82,3 +82,5 @@ module Cod
     end
   end
 end
+
+require 'cod/directory/countdown'
