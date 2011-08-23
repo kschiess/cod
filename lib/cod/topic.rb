@@ -22,8 +22,11 @@ module Cod
     # Reads the next message from the directory that matches this topic. 
     #
     def get(opts={})
+      # Read one message from the channel
       subscription_id, message = answers.get(opts)
+      # Answer back with a ping (so the directory knows we're still there)
       directory.put [:ping, subscription_id]
+      
       return message
     end
     
