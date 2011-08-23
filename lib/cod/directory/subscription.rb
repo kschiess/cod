@@ -14,8 +14,13 @@ module Cod
       matcher === other
     end
     
+    def identifier
+      object_id
+    end
+    
     def put(msg)
-      channel.put msg
+      # Envelope the message to send this subscription id along
+      channel.put [identifier, msg]
     end
   end
 end

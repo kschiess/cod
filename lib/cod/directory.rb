@@ -28,7 +28,7 @@ module Cod
       for subscription in @subscriptions
         begin
           if subscription === topic
-            subscription.put [subscription.object_id, message] 
+            subscription.put message
             n += 1
           end
         # TODO reenable this with more specific exception list.
@@ -70,7 +70,7 @@ module Cod
           when :ping
             ping_id = rest.first
             subscriptions.
-              find { |sub| sub.object_id == ping_id }.
+              find { |sub| sub.identifier == ping_id }.
               ping
         else 
           warn "Unknown command received: #{cmd.inspect} (#{rest.inspect})"

@@ -44,8 +44,9 @@ describe "Directory & Topics" do
         Struct.new(:backchannel) do
           def ===(o); true end
           def put(msg)
-            backchannel.put [:ping, msg.first]
+            backchannel.put [:ping, identifier]
           end
+          def identifier; 42 end
         end
       }
       let(:subscription) { ping_subscription_klass.new(directory_channel.dup) }
