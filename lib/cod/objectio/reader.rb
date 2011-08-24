@@ -39,6 +39,8 @@ module Cod::ObjectIO
     def waiting?
       read_from_wire
       queued?
+    rescue Cod::Channel::CommunicationError
+      queued?
     end
     
     def queued?

@@ -1,3 +1,5 @@
+require 'uuid'
+
 # The core concept of Cod are 'channels'. (Cod::Channel::Base) You can create
 # such channels on top of the various transport layers. Once you have such a
 # channel, you #put messages into it and you #get messages out of it. Messages
@@ -70,15 +72,34 @@ module Cod
   end
   module_function :pipe
   
+  # Creates a tcp connection to the destination and returns a channel for it. 
+  #
   def tcp(destination)
     Cod::Channel::TCPConnection.new(destination)
   end
   module_function :tcp
   
+  # Creates a tcp listener on bind_to and returns a channel for it. 
+  #
   def tcpserver(bind_to)
     Cod::Channel::TCPServer.new(bind_to)
   end
   module_function :tcpserver
+  
+  # Returns a UUID that should be unique for this machine (based on MAC), this 
+  # Thread and Process. Even after a fork. 
+  # 
+  # This is used to create identity on the network. Internal method. 
+  #
+  def uuid
+    uuid_generator.generate.tap { |uuid| 
+      p [Thread.current, Process.pid, uuid]
+       }
+  end  
+  def uuid_generator
+    Thread.current[:_cod_uuid_generator] ||= UUID.new
+  end
+  module_function :uuid, :uuid_generator
 end
 
 module Cod::Connection; end
