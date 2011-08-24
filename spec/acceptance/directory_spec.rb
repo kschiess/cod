@@ -52,6 +52,22 @@ describe "Directory & Topics" do
       
       after(:each) { directory.close; topic.close }
       
+      it "should be created with the timer stopped" do
+        directory.process_control_messages
+        
+        directory.should have(1).subscriptions
+        directory.subscriptions.each do |subscription|
+          subscription.countdown.should_not be_running
+        end
+      end
+      it "start counting on every message sent" do
+        directory.publish '', :test
+        
+        directory.should have(1).subscriptions
+        directory.subscriptions.each do |subscription|
+          subscription.countdown.should be_running
+        end
+      end
       it "unsubscribe stale subscriptions after 30 minutes" do
         topic.close
         directory.publish '', :holler
@@ -67,5 +83,4 @@ describe "Directory & Topics" do
       end 
     end
   end
-  
 end

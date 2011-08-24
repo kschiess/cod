@@ -2,7 +2,7 @@ class Cod::Directory
   class Countdown
     def initialize(now = Time.now)
       @run_time = 30 * 60 # 30 minutes
-      start(now)
+      start(now); stop
     end
     
     def elapsed?(now = Time.now)
@@ -14,7 +14,7 @@ class Cod::Directory
     end
     
     def running?
-      !@stopped_at
+      @started_at && !@stopped_at
     end
     
     def start(now = Time.now)
