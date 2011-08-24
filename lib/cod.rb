@@ -95,7 +95,14 @@ module Cod
     uuid_generator.generate
   end  
   def uuid_generator
-    Thread.current[:_cod_uuid_generator] ||= UUID.new
+    pid, generator = Thread.current[:_cod_uuid_generator]
+    
+    if pid && Process.pid == pid
+      return generator
+    end
+    
+    pid, generator = Thread.current[:_cod_uuid_generator] = [Process.pid, UUID.new]
+    return generator
   end
   module_function :uuid, :uuid_generator
 end
