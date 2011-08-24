@@ -22,7 +22,11 @@ module Cod
     #
     def subscribe
       directory.put [
-        :subscribe, subscription]
+        :subscribe, subscription, :new]
+    end
+    def renew_subscription
+      directory.put [
+        :subscribe, subscription, :refresh]
     end
 
     # Reads the next message from the directory that matches this topic. 

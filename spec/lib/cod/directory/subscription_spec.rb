@@ -17,6 +17,18 @@ describe Cod::Directory::Subscription do
       subscription === 'foobar'
     end 
   end
+  describe '#==' do
+    let(:a) { described_class.new(match_expr, channel, '1') }
+    let(:b) { described_class.new(match_expr, channel, '2') }
+    let(:c) { described_class.new(match_expr, channel, '2') }
+    
+    it "b == c" do
+      b.should == c
+    end
+    it "a != b" do
+      a.should_not == b
+    end
+  end
   describe "#put" do
     before(:each) { channel.should_receive(:put).by_default }
     

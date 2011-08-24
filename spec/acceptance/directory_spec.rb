@@ -82,5 +82,29 @@ describe "Directory & Topics" do
         directory.subscriptions.should have(0).elements
       end 
     end
+    describe 'renewing subscriptions' do
+      let(:directory_channel) { Cod.pipe }
+      let(:topic_channel) { Cod.pipe }
+      
+      let!(:directory) { Cod::Directory.new(directory_channel.dup) }
+      let!(:topic) { Cod::Topic.new('', directory_channel, topic_channel) }
+      
+      after(:each) { directory.close; topic.close }
+
+      it "dedupes subscriptions based on id" do
+        topic.renew_subscription
+        directory.process_control_messages
+        
+        directory.should have(1).subscriptions
+      end
+      it "raises Exception if the same identifier subscribes twice" do
+        topic.subscribe
+        
+        expect {
+          directory.process_control_messages
+        }.to raise_error
+        directory.should have(1).subscriptions
+      end 
+    end
   end
 end

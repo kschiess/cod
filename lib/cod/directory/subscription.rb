@@ -28,6 +28,7 @@ class Cod::Directory
       hash == other.hash && 
         identifier == other.identifier
     end
+    alias == eql?
     def hash
       identifier.hash
     end

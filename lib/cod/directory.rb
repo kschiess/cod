@@ -14,7 +14,7 @@ module Cod
     
     def initialize(channel)
       @channel = channel
-      @subscriptions = []
+      @subscriptions = Set.new
     end
     
     # Sends the message to all subscribers that listen to this topic. Returns
@@ -50,8 +50,13 @@ module Cod
       channel.close
     end
 
-    # Mostly for use during tests. 
-    def subscribe(subscription)
+    # Internal use: Subscribe a new topic to this directory. 
+    #
+    def subscribe(subscription, status=:new)
+      if status == :new && subscriptions.include?(subscription)
+        raise "UUID collision? I already have a subscription for #{subscription.identifier}."
+      end
+      
       @subscriptions << subscription
     end
     
@@ -64,8 +69,8 @@ module Cod
         cmd, *rest = channel.get(timeout: 0.1)
         case cmd
           when :subscribe
-            subscription = rest.first
-            subscribe subscription
+            subscription, status = *rest
+            subscribe subscription, status
           when :ping
             ping_id = rest.first
             subscriptions.
