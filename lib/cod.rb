@@ -92,9 +92,7 @@ module Cod
   # This is used to create identity on the network. Internal method. 
   #
   def uuid
-    uuid_generator.generate.tap { |uuid| 
-      p [Thread.current, Process.pid, uuid]
-       }
+    uuid_generator.generate
   end  
   def uuid_generator
     Thread.current[:_cod_uuid_generator] ||= UUID.new
