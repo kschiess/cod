@@ -1,5 +1,7 @@
 class Cod::Directory
   class Countdown
+    attr_reader :run_time
+    
     def initialize(run_time=30*60, now = Time.now)
       @run_time = run_time
       start(now); stop

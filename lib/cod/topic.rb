@@ -38,24 +38,51 @@ module Cod
     # Subscribes this topic to the directory's messages. This gets called upon
     # initialization and must not be called again. 
     #
-    def subscribe
+    def subscribe(status=:new)
       directory.put [
-        :subscribe, subscription, :new]
+        :subscribe, subscription, status]
+
+      # Start counting down to next subscription renewal
+      renew_countdown.start
     end
     def renew_subscription
-      directory.put [
-        :subscribe, subscription, :refresh]
+      subscribe(:refresh)
+    end
+    def renewal_needed?
+      renew_countdown.elapsed?
     end
 
     # Reads the next message from the directory that matches this topic. 
     #
     def get(opts={})
       # Read one message from the channel
-      subscription_id, message = answers.get(opts)
+      subscription_id, message = next_message(opts)
       # Answer back with a ping (so the directory knows we're still there)
       directory.put [:ping, subscription_id]
       
       return message
+    end
+    def next_message(opts)
+      if t=opts[:timeout]
+        timeout_at = Time.now + t
+        timeout    = [t, renew_countdown.run_time].min
+      else
+        timeout_at = nil
+        timeout    = renew_countdown.run_time
+      end
+
+      loop do
+        renew_subscription if renewal_needed?
+        
+        begin
+          return answers.get(opts.merge(:timeout => timeout))
+        rescue Cod::Channel::TimeoutError
+          raise if timeout_at && Time.now > timeout_at
+          # DO NOTHING
+        end
+      end
+
+      fail "NOT REACHED"
     end
     
     # Closes all resources used by the topic. 
