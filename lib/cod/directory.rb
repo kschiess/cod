@@ -40,7 +40,7 @@ module Cod
       
       process_control_messages
       
-      remove_subscriptions(failed_subscriptions)
+      remove_subscriptions { |sub| failed_subscriptions.include?(sub) }
       return n
     end
     
@@ -56,7 +56,7 @@ module Cod
     end
     
     # Internal method to process messages that are inbound on the directory 
-    # control channel. 
+    # control channel.
     #
     def process_control_messages(now = Time.now)
       # Handle incoming messages on channel
@@ -77,15 +77,15 @@ module Cod
       end
 
       # Remove all stale subscriptions
-      remove_subscriptions subscriptions.select { |sub| sub.stale?(now) }
+      remove_subscriptions { |sub| sub.stale?(now) }
     rescue ArgumentError
       # Probably we could not create a duplicate of a serialized channel. 
       # Ignore this round of subscriptions. 
     end
 
   private
-    def remove_subscriptions(failed)
-      @subscriptions.delete_if { |e| failed.include?(e) }
+    def remove_subscriptions(&block)
+      @subscriptions.delete_if(&block)
     end
   end
 end
