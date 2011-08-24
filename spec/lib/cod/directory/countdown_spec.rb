@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Cod::Directory::Countdown do
   let(:start_time) { Time.now }
-  slet(:countdown) { described_class.new(start_time) }
+  slet(:countdown) { described_class.new(30*60, start_time) }
   
   def min(min)
     min * 60
@@ -42,9 +42,14 @@ describe Cod::Directory::Countdown do
     countdown.should_not be_running
   end    
   it "allows construction and other methods without time argument" do
-    countdown = described_class.new
+    countdown = described_class.new(10)
     countdown.elapsed?
     countdown.stop
     countdown.start
+  end 
+  it "allows construction with a number of seconds to count down" do
+    cd = described_class.new(15)
+    cd.start
+    cd.should be_elapsed(Time.now+16)
   end 
 end

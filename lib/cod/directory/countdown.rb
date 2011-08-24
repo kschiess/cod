@@ -1,7 +1,7 @@
 class Cod::Directory
   class Countdown
-    def initialize(now = Time.now)
-      @run_time = 30 * 60 # 30 minutes
+    def initialize(run_time=30*60, now = Time.now)
+      @run_time = run_time
       start(now); stop
     end
     
