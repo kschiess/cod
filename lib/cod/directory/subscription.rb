@@ -1,15 +1,20 @@
 class Cod::Directory
-  # Represents a subscription to a directory. 
+  # Represents a subscription to a directory. The subscription is what links
+  # the topic to the directory. It carries the topic id as identifier; this is
+  # what gives the subscription identity. If two subscriptions in a system
+  # have the same identifier, they link to the same topic instance and should
+  # not be sent the same message twice. 
   #
   class Subscription
     attr_reader :matcher
     attr_reader :channel
     attr_reader :countdown
     
-    def initialize(matcher, channel)
+    def initialize(matcher, channel, topic_id)
       @matcher = matcher
       @channel = channel
       @countdown = Countdown.new
+      @identifier = topic_id
     end
     
     def ===(other)
@@ -17,7 +22,14 @@ class Cod::Directory
     end
     
     def identifier
-      object_id
+      @identifier
+    end
+    def eql?(other)
+      hash == other.hash && 
+        identifier == other.identifier
+    end
+    def hash
+      identifier.hash
     end
     
     def put(msg)

@@ -4,9 +4,15 @@ module Cod
   class Topic
     attr_reader :answers, :directory
     attr_reader :match_expr
+    attr_reader :identifier
+    attr_reader :subscription
+    
     def initialize(match_expr, directory_channel, answer_channel)
       @directory, @answers = directory_channel, answer_channel
       @match_expr = match_expr
+      @identifier = Cod.uuid
+      @subscription = Directory::Subscription.new(
+        match_expr, answers, @identifier)
       
       subscribe
     end
@@ -16,7 +22,7 @@ module Cod
     #
     def subscribe
       directory.put [
-        :subscribe, Directory::Subscription.new(match_expr, answers)]
+        :subscribe, subscription]
     end
 
     # Reads the next message from the directory that matches this topic. 

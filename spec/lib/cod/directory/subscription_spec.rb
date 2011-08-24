@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Cod::Directory::Subscription do
   let(:match_expr) { flexmock(:match_expr) }
   let(:channel)    { flexmock(:channel) }
-  slet(:subscription) { described_class.new(match_expr, channel) }
+  slet(:subscription) { described_class.new(match_expr, channel, 'id') }
   
   # Defaults for channel
   before(:each) { channel.
@@ -59,5 +59,33 @@ describe Cod::Directory::Subscription do
       subscription.countdown.should be_elapsed(late)
       subscription.should_not be_stale(late)
     end
+  end
+  describe 'when put in a set' do
+    let(:a) { described_class.new(match_expr, channel, '1') }
+    let(:b) { described_class.new(match_expr, channel, '2') }
+    
+    let(:s) { Set.new }
+    
+    before(:each) { 
+      s << a
+      s << b }
+    it "behaves correctly" do
+      s.should include(a)
+      s.should include(b)
+      s.should have(2).elements
+
+      s << a
+      s << b
+      
+      s.should include(a)
+      s.should include(b)
+      s.should have(2).elements
+    end 
+    it "consolidates elements that have the same identifier" do
+      s << described_class.new(match_expr, channel, '1')
+      s << described_class.new(match_expr, channel, '2')
+      
+      s.should have(2).elements
+    end 
   end
 end
