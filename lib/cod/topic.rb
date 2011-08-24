@@ -6,13 +6,31 @@ module Cod
     attr_reader :match_expr
     attr_reader :identifier
     attr_reader :subscription
+    attr_reader :renew_countdown
     
-    def initialize(match_expr, directory_channel, answer_channel)
+    # Creates a topic that subscribes to a part of a directory. The match_expr
+    # decides which messages get forwarded to this topic, it limits the 
+    # topic to a subset of the messages in the directory. 
+    # 
+    # Parameters: 
+    #   match_expr        :: Topic to subscribe
+    #   directory_channel :: Directory channel
+    #   answer_channel    :: Where the messages for this topic get sent
+    #   opts              :: See below
+    #
+    # Available options are: 
+    #   :renew            :: Renew the subscription every n seconds. 
+    # 
+    def initialize(match_expr, directory_channel, answer_channel, opts={})
       @directory, @answers = directory_channel, answer_channel
       @match_expr = match_expr
       @identifier = Cod.uuid
       @subscription = Directory::Subscription.new(
         match_expr, answers, @identifier)
+      
+      # Default is to renew subscriptions every 30 minutes
+      @renew_countdown = Directory::Countdown.new(opts[:renew] || 30*60)
+      renew_countdown.start
       
       subscribe
     end

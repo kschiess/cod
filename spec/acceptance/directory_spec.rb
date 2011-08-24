@@ -87,7 +87,11 @@ describe "Directory & Topics" do
       let(:topic_channel) { Cod.pipe }
       
       let!(:directory) { Cod::Directory.new(directory_channel.dup) }
-      let!(:topic) { Cod::Topic.new('', directory_channel, topic_channel) }
+      let!(:topic) { Cod::Topic.new(
+        '', 
+        directory_channel, 
+        topic_channel, 
+        :renew => 30) }
       
       after(:each) { directory.close; topic.close }
 
