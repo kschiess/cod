@@ -1,0 +1,12 @@
+
+This is an example of PUB/SUB style messaging. You should run one directory
+and any number of clients. All clients should receive timestamps from the directory, once every second. 
+
+Experiments that can be made using this setup: 
+
+1) Disconnect a client, restart it. It should start receiving updates
+immediately.
+
+2) Disconnect the directory, restart it. It should start redistributing
+updates to all clients within 5 seconds.
+
