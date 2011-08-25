@@ -1,6 +1,12 @@
 
 == 0.3.1 / ???
 
+  + Large improvements in resilience to crashes, reconnects are now attempted
+    but can be improved further. 
+
+  + Both sides of an 1:n directory:topic structure can now crash without 
+    permanent message loss. 
+
   + tcp channels now have a #connected? method that indicates permanent 
     unrecoverable disconnection.
     

@@ -19,8 +19,8 @@ SYNOPSIS
   service.one { |msg| :response }               # Process A
   client.call :ruby_object    # => :response    # Process B
   
-  # And more: Publish/Subscribe, easy construction of more advanced distributed
-  # communication.
+  # And more: Publish/Subscribe, easy construction of more advanced
+  # distributed communication.
   
 STATUS
 
@@ -28,6 +28,6 @@ Becoming more useful by the day. Most things will work nicely already,
 although error handling is not production quality. Toy around with it now
 and give me feedback!
 
-At version 0.3 
+At version 0.3.1
 
 (c) 2011 Kaspar Schiess
