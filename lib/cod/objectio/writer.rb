@@ -11,6 +11,7 @@ module Cod::ObjectIO
       @pool.accept
 
       @pool.each do |connection|
+        # TODO Errno::EPIPE when the connection closes here.
         connection.write(serialize(message))
       end
     end
