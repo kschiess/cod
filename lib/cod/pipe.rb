@@ -77,7 +77,13 @@ module Cod
     def close
       pipe.close
     end
-    
+
+    def _dump(depth)
+      object_id.to_s
+    end
+    def self._load(string)
+      ObjectSpace._id2ref(Integer(string))
+    end
   private
     def deserialize_one
       # Assumes that buffer contains the just read bytes and @remaining

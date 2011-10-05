@@ -25,6 +25,7 @@ describe Cod::Pipe do
     pipe.close # already closed by split
     read.close # will be closed by test
   end
+
   # In a single process, you would split the pipe into its two ends. Splitting
   # makes the original object unusable, effectively acting like a close. 
   #
