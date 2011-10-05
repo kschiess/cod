@@ -5,7 +5,7 @@ describe Cod::Pipe do
   attr_reader :read, :write
   before(:each) { @read, @write = pipe.split }
 
-  after(:each) { pipe.close }
+  after(:each) { read.close; write.close }
   
   it "allows sending and receiving of message objects" do
     write.put [:an, :object]
@@ -21,7 +21,10 @@ describe Cod::Pipe do
 
     transmitted.should == other
   end 
-  
+  it "doesn't raise on double close"  do
+    pipe.close # already closed by split
+    read.close # will be closed by test
+  end
   # In a single process, you would split the pipe into its two ends. Splitting
   # makes the original object unusable, effectively acting like a close. 
   #
@@ -31,7 +34,7 @@ describe Cod::Pipe do
   end
   
   # In forked child processes, you inherit all pipes that you create before 
-  # forking. Using them then (after the fork) for either read or write 
+  # forking. Using them then (after the fork) for either read or write 
   # operations will dedicate them to that usage, closing the other part of the
   # pipe. 
   #

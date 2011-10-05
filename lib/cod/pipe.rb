@@ -15,8 +15,10 @@ module Cod
         r.read_nonblock(size, buffer)
       end
       def close
-        r.close
-        w.close
+        r.close if r
+        self.r = nil
+        w.close if w
+        self.w = nil
       end
     end
 
@@ -69,7 +71,8 @@ module Cod
       deserialize_one
     end
     
-    # Closes the pipe completely. 
+    # Closes the pipe completely. All active ends are closed. Note that you
+    # can call this function on a closed pipe without getting an error raised.
     #
     def close
       pipe.close
