@@ -46,3 +46,4 @@ module Cod
 end
 
 require 'cod/pipe'
+require 'cod/simple_serializer'

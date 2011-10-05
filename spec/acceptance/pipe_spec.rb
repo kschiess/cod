@@ -2,8 +2,8 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Cod::Pipe do
   slet(:pipe) { described_class.new }
-  attr_reader :read_end, :write_end
-  before(:each) { @read_end, @write_end = pipe.split }
+  attr_reader :read, :write
+  before(:each) { @read, @write = pipe.split }
 
   after(:each) { pipe.close }
   
