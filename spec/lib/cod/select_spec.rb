@@ -28,4 +28,9 @@ describe Cod::SelectGroup do
       group.keep_if { |e| true }.keys.should == [:three, :two, :one, :naught]
     end 
   end
+  describe '#values' do
+    it "returns all values" do
+      group.values.should =~ [1,2,1,1,2,3,0]
+    end 
+  end
 end

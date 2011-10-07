@@ -17,8 +17,18 @@ module Cod
       @h = hash
     end
     
+    # Returns all values as a single flat array. NOT like Hash#values.
+    #
+    def values
+      values = []
+      @h.each do |_,v|
+        values << v
+      end
+      values.flatten
+    end
+    
     # Keeps values around with their respective keys if block returns true
-    # for the values. Deletes everything else. 
+    # for the values. Deletes everything else. NOT like Hash#keep_if.
     #
     def keep_if(&block)
       old_hash = @h
@@ -37,6 +47,8 @@ module Cod
       
       self
     end
+    
+    # EXACTLY like Hash#keys.
     def keys
       @h.keys
     end
