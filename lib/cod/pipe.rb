@@ -22,8 +22,8 @@ module Cod
       end
     end
 
-    def initialize
-      @serializer = SimpleSerializer.new
+    def initialize(serializer=nil)
+      @serializer = serializer || SimpleSerializer.new
       @pipe = IOPair.new(*IO.pipe)
       @buffer = String.new
       @remaining = nil
@@ -50,7 +50,7 @@ module Cod
     #
     def put(obj)
       pipe.write(
-        serializer.serialize(obj))
+        serializer.en(obj))
     end
     
     # Reads a message object from the pipe. 
@@ -98,7 +98,7 @@ module Cod
       end
       
       # Now deserialize one message from the buffer in io
-      serializer.deserialize(io).tap {
+      serializer.de(io).tap {
         # Is there something left to consume in io? If yes, store that
         # buffer in @remaining. 
         @remaining = io.string

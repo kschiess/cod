@@ -1,10 +1,10 @@
 module Cod
   class SimpleSerializer
-    def serialize(obj)
+    def en(obj)
       Marshal.dump(obj)
     end
     
-    def deserialize(io)
+    def de(io)
       Marshal.load(io)
     end
   end
