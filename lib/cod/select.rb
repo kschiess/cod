@@ -58,6 +58,12 @@ module Cod
     def keys
       @h.keys
     end
+
+    # Converts this to a hash.
+    #
+    def to_hsh
+      @h
+    end
   end
   
   # Performs an IO.select on a list of file descriptors and Cod channels. 
@@ -81,12 +87,7 @@ module Cod
     # groups, containing only FDs and channels that are ready for reading. 
     #
     def do
-      
-      # Gather all file descriptors
-      fds = []
-      fds = groups.map { |_, v| 
-        to_read_fds(v) }.
-        flatten
+      fds = groups.values { |e| to_read_fd(e) }
       
       # Perform select  
       r,w,e = IO.select(fds, nil, nil, timeout)
@@ -96,24 +97,9 @@ module Cod
       
       # Prepare a nice return value: The original hash, where the fds are
       # ready.
-      groups.inject({}) { |hash, (name, value)| 
-        hash[name] = if value.respond_to?(:to_ary)
-          value.select { |e| r.include?(to_read_fd(e)) }
-        else
-          r.include?(to_read_fd(value)) ? value : nil
-        end
-        
-        hash
-      }
+      groups.keep_if { |e| fds.include?(e) }.to_hsh
     end
   private
-    def to_read_fds(ary_or_single)
-      if ary_or_single.respond_to?(:to_ary)
-        return ary_or_single.map { |e| to_read_fd(e) }
-      else
-        return to_read_fd(ary_or_single)
-      end
-    end
     def to_read_fd(single)
       return single.to_read_fds if single.respond_to?(:to_read_fds)
       return single
