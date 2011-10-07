@@ -4,6 +4,44 @@ module Cod
   end
   module_function :select
   
+  # A select group is a special kind of hash, basically. It contains group
+  # names as keys (probably symbols) and has either array values or single 
+  # object instances. 
+  # 
+  # A number of operations is defined to make it easier to filter such 
+  # hashes during IO.select. The API user only ever gets to see the resulting
+  # hash.
+  #
+  class SelectGroup
+    def initialize(hash)
+      @h = hash
+    end
+    
+    # Keeps values around with their respective keys if block returns true
+    # for the values. Deletes everything else. 
+    #
+    def keep_if(&block)
+      old_hash = @h
+      @h = Hash.new
+      old_hash.each do |key, values|
+        # Now values is either an Array like structure that we iterate 
+        # on or it is a single value. 
+        if values.respond_to?(:to_ary)
+          ary = values.select { |e| block.call(e) }
+          @h[key] = ary unless ary.empty?
+        else
+          value = values
+          @h[key] = value if block.call(value)
+        end
+      end
+      
+      self
+    end
+    def keys
+      @h.keys
+    end
+  end
+  
   class Select
     attr_reader :timeout
     attr_reader :groups
