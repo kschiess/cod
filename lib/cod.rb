@@ -43,6 +43,24 @@ module Cod
   def tcpserver(bind_to)
   end
   module_function :tcpserver
+
+  # Indicates that the given channel is write only. This gets raised on 
+  # operations like #put.
+  #
+  class WriteOnlyChannel < StandardError
+    def initialize
+      super("This channel is write only, attempted read operation.")
+    end
+  end
+  
+  # Indicates that the channel is read only. This gets raised on operations
+  # like #get. 
+  #
+  class ReadOnlyChannel < StandardError
+    def initialize
+      super("This channel is read only, attempted write operation.")
+    end
+  end
 end
 
 require 'cod/pipe'

@@ -1,37 +1,44 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Cod::Pipe do
-  slet(:pipe) { described_class.new }
-  attr_reader :read, :write
-  before(:each) { @read, @write = pipe.split }
+  context "when split into read & write" do
+    slet(:pipe) { described_class.new }
+    attr_reader :read, :write
+    before(:each) { @read, @write = pipe.split }
 
-  after(:each) { read.close; write.close }
-  
-  it "allows sending and receiving of message objects" do
-    write.put [:an, :object]
-    read.get.should == [:an, :object]
-  end
-  it 'transmits pipe objects intact' do
-    read, write = pipe.split
+    after(:each) { read.close; write.close }
+
+    it "allows sending and receiving of message objects" do
+      write.put [:an, :object]
+      read.get.should == [:an, :object]
+    end
+    it 'transmits pipe objects intact' do
+      other = described_class.new
+
+      write.put other
+      transmitted = read.get 
+
+      transmitted.should == other
+    end 
+    it "doesn't raise on double close"  do
+      pipe.close # already closed by split
+      read.close # will be closed by test
+    end
     
-    other = described_class.new
-
-    write.put other
-    transmitted = read.get 
-
-    transmitted.should == other
-  end 
-  it "doesn't raise on double close"  do
-    pipe.close # already closed by split
-    read.close # will be closed by test
-  end
-
-  # In a single process, you would split the pipe into its two ends. Splitting
-  # makes the original object unusable, effectively acting like a close. 
-  #
-  describe 'splitting' do
-    it 'returns the pipes ends' 
-    it 'closes the pipe' 
+    # In a single process, you would split the pipe into its two ends. Splitting
+    # makes the original object unusable, effectively acting like a close. 
+    #
+    describe 'splitting' do
+      it 'returns the pipes ends' do
+        write.pipe.w.write('.')
+        read.pipe.r.read(1).should == '.'
+      end
+      it 'closes the pipe' do
+        fds = pipe.pipe
+        fds.r.should == nil
+        fds.w.should == nil
+      end
+    end
   end
   
   # In forked child processes, you inherit all pipes that you create before 
@@ -48,13 +55,14 @@ describe Cod::Pipe do
     it 'allows further reading'  
   end
 
-  # You can replace the serializer on a pipe. 
+  # You can replace the serializer on a pipe. 
   #
   context "when constructed with a serializer" do
     let(:serializer) { flexmock(:serializer) }
     slet(:pipe) { described_class.new(serializer) }
     
     before(:each) { serializer.should_receive(:en => 'serialized') }
+    after(:each) { pipe.close }
     
     it 'uses the #de method to decode objects' do
       serializer.should_receive(:de => :return)

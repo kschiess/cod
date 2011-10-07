@@ -8,25 +8,72 @@ module Cod
     attr_reader :serializer
     
     IOPair = Struct.new(:r, :w) do
+      # Performs a deep copy of the structure. 
+      def initialize_copy(other)
+        super
+        self.r = other.r.dup
+        self.w = other.w.dup
+      end
       def write(buf)
+        raise Cod::ReadOnlyChannel unless w
         w.write(buf)
       end
       def read_nonblock(size, buffer)
+        raise Cod::WriteOnlyChannel unless r
         r.read_nonblock(size, buffer)
       end
       def close
+        close_r
+        close_w
+      end
+      def close_r
         r.close if r
         self.r = nil
+      end
+      def close_w
         w.close if w
         self.w = nil
       end
     end
 
     def initialize(serializer=nil)
+      super
       @serializer = serializer || SimpleSerializer.new
       @pipe = IOPair.new(*IO.pipe)
-      @buffer = String.new
-      @remaining = nil
+      buffer_init
+    end
+    
+    # Creates a copy of this pipe channel. This performs a shallow #dup except
+    # for the file descriptors stored in the pipe, so that a #close affects
+    # only one copy. 
+    #
+    def initialize_copy(other)
+      super
+      @serializer = other.serializer
+      @pipe = other.pipe.dup
+      buffer_init
+    end
+    
+    # Makes this pipe readonly. Calls to #put will error out. This closes the
+    # write end permanently and provokes end of file on the read end once all
+    # processes that posses a link to the write end do so. 
+    # 
+    # Returns self so that you can write for example: 
+    #   read_end = pipe.dup.readonly
+    #
+    def readonly
+      pipe.close_w
+      self
+    end
+    
+    # Makes this pipe writeonly. Calls to #get will error out. See #readonly. 
+    #
+    # Returns self so that you can write for example: 
+    #   write_end = pipe.dup.writeonly
+    #
+    def writeonly
+      pipe.close_r
+      self
     end
     
     # Actively splits this pipe into two ends, a read end and a write end. The
@@ -35,7 +82,9 @@ module Cod
     # written to (#put).
     #
     def split
-      [self, self]# TODO
+      [self.dup.readonly, self.dup.writeonly].tap {
+        self.close
+      }
     end
     
     # Writes a message object to the pipe. You can specify a custom object
@@ -103,6 +152,10 @@ module Cod
         # buffer in @remaining. 
         @remaining = io.string
       }
+    end
+    def buffer_init
+      @buffer = String.new
+      @remaining = nil
     end
   end
 end
