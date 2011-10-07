@@ -60,7 +60,7 @@ describe Cod::Pipe do
     it 'closes the write part, raising when written to' do
       expect {
         duplicate.put :answer
-      }.to raise_error
+      }.to raise_error(Cod::ReadOnlyChannel)
     end
     it 'allows further reading' do
       pipe.put :another_test
@@ -68,10 +68,25 @@ describe Cod::Pipe do
     end
   end 
   describe 'write use' do
+    let!(:pipe) { described_class.new }
+    let!(:duplicate) { pipe.dup }
+    
+    after(:each) { pipe.close; duplicate.close }
+
+    # Makes pipe writeonly and duplicate readonly
+    before(:each) { 
+      pipe.put :test
+      duplicate.get }
+
     it 'closes the read part, raising when read from' do
-      pending
+      expect {
+        pipe.get
+      }.to raise_error(Cod::WriteOnlyChannel)
     end
-    it 'allows further reading'  
+    it 'allows further writing' do
+      pipe.put :another_test
+      duplicate.get
+    end
   end
 
   # You can replace the serializer on a pipe. 
