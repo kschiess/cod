@@ -15,10 +15,12 @@ module Cod
         self.w = other.w.dup
       end
       def write(buf)
+        close_r
         raise Cod::ReadOnlyChannel unless w
         w.write(buf)
       end
       def read_nonblock(size, buffer)
+        close_w
         raise Cod::WriteOnlyChannel unless r
         r.read_nonblock(size, buffer)
       end
@@ -141,7 +143,7 @@ module Cod
       # from that: 
       io = if @remaining
         StringIO.new(@remaining).tap { |io|
-          io.write(@buffer) }
+          io.write(@buffer); io.pos=0 }
       else
         StringIO.new(@buffer)
       end

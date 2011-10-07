@@ -47,11 +47,30 @@ describe Cod::Pipe do
   # pipe. 
   #
   describe 'read use' do
-    it 'closes the read part, raising when read from'
-    it 'allows further reading'
+    let!(:pipe) { described_class.new }
+    let!(:duplicate) { pipe.dup }
+    
+    after(:each) { pipe.close; duplicate.close }
+
+    # Makes pipe writeonly and duplicate readonly
+    before(:each) { 
+      pipe.put :test
+      duplicate.get }
+    
+    it 'closes the write part, raising when written to' do
+      expect {
+        duplicate.put :answer
+      }.to raise_error
+    end
+    it 'allows further reading' do
+      pipe.put :another_test
+      duplicate.get
+    end
   end 
   describe 'write use' do
-    it 'closes the write part, raising when written to'
+    it 'closes the read part, raising when read from' do
+      pending
+    end
     it 'allows further reading'  
   end
 
@@ -66,9 +85,14 @@ describe Cod::Pipe do
     
     it 'uses the #de method to decode objects' do
       serializer.should_receive(:de => :return)
-      
-      pipe.put :the_man
-      pipe.get.should == :return 
+    
+      r,w = pipe.split
+      begin
+        w.put :the_man
+        r.get.should == :return 
+      ensure
+        r.close; w.close
+      end
     end 
   end
   
