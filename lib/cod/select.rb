@@ -92,12 +92,13 @@ module Cod
       # Perform select  
       r,w,e = IO.select(fds, nil, nil, timeout)
 
-      # Nothing is ready
+      # Nothing is ready if r is nil
       return {} unless r
       
-      # Prepare a nice return value: The original hash, where the fds are
-      # ready.
-      groups.keep_if { |e| fds.include?(e) }.to_hsh
+      # Prepare a return value: The original hash, where the fds are ready.
+      groups.
+        keep_if { |e| r.include?(to_read_fd(e)) }.
+        to_hsh
     end
   private
     def to_read_fd(single)

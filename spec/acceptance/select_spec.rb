@@ -21,7 +21,7 @@ describe "Cod.select" do
         # TODO allow the creation of an additional pipe be optimized away.
         write.put :test
         result = Cod.select(nil, my_group: [read])
-
+        
         result.should have_key(:my_group)
         result[:my_group].should =~ [read]
       end
@@ -33,7 +33,6 @@ describe "Cod.select" do
         result[:my_group].should == read
       end 
     end
-    
 
     it "returns an empty hash when nothing is ready" do
       pipe = Cod.pipe
