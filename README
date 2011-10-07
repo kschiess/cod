@@ -1,12 +1,12 @@
 
-cod is a simple ipc abstraction layer. It allows you to focus on interaction 
-between processes instead of having to think about interaction with the OS. 
+IPC for babies and those who want to become. Another thin API layer over what
+Ruby offers for IO.pipe, TCP sockets and FIFOs: Makes sending and receiving
+of Ruby objects a breeze. 
 
 SYNOPSIS
 
   # Cod's basic elements are channels, unidirectional communication links. 
   pipe = Cod.pipe
-  beanstalk = Cod.beanstalk('localhost:11300', 'a_channel')
   
   # You can use those either directly: 
   pipe.put :some_ruby_object        # Process A
@@ -18,16 +18,13 @@ SYNOPSIS
   
   service.one { |msg| :response }               # Process A
   client.call :ruby_object    # => :response    # Process B
-  
-  # And more: Publish/Subscribe, easy construction of more advanced
-  # distributed communication.
-  
+    
 STATUS
 
-Becoming more useful by the day. Most things will work nicely already,
-although error handling is not production quality. Toy around with it now
-and give me feedback!
+Complete rewrite of the code: Did away with some of the complexities that
+stemmed from early design work. The functionality that is there is much like
+that we had before, but some things have been designed more logically. 
 
-At version 0.3.1
+At version 0.4.0
 
 (c) 2011 Kaspar Schiess

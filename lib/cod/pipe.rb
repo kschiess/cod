@@ -129,6 +129,16 @@ module Cod
       pipe.close
     end
 
+    # Returns if this pipe is ready for reading. 
+    #
+    def select(timeout=nil)
+      result = Cod.select(timeout, this_channel: self)
+      result.has_key?(:this_channel)
+    end
+    def to_read_fds
+      pipe.r
+    end
+
     def _dump(depth)
       object_id.to_s
     end

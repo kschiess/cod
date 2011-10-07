@@ -65,3 +65,4 @@ end
 
 require 'cod/pipe'
 require 'cod/simple_serializer'
+require 'cod/select'
