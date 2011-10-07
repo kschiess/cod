@@ -19,10 +19,16 @@ module Cod
     
     # Returns all values as a single flat array. NOT like Hash#values.
     #
-    def values
+    def values(&block)
       values = []
+      block = lambda { |e| e } unless block   # identity
+      
       @h.each do |_,v|
-        values << v
+        if v.respond_to?(:to_ary)
+          values << v.map(&block)
+        else
+          values << block.call(v)
+        end
       end
       values.flatten
     end
@@ -54,16 +60,28 @@ module Cod
     end
   end
   
+  # Performs an IO.select on a list of file descriptors and Cod channels. 
+  # Construct this like so: 
+  #   Select.new(
+  #     0.1,                    # timeout
+  #     foo: single_fd,         # a single named FD
+  #     bar: [one, two, three], # a group of FDs.
+  #   )
+  #
   class Select
     attr_reader :timeout
     attr_reader :groups
     
     def initialize(timeout, groups)
       @timeout = timeout
-      @groups = groups
+      @groups = SelectGroup.new(groups)
     end
     
+    # Performs the IO.select and returns a thinned out version of that initial
+    # groups, containing only FDs and channels that are ready for reading. 
+    #
     def do
+      
       # Gather all file descriptors
       fds = []
       fds = groups.map { |_, v| 

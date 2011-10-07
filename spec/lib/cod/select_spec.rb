@@ -32,5 +32,8 @@ describe Cod::SelectGroup do
     it "returns all values" do
       group.values.should =~ [1,2,1,1,2,3,0]
     end 
+    it "allows transforming the values" do
+      group.values { |e| e**2 }.should =~ [0, 1, 1, 1, 4, 4, 9]
+    end 
   end
 end
