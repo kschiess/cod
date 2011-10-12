@@ -3,6 +3,9 @@ IPC for babies and those who want to become. Another thin API layer over what
 Ruby offers for IO.pipe, TCP sockets and FIFOs: Makes sending and receiving
 of Ruby objects a breeze. 
 
+Currently, I am rewriting all of the code. This is why the master branch on 
+github hasn't got all the features that are in the released version. 
+
 SYNOPSIS
 
   # Cod's basic elements are channels, unidirectional communication links. 
