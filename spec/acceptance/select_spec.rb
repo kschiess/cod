@@ -39,9 +39,21 @@ describe "Cod.select" do
 
       pipe.select(0.01)
     end 
-    
-    it "allows Cod channels"
-    it "allows IO descendants"
-    it "has a default timeout of forever" 
+
+    describe 'allowed values' do
+      mlet(:read, :write) { Cod.pipe.split }
+      after(:each) { read.close; write.close }
+
+      it "allows Cod channels" do
+        write.put :test
+        Cod.select(0.1, foo: read).keys.should == [:foo]
+      end
+      it "allows IO descendants" do
+        r,w = IO.pipe
+        w.write('.')
+        Cod.select(0.1, foo: r).keys.should == [:foo]
+        r.close; w.close
+      end
+    end
   end 
 end
