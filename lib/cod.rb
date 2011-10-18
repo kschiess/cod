@@ -35,14 +35,16 @@ module Cod
   # Creates a tcp connection to the destination and returns a channel for it. 
   #
   def tcp(destination)
+    Cod::TcpClient.new(destination)
   end
   module_function :tcp
   
   # Creates a tcp listener on bind_to and returns a channel for it. 
   #
-  def tcpserver(bind_to)
+  def tcp_server(bind_to)
+    Cod::TcpServer.new(bind_to)
   end
-  module_function :tcpserver
+  module_function :tcp_server
 
   # Indicates that the given channel is write only. This gets raised on 
   # operations like #put.
@@ -66,3 +68,6 @@ end
 require 'cod/pipe'
 require 'cod/simple_serializer'
 require 'cod/select'
+require 'cod/tcp_client'
+require 'cod/tcp_server'
+
