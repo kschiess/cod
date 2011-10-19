@@ -35,46 +35,52 @@ module Cod
         end
       end
     end
-    
-    class IOThread
-      def initialize(connection, send_queue)
-        @connection = connection
-        @send_queue = send_queue
+    class BackgroundIO
+      def initialize(connection, queue)
+        @connection, @queue = connection, queue
+        @thread = nil
+      end
 
-        @m_running = Mutex.new
-        @running = false
+      # Ensures that only one thread is in the block given to it at any given
+      # time. If there is already a thread working on the block, it returns
+      # without yielding. 
+      #
+      def one_thread
+        yield
       end
       
-      attr_reader :connection
-      
-      def running?
-        @running
-      end
-      
-      def start
-        # TODO worry about reconnects. Should we loose objects in certain
-        # cases?
-        
-        @m_running.synchronize { @running = true }
-        # Thread.start do
-          connection.try_connect
+      def try_send
+        p [:try_send, @queue.size]
+        return if @queue.empty?
+        start_thread unless @thread
+
+        one_thread do
+          @connection.try_connect
           
-          while connection.established? && !send_queue.empty?
-            obj = send_queue.shift
-            
-            p [:sending, obj]
-            connection.write(serializer.en(obj))
+          while @connection.established? && !queue.empty?
+            msg = queue.shift
+            @connection.write(
+              serializer.en(msg))
+          end
+        end
+      end
+    private
+      def start_thread
+        @thread = Thread.start do
+          while !@queue.empty?
+            p :background_try_send
+            try_send
+            sleep 0.1
           end
           
-          @m_running.synchronize { @running = false }
-        # end
+          @thread = nil
+        end
       end
     end
     
     def initialize(destination)
       @send_queue = Queue.new
       @connection = Connection.new(destination)
-      @io_thread = IOThread.new(@connection, @send_queue)
     end
     
     # A queue of objects that are waiting to be sent. 
@@ -92,17 +98,14 @@ module Cod
     #
     def put(obj)
       # TODO high watermark check
-      send_enqueue obj
-      Thread.pass
-    end
-    
-  private
-    def send_enqueue(obj)
+      # Here's the strategy for sending messages now and later: 
+      #  * is there already a Bac
+      #  * try to send messages right now. If they can be sent, stop. 
+      #  * l
       send_queue << obj
       
-      unless @io_thread.running?
-        @io_thread.start
-      end
+      @background_io ||= BackgroundIO.new(@connection, send_queue)
+      @background_io.try_send
     end
   end
 end
