@@ -15,7 +15,6 @@ module Cod
     #   
     def get
       loop do
-        p [:get_loop, @client_sockets.size]
         # Check if there are pending connects
         accept_new_connections
 
@@ -32,14 +31,23 @@ module Cod
         end
         
         return @messages.shift unless @messages.empty?
+        Thread.pass
       end
     end
     
+    # Closes the channel. 
+    #
+    def close
+      @socket.close
+      @client_sockets.each { |io| io.close }
+    end
+
+  private
     def consume_pending(io)
       buffer = io.read_nonblock(10*1024)
-      tracked_buffer = StringIO.new(bufffer)
+      tracked_buffer = StringIO.new(buffer)
       while !tracked_buffer.eof?
-        @messages << serializer.de(tracked_buffer)
+        @messages << @serializer.de(tracked_buffer)
       end
     end
     

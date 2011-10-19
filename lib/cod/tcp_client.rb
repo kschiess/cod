@@ -30,14 +30,23 @@ module Cod
       # fails silently. 
       #
       def write(buffer)
-        if @socket 
+        if @socket
+          p :real_write
           @socket.write(buffer)
         end
+      end
+
+      # Closes the connection and stops reconnection. 
+      #
+      def close
+        @socket.close if @socket
+        @socket = nil
       end
     end
     class BackgroundIO
       def initialize(connection, queue)
         @connection, @queue = connection, queue
+        @serializer = SimpleSerializer.new
         @thread = nil
       end
 
@@ -50,27 +59,27 @@ module Cod
       end
       
       def try_send
-        p [:try_send, @queue.size]
         return if @queue.empty?
         start_thread unless @thread
 
         one_thread do
           @connection.try_connect
           
-          while @connection.established? && !queue.empty?
-            msg = queue.shift
+          while @connection.established? && !@queue.empty?
+            msg = @queue.shift
+
             @connection.write(
-              serializer.en(msg))
+              @serializer.en(msg))
           end
         end
       end
     private
       def start_thread
         @thread = Thread.start do
+          Thread.current.abort_on_exception= true
           while !@queue.empty?
-            p :background_try_send
             try_send
-            sleep 0.1
+            Thread.pass
           end
           
           @thread = nil
@@ -86,6 +95,14 @@ module Cod
     # A queue of objects that are waiting to be sent. 
     #
     attr_reader :send_queue
+
+    # Closes all underlying connections. You should only call this if you 
+    # don't want to use the channel again, since it will also stop reconnection
+    # attempts. 
+    #
+    def close
+      @connection.close
+    end
 
     # Sends an object to the other end of the channel, if it is connected. 
     # If it is not connected, objects sent will queue up and once the internal
