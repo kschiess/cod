@@ -1,8 +1,21 @@
 require 'thread'
 
 module Cod
+  # Acts as a channel that connects to a tcp listening socket on the other
+  # end. 
+  #
   class TcpClient
-    class Connection
+    # A connection that can be down. This allows elegant handling of
+    # reconnecting and delaying connections. 
+    #
+    # Synopsis: 
+    #   connection = Connection.new('foo:123')
+    #   connection.try_connect
+    #   connection.write('buffer')
+    #   connection.established? # => false
+    #   connection.close
+    #
+    class Connection # :nodoc: 
       def initialize(destination)
         @destination = destination
         @socket = nil
@@ -31,7 +44,6 @@ module Cod
       #
       def write(buffer)
         if @socket
-          p :real_write
           @socket.write(buffer)
         end
       end
@@ -43,11 +55,39 @@ module Cod
         @socket = nil
       end
     end
+
+    # Allows protecting a block of code from parallel execution. Block
+    # will appear in multiple code paths, but only be executed in one at 
+    # any one time. 
+    #
+    class ExclusiveSection
+      def initialize
+        @count = 0
+        @m_count = Mutex.new
+      end
+      
+      def enter
+        @m_count.synchronize {
+          # If someone is already in the exclusive section, abort this call.
+          return if @count > 1
+          # We're not already in it and @count is protected by the mutex. This
+          # means that we can enter the section now. 
+          @count += 1
+        }
+
+        return yield
+      ensure
+        # Leaving the section now. We'll mark it done: 
+        @m_count.synchronize { @count -= 1 }
+      end
+    end
+    
     class BackgroundIO
       def initialize(connection, queue)
         @connection, @queue = connection, queue
         @serializer = SimpleSerializer.new
         @thread = nil
+        @socket_writer = ExclusiveSection.new
       end
 
       # Ensures that only one thread is in the block given to it at any given
@@ -55,7 +95,9 @@ module Cod
       # without yielding. 
       #
       def one_thread
-        yield
+        @socket_writer.enter do
+          yield
+        end
       end
       
       def try_send
