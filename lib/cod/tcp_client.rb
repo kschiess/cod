@@ -55,76 +55,71 @@ module Cod
         @socket = nil
       end
     end
-
-    # Allows protecting a block of code from parallel execution. Block
-    # will appear in multiple code paths, but only be executed in one at 
-    # any one time. 
-    #
-    class ExclusiveSection
-      def initialize
-        @count = 0
-        @m_count = Mutex.new
-      end
-      
-      def enter
-        @m_count.synchronize {
-          # If someone is already in the exclusive section, abort this call.
-          return if @count > 1
-          # We're not already in it and @count is protected by the mutex. This
-          # means that we can enter the section now. 
-          @count += 1
-        }
-
-        return yield
-      ensure
-        # Leaving the section now. We'll mark it done: 
-        @m_count.synchronize { @count -= 1 }
-      end
-    end
     
+    # A background thread that sends messages from the queue to the connection
+    # as fast as it can. Once the queue is exhausted, the background thread
+    # is closed until the queue again populates (#try_send).
+    #
     class BackgroundIO
       def initialize(connection, queue)
         @connection, @queue = connection, queue
         @serializer = SimpleSerializer.new
         @thread = nil
-        @socket_writer = ExclusiveSection.new
+        
+        @queue_full_cv = ConditionVariable.new
+        @queue_full_m  = Mutex.new
+        
+        start_thread
       end
 
-      # Ensures that only one thread is in the block given to it at any given
-      # time. If there is already a thread working on the block, it returns
-      # without yielding. 
+      # Tries to send all messages from @queue to @connection. If there is 
+      # a reason this cannot happen (broken connection, etc.), run a background
+      # thread that will retry. 
       #
-      def one_thread
-        @socket_writer.enter do
-          yield
-        end
-      end
-      
       def try_send
         return if @queue.empty?
-        start_thread unless @thread
 
-        one_thread do
-          @connection.try_connect
-          
-          while @connection.established? && !@queue.empty?
-            msg = @queue.shift
-
-            @connection.write(
-              @serializer.en(msg))
-          end
-        end
+        signal_full_queue
       end
     private
+      def signal_full_queue
+        @queue_full_m.synchronize {
+          @queue_full_cv.signal
+        }
+      end
+      def wait_until_queue_fills
+        @queue_full_m.synchronize { @queue_full_cv.wait(@queue_full_m) }
+      end
       def start_thread
         @thread = Thread.start do
           Thread.current.abort_on_exception= true
-          while !@queue.empty?
-            try_send
-            Thread.pass
-          end
           
-          @thread = nil
+          loop do
+            # We first try to send whatever is there, because we might be 
+            # in a start-up race condition where the CV is signaled before
+            # we wait on it. Try to send anyway, and then wait.
+            while !@queue.empty?
+              # Busy loop until we can send the data. Maybe this is too 
+              # time consuming; introduce a backoff algo later on?
+              do_send
+              Thread.pass
+            end
+
+            # Wait until someone thinks that there is work to do.
+            wait_until_queue_fills
+          end
+        end
+      end
+      
+      def do_send
+        @connection.try_connect
+        
+        while @connection.established? && !@queue.empty?
+          # TODO maybe we should abort when the socket is not ready?
+          msg = @queue.shift
+
+          @connection.write(
+            @serializer.en(msg))
         end
       end
     end
@@ -157,13 +152,12 @@ module Cod
     #
     def put(obj)
       # TODO high watermark check
-      # Here's the strategy for sending messages now and later: 
-      #  * is there already a Bac
-      #  * try to send messages right now. If they can be sent, stop. 
-      #  * l
       send_queue << obj
-      
+
+      # Make sure that we have a background io thread
       @background_io ||= BackgroundIO.new(@connection, send_queue)
+      # Try sending the messages right now. This only does work if the
+      # thread is not already doing it. 
       @background_io.try_send
     end
   end
