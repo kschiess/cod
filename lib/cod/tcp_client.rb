@@ -58,7 +58,7 @@ module Cod
     
     # A background thread that sends messages from the queue to the connection
     # as fast as it can. Once the queue is exhausted, the background thread
-    # is closed until the queue again populates (#try_send).
+    # waits until the queue again populates (#try_send).
     #
     class BackgroundIO
       def initialize(connection, queue)
@@ -81,6 +81,21 @@ module Cod
 
         signal_full_queue
       end
+
+      # Shuts down the thread that is running in the background. 
+      #
+      def shutdown
+        return unless @thread
+        
+        # Signal that we would like to shut down
+        @shutdown_requested = true
+        # Wake up the thread that is probably waiting for the queue
+        signal_full_queue
+        # Join the thread
+        @thread.join
+        
+        @thread = nil
+      end
     private
       def signal_full_queue
         @queue_full_m.synchronize {
@@ -90,24 +105,31 @@ module Cod
       def wait_until_queue_fills
         @queue_full_m.synchronize { @queue_full_cv.wait(@queue_full_m) }
       end
+
       def start_thread
         @thread = Thread.start do
           Thread.current.abort_on_exception= true
           
-          loop do
-            # We first try to send whatever is there, because we might be 
-            # in a start-up race condition where the CV is signaled before
-            # we wait on it. Try to send anyway, and then wait.
-            while !@queue.empty?
-              # Busy loop until we can send the data. Maybe this is too 
-              # time consuming; introduce a backoff algo later on?
-              do_send
-              Thread.pass
-            end
-
-            # Wait until someone thinks that there is work to do.
-            wait_until_queue_fills
+          run
+        end
+      end
+      
+      def run
+        loop do
+          # We first try to send whatever is there, because we might be 
+          # in a start-up race condition where the CV is signaled before
+          # we wait on it. Try to send anyway, and then wait.
+          while !@queue.empty? && !@shutdown_requested
+            # Busy loop until we can send the data. Maybe this is too 
+            # time consuming; introduce a backoff algo later on?
+            do_send
+            Thread.pass
           end
+
+          # Wait until someone thinks that there is work to do.
+          break if @shutdown_requested 
+
+          wait_until_queue_fills
         end
       end
       
@@ -116,6 +138,7 @@ module Cod
         
         while @connection.established? && !@queue.empty?
           # TODO maybe we should abort when the socket is not ready?
+          return if @shutdown_requested
           msg = @queue.shift
 
           @connection.write(
@@ -139,6 +162,7 @@ module Cod
     #
     def close
       @connection.close
+      @background_io.shutdown
     end
 
     # Sends an object to the other end of the channel, if it is connected. 
@@ -156,6 +180,7 @@ module Cod
 
       # Make sure that we have a background io thread
       @background_io ||= BackgroundIO.new(@connection, send_queue)
+      
       # Try sending the messages right now. This only does work if the
       # thread is not already doing it. 
       @background_io.try_send

@@ -14,6 +14,13 @@ describe 'Cod TCP' do
     client.put :test
     server.get.should == :test
   end 
+  it "correctly shuts down the background thread" do
+    client.put :test
+    
+    expect {
+      client.close
+    }.to change { Thread.list.size }.by(-1)
+  end 
   
   describe 'error handling' do
     it "handles a socket that already exists (bind error)"
