@@ -41,6 +41,9 @@ describe Cod::Pipe do
     end
   end
   
+  # NOTE: no samples on using Cod.select on pipes, since select_spec does 
+  # that extensively. 
+  
   # In forked child processes, you inherit all pipes that you create before 
   # forking. Using them then (after the fork) for either read or write 
   # operations will dedicate them to that usage, closing the other part of the
