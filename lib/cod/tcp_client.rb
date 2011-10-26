@@ -150,6 +150,7 @@ module Cod
     def initialize(destination)
       @send_queue = Queue.new
       @connection = Connection.new(destination)
+      @background_io = BackgroundIO.new(@connection, @send_queue)
     end
     
     # A queue of objects that are waiting to be sent. 
@@ -162,7 +163,7 @@ module Cod
     #
     def close
       @connection.close
-      @background_io.shutdown if @background_io
+      @background_io.shutdown
     end
 
     # Sends an object to the other end of the channel, if it is connected. 
@@ -177,9 +178,6 @@ module Cod
     def put(obj)
       # TODO high watermark check
       send_queue << obj
-
-      # Make sure that we have a background io thread
-      @background_io ||= BackgroundIO.new(@connection, send_queue)
       
       # Try sending the messages right now. This only does work if the
       # thread is not already doing it. 
