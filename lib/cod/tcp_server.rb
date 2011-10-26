@@ -14,6 +14,42 @@ module Cod
     #   channel.get # => object
     #   
     def get
+      msg, socket = _get
+      return msg
+    end
+    
+    # Receives one object from the channel. Returns a tuple of
+    # <message,channel> where channel is a tcp channel that links back to the
+    # client that sent message.
+    #
+    # Using this method, the server can communicate back to its clients
+    # individually instead of collectively. 
+    #
+    # Example: 
+    #   msg, chan = server.get_ext
+    #   chan.put :answer
+    def get_ext
+      msg, socket = _get
+      return [
+        msg, 
+        TcpClient.new(socket)]
+    end
+    
+    # Closes the channel. 
+    #
+    def close
+      @socket.close
+      @client_sockets.each { |io| io.close }
+    end
+
+    # Returns an array of IOs that Cod.select should select on. 
+    #
+    def to_read_fds
+      @client_sockets
+    end
+
+  private
+    def _get
       loop do
         # Check if there are pending connects
         accept_new_connections
@@ -31,29 +67,14 @@ module Cod
         end
         
         return @messages.shift unless @messages.empty?
-        Thread.pass
       end
     end
-    
-    # Closes the channel. 
-    #
-    def close
-      @socket.close
-      @client_sockets.each { |io| io.close }
-    end
-
-    # Returns an array of IOs that Cod.select should select on. 
-    #
-    def to_read_fds
-      @client_sockets
-    end
-
-  private
+  
     def consume_pending(io)
       buffer = io.read_nonblock(10*1024)
       tracked_buffer = StringIO.new(buffer)
       while !tracked_buffer.eof?
-        @messages << @serializer.de(tracked_buffer)
+        @messages << [@serializer.de(tracked_buffer), io]
       end
     end
     

@@ -9,13 +9,13 @@ module Cod
     # reconnecting and delaying connections. 
     #
     # Synopsis: 
-    #   connection = Connection.new('foo:123')
+    #   connection = RobustConnection.new('foo:123')
     #   connection.try_connect
     #   connection.write('buffer')
     #   connection.established? # => false
     #   connection.close
     #
-    class Connection # :nodoc: 
+    class RobustConnection # :nodoc: 
       def initialize(destination)
         @destination = destination
         @socket = nil
@@ -48,11 +48,35 @@ module Cod
         end
       end
 
+      # Reads from the connection in a nonblocking manner.
+      #
+      def read_nonblock(bytes)
+        if @socket
+          return @socket.read_nonblock(bytes)
+        end
+        
+        raise Errno::EAGAIN
+      end
+
       # Closes the connection and stops reconnection. 
       #
       def close
         @socket.close if @socket
         @socket = nil
+      end
+    end
+    
+    class Connection
+      def initialize(socket)
+        @socket = socket
+      end
+      def try_connect
+      end
+      def established?
+        true
+      end
+      def write(buffer)
+        @socket.write(buffer)
       end
     end
     
@@ -149,13 +173,27 @@ module Cod
     
     def initialize(destination)
       @send_queue = Queue.new
-      @connection = Connection.new(destination)
+      @recv_queue = Array.new
+      # TODO pass this into background io
+      @serializer = SimpleSerializer.new
+
+      if destination.respond_to?(:read)
+        # destination seems to be a socket, wrap it with Connection
+        @connection = Connection.new(destination)
+      else
+        @connection = RobustConnection.new(destination)
+      end
+
       @background_io = BackgroundIO.new(@connection, @send_queue)
     end
     
     # A queue of objects that are waiting to be sent. 
     #
     attr_reader :send_queue
+    
+    # A queue of objects that have already been received.
+    #
+    attr_reader :recv_queue
 
     # Closes all underlying connections. You should only call this if you 
     # don't want to use the channel again, since it will also stop reconnection
@@ -182,6 +220,31 @@ module Cod
       # Try sending the messages right now. This only does work if the
       # thread is not already doing it. 
       @background_io.try_send
+    end
+    
+    # Receives a message. 
+    #
+    def get
+      loop do
+        return recv_queue.shift if queued?
+        
+        process_incoming
+      end
+    end
+
+  private
+    def process_incoming
+      # TODO figure out how to deal with chunks
+      buffer = @connection.read_nonblock(1024*1024)
+      marked_buffer = StringIO.new(buffer)
+      while !marked_buffer.eof?
+        recv_queue << @serializer.de(marked_buffer)
+      end
+    rescue Errno::EAGAIN
+      # Nothing to read, no problem
+    end
+    def queued?
+      !recv_queue.empty?
     end
   end
 end

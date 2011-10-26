@@ -22,6 +22,17 @@ describe 'Cod TCP' do
     }.to change { Thread.list.size }.by(-1)
   end 
   
+  describe 'server#get_ext' do
+    it "returns a tuple of <msg, channel>" do
+      client.put :test
+      msg, channel = server.get_ext
+      
+      msg.should == :test
+      # channel is connected to client: 
+      channel.put :answer
+      client.get.should == :answer
+    end 
+  end
   describe 'with Cod.select' do
     it "times out when no data is there" do
       Cod.select(0.01, test: server).should == {}
