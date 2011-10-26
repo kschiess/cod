@@ -22,6 +22,11 @@ describe 'Cod TCP' do
     }.to change { Thread.list.size }.by(-1)
   end 
   
+  describe 'with Cod.select' do
+    it "times out when no data is there" do
+      Cod.select(0.01, test: server).should == {}
+    end 
+  end
   describe 'error handling' do
     it "handles a socket that already exists (bind error)"
     it "handles when the server socket isn't listening (yet)"

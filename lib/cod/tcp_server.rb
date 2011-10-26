@@ -42,6 +42,12 @@ module Cod
       @client_sockets.each { |io| io.close }
     end
 
+    # Returns an array of IOs that Cod.select should select on. 
+    #
+    def to_read_fds
+      @client_sockets
+    end
+
   private
     def consume_pending(io)
       buffer = io.read_nonblock(10*1024)

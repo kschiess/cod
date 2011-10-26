@@ -162,7 +162,7 @@ module Cod
     #
     def close
       @connection.close
-      @background_io.shutdown
+      @background_io.shutdown if @background_io
     end
 
     # Sends an object to the other end of the channel, if it is connected. 
