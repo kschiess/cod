@@ -1,5 +1,9 @@
 module Cod
   class Service
+    def initialize(channel)
+      @channel = channel
+    end
+    
     # Waits until a request arrives on the service channel. Then reads that
     # request and hands it to the block given. The block return value
     # will be returned to the service client. 
@@ -9,13 +13,22 @@ module Cod
     # 
     #
     def one
-      
+      rq, answer_chan = @channel.get
+      res = yield(rq)
+      answer_chan.put res
     end
 
     # A service client. 
     #
     class Client
+      def initialize(server_chan, answer_chan)
+        @server_chan, @answer_chan = server_chan, answer_chan
+      end
       
+      def call(rq)
+        @server_chan.put [rq, @answer_chan]
+        @answer_chan.get
+      end
     end
   end
   

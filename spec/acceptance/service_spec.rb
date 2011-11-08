@@ -5,7 +5,7 @@ describe "Cod services" do
     let!(:service_channel) { Cod.pipe }
     let!(:answer_channel) { Cod.pipe }
     
-    let(:service) { Cod.service_client(service_client, answer_channel) }
+    let(:service) { Cod.service_client(service_channel, answer_channel) }
     
     attr_reader :pid
     before(:each) { 
@@ -13,7 +13,7 @@ describe "Cod services" do
         server = Cod.service(service_channel)
         server.one { |request| request + 2 }}}
     after(:each) { 
-      Process.kill(@pid)
+      Process.kill('QUIT', @pid)
       Process.wait(@pid) }
       
     after(:each) { service_channel.close; answer_channel.close }
