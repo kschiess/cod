@@ -46,12 +46,22 @@ module Cod
   end
   module_function :tcp_server
 
-  # Creates and returns a service. See Cod::Service for description. 
+  # Creates and returns a service (server process). 
+  # See Cod::Service for description. 
   #
-  def service(channel)
-    Cod::Service.new(channel)
+  def service(*args)
+    Cod::Service.new(*args)
   end
   module_function :service
+
+  # Creates and returns a service client. 
+  # See Cod::Service::Client for description. 
+  #
+  def service_client(*args)
+    Cod::Service::Client.new(*args)
+  end
+  module_function :service_client
+
 
   # Indicates that the given channel is write only. This gets raised on 
   # operations like #put.
