@@ -104,6 +104,8 @@ module Cod
     #   pipe.put [:a, :message]
     #
     def put(obj)
+      raise Cod::ReadOnlyChannel unless can_write?
+      
       pipe.write(
         serializer.en(obj))
     end
@@ -120,8 +122,11 @@ module Cod
     #   pipe.get # => obj
     #
     def get(opts={})
+      raise Cod::WriteOnlyChannel unless can_read?
+      pipe.close_w
+      
       loop do
-        ready = Cod.select(0.1, self)
+        ready = Cod.select(nil, self)
         return deserialize_one if ready
       end
     end
@@ -141,6 +146,18 @@ module Cod
     end
     def to_read_fds
       pipe.r
+    end
+    
+    # Returns true if you can read from this pipe. 
+    #
+    def can_read?
+      not pipe.r.nil?
+    end
+    
+    # Returns true if you can write to this pipe. 
+    #
+    def can_write?
+      not pipe.w.nil?
     end
 
     def _dump(depth)
