@@ -21,13 +21,18 @@ module Cod
     # A service client. 
     #
     class Client
-      def initialize(server_chan, answer_chan)
-        @server_chan, @answer_chan = server_chan, answer_chan
+      def initialize(server_chan, answer_chan=nil)
+        @server_chan, @answer_chan = server_chan, answer_chan || server_chan
       end
       
       def call(rq)
         @server_chan.put [rq, @answer_chan]
         @answer_chan.get
+      end
+      
+      def close
+        @server_chan.close
+        @answer_chan.close
       end
     end
   end

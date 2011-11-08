@@ -57,10 +57,10 @@ module Cod
   # Creates and returns a service client. 
   # See Cod::Service::Client for description. 
   #
-  def service_client(*args)
+  def client(*args)
     Cod::Service::Client.new(*args)
   end
-  module_function :service_client
+  module_function :client
 
 
   # Indicates that the given channel is write only. This gets raised on 
