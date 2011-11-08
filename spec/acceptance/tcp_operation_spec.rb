@@ -30,6 +30,7 @@ describe 'Cod TCP' do
       msg.should == :test
       # channel is connected to client: 
       channel.put :answer
+
       client.get.should == :answer
     end 
   end

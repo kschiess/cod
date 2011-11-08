@@ -5,7 +5,7 @@ require 'cod'
 require 'example_scaffold'
 
 server {
-  channel = Cod.tcpserver('127.0.0.1:5454')
+  channel = Cod.tcp_server('127.0.0.1:5454')
   
   client = channel.get
   client.put 'heiho from server'
