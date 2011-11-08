@@ -2,9 +2,10 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe "Cod.select" do
   describe 'on the channels (pipe)' do
-    mlet(:read, :write) { Cod.pipe.split }
-    after(:each) { read.close; write.close }
-  
+    let(:split) { Cod.pipe.split }
+    let(:read) { split.read }
+    let(:write) { split.write }
+      
     it "returns simply true / false" do
       read.select(0.01).should == false
       
@@ -14,7 +15,10 @@ describe "Cod.select" do
   end 
   describe '(timeout, groups)' do
     describe 'retains group form' do
-      mlet(:read, :write) { Cod.pipe.split }
+      let(:split) { Cod.pipe.split }
+      let(:read) { split.read }
+      let(:write) { split.write }
+
       after(:each) { read.close; write.close }
       
       it "(array)" do
@@ -41,7 +45,10 @@ describe "Cod.select" do
     end 
 
     describe 'allowed values' do
-      mlet(:read, :write) { Cod.pipe.split }
+      let(:split) { Cod.pipe.split }
+      let(:read) { split.read }
+      let(:write) { split.write }
+
       after(:each) { read.close; write.close }
 
       it "allows Cod channels" do

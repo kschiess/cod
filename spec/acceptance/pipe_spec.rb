@@ -3,8 +3,9 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe Cod::Pipe do
   context "when split into read & write" do
     slet(:pipe) { described_class.new }
-    attr_reader :read, :write
-    before(:each) { @read, @write = pipe.split }
+    let!(:ends) { pipe.split }
+    let(:read) { ends.read }
+    let(:write) { ends.write }
 
     after(:each) { read.close; write.close }
 

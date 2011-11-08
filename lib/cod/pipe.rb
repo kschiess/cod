@@ -11,8 +11,8 @@ module Cod
       # Performs a deep copy of the structure. 
       def initialize_copy(other)
         super
-        self.r = other.r.dup
-        self.w = other.w.dup
+        self.r = other.r.dup if other.r
+        self.w = other.w.dup if other.w
       end
       def write(buf)
         close_r
@@ -36,6 +36,15 @@ module Cod
         w.close if w
         self.w = nil
       end
+    end
+
+    # A few methods that a pipe split must answer to. The split itself is 
+    # basically an array instance; these methods add some calling safety and
+    # convenience. 
+    #
+    module SplitMethods
+      def read; first; end
+      def write; last; end
     end
 
     def initialize(serializer=nil)
@@ -84,8 +93,10 @@ module Cod
     # written to (#put).
     #
     def split
-      [self.dup.readonly, self.dup.writeonly].tap {
+      [self.dup.readonly, self.dup.writeonly].tap { |split|
         self.close
+        
+        split.extend(SplitMethods)
       }
     end
     

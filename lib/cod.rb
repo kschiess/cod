@@ -46,6 +46,13 @@ module Cod
   end
   module_function :tcp_server
 
+  # Creates and returns a service. See Cod::Service for description. 
+  #
+  def service(channel)
+    Cod::Service.new(channel)
+  end
+  module_function :service
+
   # Indicates that the given channel is write only. This gets raised on 
   # operations like #put.
   #
@@ -71,3 +78,4 @@ require 'cod/select'
 require 'cod/tcp_client'
 require 'cod/tcp_server'
 
+require 'cod/service'
