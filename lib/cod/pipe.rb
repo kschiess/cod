@@ -19,11 +19,6 @@ module Cod
         raise Cod::ReadOnlyChannel unless w
         w.write(buf)
       end
-      def read_nonblock(size, buffer)
-        close_w
-        raise Cod::WriteOnlyChannel unless r
-        r.read_nonblock(size, buffer)
-      end
       def close
         close_r
         close_w
@@ -51,7 +46,6 @@ module Cod
       super
       @serializer = serializer || SimpleSerializer.new
       @pipe = IOPair.new(*IO.pipe)
-      buffer_init
     end
     
     # Creates a copy of this pipe channel. This performs a shallow #dup except
@@ -62,7 +56,6 @@ module Cod
       super
       @serializer = other.serializer
       @pipe = other.pipe.dup
-      buffer_init
     end
     
     # Makes this pipe readonly. Calls to #put will error out. This closes the
@@ -127,10 +120,10 @@ module Cod
     #   pipe.get # => obj
     #
     def get(opts={})
-      # TODO :timeout
-      pipe.read_nonblock(1024**2, @buffer)
-      
-      deserialize_one
+      loop do
+        ready = Cod.select(0.1, self)
+        return deserialize_one if ready
+      end
     end
     
     # Closes the pipe completely. All active ends are closed. Note that you
@@ -143,8 +136,8 @@ module Cod
     # Returns if this pipe is ready for reading. 
     #
     def select(timeout=nil)
-      result = Cod.select(timeout, this_channel: self)
-      result.has_key?(:this_channel)
+      result = Cod.select(timeout, self)
+      not result.nil?
     end
     def to_read_fds
       pipe.r
@@ -158,27 +151,8 @@ module Cod
     end
   private
     def deserialize_one
-      # Assumes that buffer contains the just read bytes and @remaining
-      # contains what we haven't parsed yet.
-      # So we need to concat @buffer to @remaining and construct an IO 
-      # from that: 
-      io = if @remaining
-        StringIO.new(@remaining).tap { |io|
-          io.write(@buffer); io.pos=0 }
-      else
-        StringIO.new(@buffer)
-      end
-      
       # Now deserialize one message from the buffer in io
-      serializer.de(io).tap {
-        # Is there something left to consume in io? If yes, store that
-        # buffer in @remaining. 
-        @remaining = io.string
-      }
-    end
-    def buffer_init
-      @buffer = String.new
-      @remaining = nil
+      serializer.de(pipe.r)
     end
   end
 end

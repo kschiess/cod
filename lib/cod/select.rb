@@ -13,15 +13,21 @@ module Cod
   # hash.
   #
   class SelectGroup
-    def initialize(hash)
-      @h = hash
+    def initialize(hash_or_value)
+      if hash_or_value.respond_to?(:each)
+        @h = hash_or_value
+        @unpack = false
+      else
+        @h = {box: hash_or_value}
+        @unpack = true
+      end
     end
     
     # Returns all values as a single flat array. NOT like Hash#values.
     #
     def values(&block)
       values = []
-      block = lambda { |e| e } unless block   # identity
+      block ||= lambda { |e| e } # identity
       
       @h.each do |_,v|
         if v.respond_to?(:to_ary)
@@ -59,10 +65,28 @@ module Cod
       @h.keys
     end
 
-    # Converts this to a hash.
+    # Converts this to a result value. If this instance was constructed with a 
+    # simple ruby object, return the object. Otherwise return the resulting
+    # hash.
     #
-    def to_hsh
-      @h
+    def unpack
+      if @unpack
+        @h[:box]
+      else
+        @h
+      end
+    end
+    
+    # Returns something that will represent the empty result to our client. 
+    # If this class was constructed with just a single object, the empty 
+    # result is nil. Otherwise the empty result is an empty hash. 
+    #
+    def empty
+      if @unpack
+        nil
+      else
+        {}
+      end
     end
   end
   
@@ -93,12 +117,12 @@ module Cod
       r,w,e = IO.select(fds, nil, nil, timeout)
 
       # Nothing is ready if r is nil
-      return {} unless r
+      return groups.empty unless r
       
       # Prepare a return value: The original hash, where the fds are ready.
       groups.
         keep_if { |e| r.include?(to_read_fd(e)) }.
-        to_hsh
+        unpack
     end
   private
     def to_read_fd(single)
