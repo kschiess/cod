@@ -46,6 +46,13 @@ module Cod
   end
   module_function :tcp_server
 
+  # Creates a channel based on the beanstalkd messaging queue. 
+  # 
+  def beanstalk(tube_name)
+    Cod::Beanstalk.new(tube_name)
+  end
+  module_function :beanstalk
+
   # Creates and returns a service (server process). 
   # See Cod::Service for description. 
   #
@@ -82,10 +89,14 @@ module Cod
   end
 end
 
-require 'cod/pipe'
 require 'cod/simple_serializer'
 require 'cod/select'
+
+require 'cod/pipe'
+
 require 'cod/tcp_client'
 require 'cod/tcp_server'
+
+require 'cod/beanstalk'
 
 require 'cod/service'
