@@ -35,6 +35,18 @@ module Cod
     end
     
     def get
+      @channel.put format_cmd(:reserve)
+      
+      case answer=@channel.get
+        when /RESERVED (?<id>\d+) (?<bytes>\d+)/
+          return @body_serializer.de(StringIO.new(@channel.get))
+      else
+        fail answer
+      end
+    end
+    
+    def close
+      @channel.close
     end
   private 
     def format_cmd(command, *args)
