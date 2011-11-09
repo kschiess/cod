@@ -34,8 +34,10 @@ module Cod
   
   # Creates a tcp connection to the destination and returns a channel for it. 
   #
-  def tcp(destination)
-    Cod::TcpClient.new(destination)
+  def tcp(destination, serializer=nil)
+    Cod::TcpClient.new(
+      destination, 
+      serializer || SimpleSerializer.new)
   end
   module_function :tcp
   

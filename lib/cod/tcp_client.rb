@@ -85,9 +85,9 @@ module Cod
     # waits until the queue again populates (#try_send).
     #
     class BackgroundIO
-      def initialize(connection, queue)
+      def initialize(connection, queue, serializer)
         @connection, @queue = connection, queue
-        @serializer = SimpleSerializer.new
+        @serializer = serializer
         @thread = nil
         
         @queue_full_cv = ConditionVariable.new
@@ -171,11 +171,11 @@ module Cod
       end
     end
     
-    def initialize(destination)
+    def initialize(destination, serializer)
       @send_queue = Queue.new
       @recv_queue = Array.new
       # TODO pass this into background io
-      @serializer = SimpleSerializer.new
+      @serializer = serializer
 
       if destination.respond_to?(:read)
         # destination seems to be a socket, wrap it with Connection
@@ -184,7 +184,7 @@ module Cod
         @connection = RobustConnection.new(destination)
       end
 
-      @background_io = BackgroundIO.new(@connection, @send_queue)
+      @background_io = BackgroundIO.new(@connection, @send_queue, @serializer)
     end
     
     # A queue of objects that are waiting to be sent. 

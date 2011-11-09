@@ -32,7 +32,7 @@ module Cod
       msg, socket = _get
       return [
         msg, 
-        TcpClient.new(socket)]
+        TcpClient.new(socket, @serializer)]
     end
     
     # Closes the channel. 
