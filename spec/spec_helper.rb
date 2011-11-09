@@ -25,3 +25,5 @@ RSpec::Matchers.define(:serialize) do
     true
   end
 end
+
+require 'support/transport'
