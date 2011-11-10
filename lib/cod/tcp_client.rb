@@ -222,23 +222,31 @@ module Cod
       @background_io.try_send
     end
     
-    # Receives a message. 
+    # Receives a message. opts may contain various options, see below. 
+    # Options include: 
+    #   serializer :: Context given to the serializer. This allows passing 
+    #                 in a context object to enrich deserialisation.
     #
-    def get
+    def get(opts={})
       loop do
         return recv_queue.shift if queued?
         
-        process_incoming
+        process_incoming(opts)
       end
     end
 
   private
-    def process_incoming
+    def process_incoming(opts)
       # TODO figure out how to deal with chunks
+      context = opts[:serializer]
+      
+      # Read a large bit from the buffer. We currently don't deal with large
+      # transmissions well at all. 
       buffer = @connection.read_nonblock(1024*1024)
+      
       marked_buffer = StringIO.new(buffer)
       while !marked_buffer.eof?
-        recv_queue << @serializer.de(marked_buffer)
+        recv_queue << @serializer.de(marked_buffer, context)
       end
     rescue Errno::EAGAIN
       # Nothing to read, no problem

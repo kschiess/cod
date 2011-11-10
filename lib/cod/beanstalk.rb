@@ -5,8 +5,13 @@ module Cod
       def en(str)
         str
       end
-      def de(io)
-        io.gets("\r\n")
+      def de(io, context)
+        p context
+        if context && bytes=context[:bytes]
+          io.read(bytes)
+        else
+          io.gets("\r\n")
+        end
       end
     end
     
@@ -19,6 +24,7 @@ module Cod
     
     def put(msg)
       body = @body_serializer.en(msg)
+      p body.bytesize
       priority = 0
       delay    = 0
       ttr      = 3600
@@ -34,12 +40,18 @@ module Cod
       end
     end
     
-    def get
+    def get(opts={})
       @channel.put format_cmd(:reserve)
       
       case answer=@channel.get
         when /RESERVED (?<id>\d+) (?<bytes>\d+)/
-          return @body_serializer.de(StringIO.new(@channel.get))
+          # The second message that is read is the body: Only read bytes
+          # bytes. 
+          bytes = Integer($2)
+          p bytes
+          body = @channel.get(serializer: {bytes: bytes})
+          p body
+          return @body_serializer.de(StringIO.new(body))
       else
         fail answer
       end

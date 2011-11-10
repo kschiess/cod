@@ -5,9 +5,14 @@ describe "Beanstalk transport" do
     let(:channel) { Cod.beanstalk('simple') }
     after(:each) { channel.close }
 
-    it "does simple messaging" do
+    xit "does simple messaging" do
       channel.put :test
       channel.get.should == :test
+    end
+    it "transmits line ends properly" do
+      channel.put "\r\n"
+
+      channel.get.should == "\r\n"
     end
   end
 end

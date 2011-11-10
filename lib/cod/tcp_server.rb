@@ -13,8 +13,8 @@ module Cod
     # Example: 
     #   channel.get # => object
     #   
-    def get
-      msg, socket = _get
+    def get(opts={})
+      msg, socket = _get(opts)
       return msg
     end
     
@@ -28,8 +28,8 @@ module Cod
     # Example: 
     #   msg, chan = server.get_ext
     #   chan.put :answer
-    def get_ext
-      msg, socket = _get
+    def get_ext(opts={})
+      msg, socket = _get(opts)
       return [
         msg, 
         TcpClient.new(socket, @serializer)]
@@ -49,7 +49,7 @@ module Cod
     end
 
   private
-    def _get
+    def _get(opts)
       loop do
         # Check if there are pending connects
         accept_new_connections
@@ -63,18 +63,19 @@ module Cod
         next unless rr
         
         rr.each do |io|
-          consume_pending io
+          consume_pending io, opts
         end
         
         return @messages.shift unless @messages.empty?
       end
     end
   
-    def consume_pending(io)
+    def consume_pending(io, opts)
+      context = opts[:serializer]
       buffer = io.read_nonblock(10*1024)
       tracked_buffer = StringIO.new(buffer)
       while !tracked_buffer.eof?
-        @messages << [@serializer.de(tracked_buffer), io]
+        @messages << [@serializer.de(tracked_buffer, context), io]
       end
     end
     

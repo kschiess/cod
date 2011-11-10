@@ -4,7 +4,7 @@ module Cod
       Marshal.dump(obj)
     end
     
-    def de(io)
+    def de(io, context=nil)
       Marshal.load(io)
     end
   end
