@@ -26,15 +26,33 @@ module Cod
       
       @thread = Thread.start(&method(:thread))
     end
+    
+    # Before any kind of work is attempted, this predicate must evaluate to 
+    # true. It is tested repeatedly. 
+    #
+    # Example: 
+    #   work_queue.predicate { connection.established? }
+    #
     def predicate
     end
+
+    # Schedules a piece of work. 
+    # Example: 
+    #   work_queue.schedule { a_piece_of_work }
+    #
     def schedule(&work)
       @queue << work
     end
+
+    # Shuts down the queue properly, without waiting for work to be completed.
+    #
     def shutdown
       @shutdown_requested = true
       @thread.join
     end
+    
+    # Returns the size of the queue. 
+    #
     def size
       @queue.size
     end
