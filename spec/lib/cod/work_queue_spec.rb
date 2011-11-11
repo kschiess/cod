@@ -5,6 +5,30 @@ require 'cod/work_queue'
 describe Cod::WorkQueue do
   let(:queue) { described_class.new }
   
+  describe '#predicate' do
+    # Start out with a predicate that blocks all work
+    before(:each) {   
+      @running = false
+      queue.predicate { running? }
+    }
+    def running?
+      @running
+    end
+    
+    it "should not do work" do
+      queue.schedule { fail }
+      queue.try_work
+    end 
+    context "when the predicate evaluates to true" do
+      it "should do work" do
+        n = 0
+        queue.schedule { n += 1 }
+        @running = true
+        queue.try_work
+        n.should == 1
+      end 
+    end
+  end
   describe '#schedule' do
     # Setting the predicate to false should disable all work
     before(:each) { queue.predicate { false } }

@@ -26,6 +26,15 @@ module Cod
       
       @thread = Thread.start(&method(:thread))
     end
+
+    def try_work
+      # NOTE if predicate is nil or not set, no work will be accomplished. 
+      # This is the way I need it. 
+      while !@queue.empty? && @predicate && @predicate.call
+        wi = @queue.shift
+        wi.call
+      end
+    end
     
     # Before any kind of work is attempted, this predicate must evaluate to 
     # true. It is tested repeatedly. 
@@ -33,7 +42,8 @@ module Cod
     # Example: 
     #   work_queue.predicate { connection.established? }
     #
-    def predicate
+    def predicate(&predicate)
+      @predicate = predicate
     end
 
     # Schedules a piece of work. 
