@@ -33,6 +33,8 @@ module Cod
       # and it still seems sound, does nothing. 
       #
       def try_connect
+        return if established?
+        
         @socket = TCPSocket.new(*destination.split(':'))
       rescue Errno::ECONNREFUSED
         # No one listening? Well.. too bad.
@@ -80,101 +82,8 @@ module Cod
       end
     end
     
-    # A background thread that sends messages from the queue to the connection
-    # as fast as it can. Once the queue is exhausted, the background thread
-    # waits until the queue again populates (#try_send).
-    #
-    class BackgroundIO
-      def initialize(connection, queue, serializer)
-        @connection, @queue = connection, queue
-        @serializer = serializer
-        @thread = nil
-        
-        @queue_full_cv = ConditionVariable.new
-        @queue_full_m  = Mutex.new
-        
-        start_thread
-      end
-
-      # Tries to send all messages from @queue to @connection. If there is 
-      # a reason this cannot happen (broken connection, etc.), run a background
-      # thread that will retry. 
-      #
-      def try_send
-        return if @queue.empty?
-
-        signal_full_queue
-      end
-
-      # Shuts down the thread that is running in the background. 
-      #
-      def shutdown
-        return unless @thread
-        
-        # Signal that we would like to shut down
-        @shutdown_requested = true
-        # Wake up the thread that is probably waiting for the queue
-        signal_full_queue
-        # Join the thread
-        @thread.join
-        
-        @thread = nil
-      end
-    private
-      def signal_full_queue
-        @queue_full_m.synchronize {
-          @queue_full_cv.signal
-        }
-      end
-      def wait_until_queue_fills
-        @queue_full_m.synchronize { @queue_full_cv.wait(@queue_full_m) }
-      end
-
-      def start_thread
-        @thread = Thread.start do
-          Thread.current.abort_on_exception= true
-          
-          run
-        end
-      end
-      
-      def run
-        loop do
-          # We first try to send whatever is there, because we might be 
-          # in a start-up race condition where the CV is signaled before
-          # we wait on it. Try to send anyway, and then wait.
-          while !@queue.empty? && !@shutdown_requested
-            # Busy loop until we can send the data. Maybe this is too 
-            # time consuming; introduce a backoff algo later on?
-            do_send
-            Thread.pass
-          end
-
-          # Wait until someone thinks that there is work to do.
-          break if @shutdown_requested 
-
-          wait_until_queue_fills
-        end
-      end
-      
-      def do_send
-        @connection.try_connect
-        
-        while @connection.established? && !@queue.empty?
-          # TODO maybe we should abort when the socket is not ready?
-          return if @shutdown_requested
-          msg = @queue.shift
-
-          @connection.write(
-            @serializer.en(msg))
-        end
-      end
-    end
-    
     def initialize(destination, serializer)
-      @send_queue = Queue.new
       @recv_queue = Array.new
-      # TODO pass this into background io
       @serializer = serializer
 
       if destination.respond_to?(:read)
@@ -184,12 +93,16 @@ module Cod
         @connection = RobustConnection.new(destination)
       end
 
-      @background_io = BackgroundIO.new(@connection, @send_queue, @serializer)
+      @work_queue = WorkQueue.new
+
+      # The predicate for allowing sends: Is the connection up?
+      @work_queue.predicate {
+        # NOTE This will not be called unless we have some messages to send,
+        # so no useless connections are made
+        @connection.try_connect
+        @connection.established?
+      }
     end
-    
-    # A queue of objects that are waiting to be sent. 
-    #
-    attr_reader :send_queue
     
     # A queue of objects that have already been received.
     #
@@ -200,8 +113,8 @@ module Cod
     # attempts. 
     #
     def close
+      @work_queue.shutdown
       @connection.close
-      @background_io.shutdown
     end
 
     # Sends an object to the other end of the channel, if it is connected. 
@@ -215,11 +128,11 @@ module Cod
     #
     def put(obj)
       # TODO high watermark check
-      send_queue << obj
+      @work_queue.schedule {
+        send(obj)
+      }
       
-      # Try sending the messages right now. This only does work if the
-      # thread is not already doing it. 
-      @background_io.try_send
+      @work_queue.try_work
     end
     
     # Receives a message. opts may contain various options, see below. 
@@ -234,8 +147,12 @@ module Cod
         process_incoming(opts)
       end
     end
-
   private
+    def send(msg)
+      @connection.write(
+        @serializer.en(msg))
+    end
+  
     def process_incoming(opts)
       # TODO figure out how to deal with chunks
       context = opts[:serializer]
