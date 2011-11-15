@@ -1,10 +1,29 @@
 require 'spec_helper'
 
+require 'timeout'
 require 'cod/work_queue'
 
 describe Cod::WorkQueue do
   let(:queue) { described_class.new }
   
+  def try_for_a_while
+    timeout(0.1) do
+      yield
+    end
+  rescue Timeout::Error
+  end
+  
+  describe 'background thread' do
+    before(:each) { queue.predicate { true } }
+    it "also works on work items" do
+      ran = false
+      queue.schedule { ran = true }
+      try_for_a_while {
+        Thread.pass until ran
+      }
+      ran.should == true
+    end 
+  end
   describe '#predicate' do
     # Start out with a predicate that blocks all work
     before(:each) {   

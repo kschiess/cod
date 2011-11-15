@@ -71,7 +71,10 @@ module Cod
       Thread.current.abort_on_exception = true
       
       loop do
-        sleep 0.1
+        Thread.pass
+        
+        try_work
+        
         return if @shutdown_requested
       end
     end
