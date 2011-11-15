@@ -107,6 +107,7 @@ module Cod
       @mutex = Mutex.new
       @threads_in_block = 0
     end
+    
     # If no one is in the block given to #enter currently, this will yield
     # to the block. If one thread is already executing that block, it will
     # return nil.
@@ -115,10 +116,14 @@ module Cod
       @mutex.synchronize { 
         return if @threads_in_block > 0
         @threads_in_block += 1 }
-      yield
-    ensure
-      @mutex.synchronize { 
-        @threads_in_block -= 1 }
+      begin
+        yield
+      ensure
+        fail "Assert fails, #{@threads_in_block} threads in block" \
+          if @threads_in_block != 1
+        @mutex.synchronize { 
+          @threads_in_block -= 1 }
+      end
     end
   end
 end
