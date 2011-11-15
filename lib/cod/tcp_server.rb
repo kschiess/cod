@@ -75,8 +75,18 @@ module Cod
       buffer = io.read_nonblock(10*1024)
       tracked_buffer = StringIO.new(buffer)
       while !tracked_buffer.eof?
-        @messages << [@serializer.de(tracked_buffer, context), io]
+        @messages << [
+          deserialize(tracked_buffer, context), 
+          io]
       end
+    end
+    
+    def deserialize(io, context)
+      @serializer.de(io, context) { |obj|
+        obj.kind_of?(TcpClient::OtherEnd) ? 
+          TcpClient.new(io, @serializer) :
+          obj
+      }
     end
     
     def round_robin(list)

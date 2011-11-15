@@ -1,4 +1,4 @@
-require 'thread'
+require 'cod/work_queue'
 
 module Cod
   # Acts as a channel that connects to a tcp listening socket on the other
@@ -146,6 +146,19 @@ module Cod
         
         process_incoming(opts)
       end
+    end
+
+    class OtherEnd
+    end
+
+    def _dump(level)
+      ""  # TODO replace with something that allows end-to-end id
+    end
+    def self._load(params)
+      # Instead of a tcp client (no way to construct one at this point), we'll
+      # insert a kind of marker in the object stream that will be replaced 
+      # with a valid client later on. (hopefully)
+      OtherEnd.new
     end
   private
     def send(msg)

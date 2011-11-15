@@ -17,7 +17,7 @@ describe "Cod services" do
       
       server { Cod.service(server_sock) }
       client { Cod.client(client_sock) }
-      close { server_sock.close; client_sock.close; p :close }
+      close { server_sock.close; client_sock.close }
     },
   ].each do |transport|
     describe "using #{transport.name}" do

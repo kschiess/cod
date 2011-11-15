@@ -5,7 +5,11 @@ module Cod
     end
     
     def de(io, context=nil)
-      Marshal.load(io)
+      if block_given?
+        Marshal.load(io, Proc.new)
+      else
+        Marshal.load(io)
+      end
     end
   end
 end
