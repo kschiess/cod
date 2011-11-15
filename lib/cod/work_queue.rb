@@ -24,16 +24,24 @@ module Cod
       # that producing more deadlocks than I would like.
       @queue = Array.new
       
-      @thread = Thread.start(&method(:thread))
+      @try_work_exclusive_section = ExclusiveSection.new
+
+      @thread = Thread.start(&method(:thread_main))
     end
+    
+    # The internal thread that is used to work on scheduled items in the
+    # background.
+    attr_reader :thread
 
     def try_work
-      # NOTE if predicate is nil or not set, no work will be accomplished. 
-      # This is the way I need it. 
-      while !@queue.empty? && @predicate && @predicate.call
-        wi = @queue.shift
-        wi.call
-      end
+      @try_work_exclusive_section.enter {
+        # NOTE if predicate is nil or not set, no work will be accomplished. 
+        # This is the way I need it. 
+        while !@queue.empty? && @predicate && @predicate.call
+          wi = @queue.shift
+          wi.call
+        end
+      }
     end
     
     # Before any kind of work is attempted, this predicate must evaluate to 
@@ -66,17 +74,51 @@ module Cod
     def size
       @queue.size
     end
+
+    def clear_thread_semaphore
+      @one_turn = false
+    end
+    def thread_semaphore_set?
+      @one_turn
+    end
   private
-    def thread
+    def thread_main
       Thread.current.abort_on_exception = true
       
       loop do
         Thread.pass
         
         try_work
+
+        # Signal the outside world that we've been around this loop once.
+        # See #clear_thread_semaphore and #thread_semaphore_set?
+        @one_turn = true
         
         return if @shutdown_requested
       end
+    end
+  end
+  
+  # A section of code that is entered only once. Instead of blocking threads
+  # that are waiting to enter, it just returns nil.
+  #
+  class ExclusiveSection
+    def initialize
+      @mutex = Mutex.new
+      @threads_in_block = 0
+    end
+    # If no one is in the block given to #enter currently, this will yield
+    # to the block. If one thread is already executing that block, it will
+    # return nil.
+    #
+    def enter
+      @mutex.synchronize { 
+        return if @threads_in_block > 0
+        @threads_in_block += 1 }
+      yield
+    ensure
+      @mutex.synchronize { 
+        @threads_in_block -= 1 }
     end
   end
 end

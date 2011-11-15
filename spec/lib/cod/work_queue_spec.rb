@@ -14,14 +14,51 @@ describe Cod::WorkQueue do
   end
   
   describe 'background thread' do
-    before(:each) { queue.predicate { true } }
+    describe '#clear_thread_semaphore and #thread_semaphore_set?' do
+      it "is false after #clear_thread_semaphore" do
+        queue.thread.kill
+        queue.clear_thread_semaphore
+        queue.thread_semaphore_set?.should == false
+      end 
+      it "becomes true again after a while" do
+        queue.clear_thread_semaphore
+        try_for_a_while {
+          Thread.pass until queue.thread_semaphore_set?
+        }
+        queue.thread_semaphore_set?.should == true
+      end
+    end
+    
     it "also works on work items" do
       ran = false
       queue.schedule { ran = true }
+      
+      queue.predicate { true }
       try_for_a_while {
         Thread.pass until ran
       }
       ran.should == true
+    end 
+    it "should not reenter the try_work" do
+      executed_in_thread = false
+      main_thread = Thread.current
+      
+      10.times do 
+        queue.schedule { 
+          if Thread.current == main_thread
+            Thread.pass until queue.thread_semaphore_set?
+          else
+            # We don't want to come in here, ever.
+            executed_in_thread = true
+          end }
+      end
+
+      queue.predicate { true }
+      
+      queue.clear_thread_semaphore
+      queue.try_work
+    
+      executed_in_thread.should == false
     end 
   end
   describe '#predicate' do
