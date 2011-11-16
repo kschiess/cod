@@ -22,6 +22,7 @@ module Cod
       end
       
       attr_reader :destination
+      attr_reader :socket
       
       # Returns true if a connection is currently running. 
       #
@@ -49,15 +50,15 @@ module Cod
           @socket.write(buffer)
         end
       end
-
-      # Reads from the connection in a nonblocking manner.
+      
+      # Reads one message from the socket if possible. 
       #
-      def read_nonblock(bytes)
+      def read(serializer)
         if @socket
-          return @socket.read_nonblock(bytes)
+          return serializer.de(@socket)
         end
         
-        raise Errno::EAGAIN
+        raise EOFError  # or so
       end
 
       # Closes the connection and stops reconnection. 
@@ -72,10 +73,14 @@ module Cod
       def initialize(socket)
         @socket = socket
       end
+      attr_reader :socket
       def try_connect
       end
       def established?
         true
+      end
+      def read(serializer)
+        serializer.de(@socket)
       end
       def write(buffer)
         @socket.write(buffer)
@@ -83,7 +88,6 @@ module Cod
     end
     
     def initialize(destination, serializer)
-      @recv_queue = Array.new
       @serializer = serializer
 
       if destination.respond_to?(:read)
@@ -104,10 +108,6 @@ module Cod
       }
     end
     
-    # A queue of objects that have already been received.
-    #
-    attr_reader :recv_queue
-
     # Closes all underlying connections. You should only call this if you 
     # don't want to use the channel again, since it will also stop reconnection
     # attempts. 
@@ -139,11 +139,7 @@ module Cod
     # Options include: 
     #
     def get(opts={})
-      loop do
-        return recv_queue.shift if queued?
-        
-        process_incoming(opts)
-      end
+      @connection.read(@serializer)
     end
 
     class OtherEnd
@@ -162,24 +158,6 @@ module Cod
     def send(msg)
       @connection.write(
         @serializer.en(msg))
-    end
-  
-    def process_incoming(opts)
-      # TODO figure out how to deal with chunks
-      
-      # Read a large bit from the buffer. We currently don't deal with large
-      # transmissions well at all. 
-      buffer = @connection.read_nonblock(1024*1024)
-      
-      marked_buffer = StringIO.new(buffer)
-      while !marked_buffer.eof?
-        recv_queue << @serializer.de(marked_buffer)
-      end
-    rescue Errno::EAGAIN
-      # Nothing to read, no problem
-    end
-    def queued?
-      !recv_queue.empty?
     end
   end
 end

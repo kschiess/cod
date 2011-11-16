@@ -71,12 +71,13 @@ module Cod
     end
   
     def consume_pending(io, opts)
-      buffer = io.read_nonblock(10*1024)
-      tracked_buffer = StringIO.new(buffer)
-      while !tracked_buffer.eof?
+      until io.eof?
         @messages << [
-          deserialize(tracked_buffer), 
+          deserialize(io), 
           io]
+          
+        # More messages from this socket? 
+        return unless IO.select([io], nil, nil, 0.01)
       end
     end
     
