@@ -4,7 +4,7 @@ module Cod
       Marshal.dump(obj)
     end
     
-    def de(io, context=nil)
+    def de(io)
       if block_given?
         Marshal.load(io, Proc.new)
       else

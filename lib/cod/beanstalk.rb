@@ -5,13 +5,12 @@ module Cod
       def en(str)
         str
       end
-      def de(io, context)
-        p context
-        if context && bytes=context[:bytes]
-          io.read(bytes)
-        else
-          io.gets("\r\n")
-        end
+      def de(io)
+        # if context && bytes=context[:bytes]
+        #   io.read(bytes)
+        # else
+        #   io.gets("\r\n")
+        # end
       end
     end
     

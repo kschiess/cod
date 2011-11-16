@@ -137,8 +137,6 @@ module Cod
     
     # Receives a message. opts may contain various options, see below. 
     # Options include: 
-    #   serializer :: Context given to the serializer. This allows passing 
-    #                 in a context object to enrich deserialisation.
     #
     def get(opts={})
       loop do
@@ -168,7 +166,6 @@ module Cod
   
     def process_incoming(opts)
       # TODO figure out how to deal with chunks
-      context = opts[:serializer]
       
       # Read a large bit from the buffer. We currently don't deal with large
       # transmissions well at all. 
@@ -176,7 +173,7 @@ module Cod
       
       marked_buffer = StringIO.new(buffer)
       while !marked_buffer.eof?
-        recv_queue << @serializer.de(marked_buffer, context)
+        recv_queue << @serializer.de(marked_buffer)
       end
     rescue Errno::EAGAIN
       # Nothing to read, no problem

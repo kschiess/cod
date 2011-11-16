@@ -127,7 +127,7 @@ module Cod
       
       loop do
         ready = Cod.select(nil, self)
-        return deserialize_one(opts) if ready
+        return deserialize_one if ready
       end
     end
     
@@ -167,10 +167,9 @@ module Cod
       ObjectSpace._id2ref(Integer(string))
     end
   private
-    def deserialize_one(opts)
+    def deserialize_one
       # Now deserialize one message from the buffer in io
-      context = opts[:serializer]
-      serializer.de(pipe.r, context)
+      serializer.de(pipe.r)
     end
   end
 end

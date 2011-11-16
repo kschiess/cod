@@ -71,18 +71,17 @@ module Cod
     end
   
     def consume_pending(io, opts)
-      context = opts[:serializer]
       buffer = io.read_nonblock(10*1024)
       tracked_buffer = StringIO.new(buffer)
       while !tracked_buffer.eof?
         @messages << [
-          deserialize(tracked_buffer, context), 
+          deserialize(tracked_buffer), 
           io]
       end
     end
     
-    def deserialize(io, context)
-      @serializer.de(io, context) { |obj|
+    def deserialize(io)
+      @serializer.de(io) { |obj|
         obj.kind_of?(TcpClient::OtherEnd) ? 
           TcpClient.new(io, @serializer) :
           obj
