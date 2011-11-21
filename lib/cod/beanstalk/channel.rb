@@ -4,46 +4,47 @@ module Cod::Beanstalk
       @tube_name, @server_url = tube_name, server_url
     
       @body_serializer = Cod::SimpleSerializer.new
-      @channel = Cod.tcp(server_url, Serializer.new)
+      @transport = Cod.tcp(server_url, Serializer.new)
     end
   
     def put(msg)
+      pri   = 1
+      delay = 0
+      ttr   = 120
       body = @body_serializer.en(msg)
-      p body.bytesize
-      priority = 0
-      delay    = 0
-      ttr      = 3600
-
-      @channel.put format_cmd(:put, priority, delay, ttr, body.bytesize)
-      @channel.put format_msg(body)
-    
-      case answer=@channel.get
-        when /INSERTED \d+/
-          # Job inserted, everything worked
-        else
-          fail answer
+      
+      @transport.put [:put, pri, delay, ttr, body]
+      
+      answer=@transport.get
+      unless answer.first == :inserted
+        fail "#put fails, #{answer.inspect}"
       end
     end
   
     def get(opts={})
-      @channel.put format_cmd(:reserve)
-    
-      case answer=@channel.get
-        when /RESERVED (?<id>\d+) (?<bytes>\d+)/
-          # The second message that is read is the body: Only read bytes
-          # bytes. 
-          bytes = Integer($2)
-          p bytes
-          body = @channel.get(serializer: {bytes: bytes})
-          p body
-          return @body_serializer.de(StringIO.new(body))
-      else
-        fail answer
+      @transport.put [:reserve]
+      
+      answer=@transport.get
+      unless answer.first == :reserved
+        fail ":reserve fails, #{answer.inspect}"  
       end
+      # assert: answer.first == :reserved
+      
+      _, id, msg = answer
+      
+      # We delete the job immediately, since we're being used as a channel, 
+      # not as a queue:
+      @transport.put [:delete, id]
+      answer=@transport.get
+      unless answer.first == :deleted
+        fail ":delete fails, #{answer.inspect}"
+      end
+      
+      @body_serializer.de(StringIO.new(msg))
     end
   
     def close
-      @channel.close
+      @transport.close
     end
   private 
     def format_cmd(command, *args)

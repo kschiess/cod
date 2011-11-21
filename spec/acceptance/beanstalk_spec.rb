@@ -11,7 +11,6 @@ describe "Beanstalk transport" do
       channel.get.should == :test
     end
     it "transmits line ends properly" do
-      pending "Proper serializer"
       channel.put "\r\n"
 
       channel.get.should == "\r\n"
