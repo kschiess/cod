@@ -3,8 +3,8 @@ module Cod::Beanstalk
     def initialize(tube_name, server_url='localhost:11300')
       @tube_name, @server_url = tube_name, server_url
     
-      @body_serializer = SimpleSerializer.new
-      @channel = Cod.tcp(server_url, BeanstalkMessageSerializer.new)
+      @body_serializer = Cod::SimpleSerializer.new
+      @channel = Cod.tcp(server_url, Serializer.new)
     end
   
     def put(msg)
