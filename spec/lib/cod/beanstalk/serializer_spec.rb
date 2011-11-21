@@ -23,5 +23,9 @@ describe Cod::Beanstalk::Serializer do
       de("INSERTED 123\r\n").should == [:inserted, 123]
       de("EXPECTED_CRLF\r\n").should == [:expected_crlf]
     end 
+    it "decodes RESERVED id bytes data" do
+      de("RESERVED 123 9\r\nA message\r\n").
+        should == [:reserved, 123, "A message"]
+    end 
   end
 end

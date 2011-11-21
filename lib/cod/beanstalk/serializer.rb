@@ -37,7 +37,20 @@ module Cod::Beanstalk
     def de(io)
       str = io.gets("\r\n")
       raw = str.split
-      [convert_cmd(raw.first), convert_args(raw[1..-1])].flatten
+      
+      cmd = convert_cmd(raw.first)
+      msg = [cmd, *convert_args(raw[1..-1])]
+
+      if cmd == :reserved
+        # More data to read:
+        size = msg.last
+        data = io.read(size+2)
+
+        fail "No crlf at end of data?" unless data[-2..-1] == "\r\n"
+        msg[-1] = data[0..-3]
+      end
+      
+      msg
     end
     
   private
