@@ -1,4 +1,4 @@
-class Cod::Beanstalk
+module Cod::Beanstalk
   # This is a kind of beanstalk message middleware: It generates and parses
   # beanstalk messages from a ruby format into raw bytes. The raw bytes go
   # directly into the tcp channel that underlies the beanstalk channel. 
@@ -23,6 +23,22 @@ class Cod::Beanstalk
   # Also see https://raw.github.com/kr/beanstalkd/master/doc/protocol.txt.
   #
   class Serializer
+    def en(msg)
+      cmd = msg.first
+      
+      if cmd == :put
+        body = msg.last
+        format(*msg[0..-2], body.bytesize) << format(body)
+      else
+        format(*msg)
+      end
+    end
     
+  private
+    # Joins the arguments with a space and appends a \r\n
+    #
+    def format(*args)
+      args.join(' ') << "\r\n"
+    end
   end
 end
