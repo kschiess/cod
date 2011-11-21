@@ -5,40 +5,32 @@ module Cod::Beanstalk
     
       @body_serializer = Cod::SimpleSerializer.new
       @transport = Cod.tcp(server_url, Serializer.new)
+      
+      init_tube
     end
-  
+    
     def put(msg)
       pri   = 1
       delay = 0
       ttr   = 120
       body = @body_serializer.en(msg)
       
-      @transport.put [:put, pri, delay, ttr, body]
-      
-      answer=@transport.get
-      unless answer.first == :inserted
-        fail "#put fails, #{answer.inspect}"
-      end
+      answer, *rest = interact(:put, pri, delay, ttr, body)
+      fail "#put fails, #{answer.inspect}" unless answer == :inserted
     end
   
     def get(opts={})
       @transport.put [:reserve]
       
-      answer=@transport.get
-      unless answer.first == :reserved
-        fail ":reserve fails, #{answer.inspect}"  
-      end
-      # assert: answer.first == :reserved
+      answer, *rest = interact(:reserve)
+      fail ":reserve fails, #{answer.inspect}" unless answer == :reserved
       
-      _, id, msg = answer
+      id, msg = rest
       
       # We delete the job immediately, since we're being used as a channel, 
       # not as a queue:
-      @transport.put [:delete, id]
-      answer=@transport.get
-      unless answer.first == :deleted
-        fail ":delete fails, #{answer.inspect}"
-      end
+      answer, *rest = interact(:delete, id)
+      fail ":delete fails, #{answer.inspect}" unless answer == :deleted
       
       @body_serializer.de(StringIO.new(msg))
     end
@@ -47,11 +39,17 @@ module Cod::Beanstalk
       @transport.close
     end
   private 
-    def format_cmd(command, *args)
-      format_msg [command, *args].join(' ')
+    def init_tube
+      answer, *rest = interact(:use, @tube_name)
+      fail "#init_tube fails, #{answer.inspect}" unless answer == :using
+      
+      answer, *rest = interact(:watch, @tube_name)
+      fail "#init_tube fails, #{answer.inspect}" unless answer == :watching
     end
-    def format_msg(message)
-      message + "\r\n"
+    
+    def interact(*msg)
+      @transport.put msg
+      @transport.get
     end
   end
 end

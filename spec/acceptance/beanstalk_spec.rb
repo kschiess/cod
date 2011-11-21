@@ -6,7 +6,6 @@ describe "Beanstalk transport" do
     after(:each) { channel.close }
 
     it "does simple messaging" do
-      pending "Proper serializer"
       channel.put :test
       channel.get.should == :test
     end
@@ -15,5 +14,22 @@ describe "Beanstalk transport" do
 
       channel.get.should == "\r\n"
     end
+    context "and the 'other' tube" do
+      let(:other) { Cod.beanstalk('other') }
+      after(:each) { other.close }
+
+      it "transmits via named tubes" do
+        other.put :foo
+        channel.put :test
+        channel.get.should == :test
+        other.get.should == :foo
+      end 
+    end
+  end
+  
+  describe '#select' do
+    it "blocks until a message becomes available" 
+    it "returns when timeout is reached" 
+    it "allows mixed requests" 
   end
 end
