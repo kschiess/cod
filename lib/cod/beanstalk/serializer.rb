@@ -34,11 +34,34 @@ module Cod::Beanstalk
       end
     end
     
+    def de(io)
+      str = io.gets("\r\n")
+      raw = str.split
+      [convert_cmd(raw.first), convert_args(raw[1..-1])].flatten
+    end
+    
   private
     # Joins the arguments with a space and appends a \r\n
     #
     def format(*args)
       args.join(' ') << "\r\n"
+    end
+    
+    # Converts a beanstalkd answer like INSERTED to :inserted
+    # 
+    def convert_cmd(cmd)
+      cmd.downcase.to_sym
+    end
+    
+    # Converts an argument to either a number or a string, depending on
+    # what it looks like. 
+    # 
+    # Example:
+    #   convert_args(['1', 'a string']) # => [1, 'a string']
+    #
+    def convert_args(args)
+      args.map { |e| 
+        /\d+/.match(e) ? Integer(e) : e }
     end
   end
 end
