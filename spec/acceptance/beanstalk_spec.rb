@@ -34,6 +34,14 @@ describe "Beanstalk transport" do
         channel.get.should == :test
         other.get.should == :foo
       end 
+      it "allows transmission of beanstalk channels via beanstalk channels" do
+        channel.put :test
+        
+        other.put channel
+        clone = other.get
+        
+        clone.get.should == :test
+      end 
     end
   end
   
