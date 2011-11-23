@@ -74,7 +74,7 @@ module Cod::Beanstalk
     #
     def convert_args(args)
       args.map { |e| 
-        /\d+/.match(e) ? Integer(e) : e }
+        /^\d+$/.match(e) ? Integer(e) : e }
     end
   end
 end
