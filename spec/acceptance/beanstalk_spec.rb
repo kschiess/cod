@@ -14,6 +14,7 @@ describe "Beanstalk transport" do
 
       channel.get.should == "\r\n"
     end
+
     context "and the 'other' tube" do
       let(:other) { Cod.beanstalk('other') }
       after(:each) { other.close }
@@ -28,8 +29,20 @@ describe "Beanstalk transport" do
   end
   
   describe '#select' do
-    it "blocks until a message becomes available" 
-    it "returns when timeout is reached" 
+    let(:channel) { Cod.beanstalk('simple') }
+    after(:each) { channel.close }
+    
+    xit "blocks until a message becomes available" do
+      fork do
+        Cod.beanstalk('simple').put :test
+      end
+      Process.waitall
+      
+      Cod.select(0.01, channel).should == channel
+    end
+    it "returns when timeout is reached" do
+      Cod.select(0.01, channel).should be_nil
+    end
     it "allows mixed requests" 
   end
 end
