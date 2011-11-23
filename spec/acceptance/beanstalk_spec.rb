@@ -14,8 +14,9 @@ describe "Beanstalk transport" do
   
   context "'simple' tube" do
     before(:each) { clear_tube('simple') }
-    let(:channel) { Cod.beanstalk('simple') }
     after(:each) { channel.close }
+
+    let(:channel) { Cod.beanstalk('simple') }
 
     it "does simple messaging" do
       channel.put :test
@@ -28,8 +29,10 @@ describe "Beanstalk transport" do
     end
 
     context "and the 'other' tube" do
-      let(:other) { Cod.beanstalk('other') }
+      before(:each) { clear_tube('other') }
       after(:each) { other.close }
+
+      let(:other) { Cod.beanstalk('other') }
 
       it "transmits via named tubes" do
         other.put :foo
