@@ -36,6 +36,11 @@ module Cod::Beanstalk
     def close
       @transport.close
     end
+    
+    def to_read_fds
+      fail "Cod.select not supported with beanstalkd channels.\n"+
+        "To support this, we will have to extend the beanstalkd protocol."
+    end
   private 
     def init_tube
       answer, *rest = interact(:use, @tube_name)

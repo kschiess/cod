@@ -31,18 +31,18 @@ describe "Beanstalk transport" do
   describe '#select' do
     let(:channel) { Cod.beanstalk('simple') }
     after(:each) { channel.close }
-    
-    xit "blocks until a message becomes available" do
-      fork do
-        Cod.beanstalk('simple').put :test
+    let(:predicate) { lambda { Cod.select(0.1, channel) } }
+
+    it "raises an error" do
+      expect(&predicate).to raise_error
+    end 
+    it "explains the problem" do
+      begin
+        predicate.call
+      rescue => e
+        e.message.should == "Cod.select not supported with beanstalkd channels.\n"+
+          "To support this, we will have to extend the beanstalkd protocol."
       end
-      Process.waitall
-      
-      Cod.select(0.01, channel).should == channel
-    end
-    it "returns when timeout is reached" do
-      Cod.select(0.01, channel).should be_nil
-    end
-    it "allows mixed requests" 
+    end 
   end
 end
