@@ -89,6 +89,7 @@ module Cod
     
     def initialize(destination, serializer)
       @serializer = serializer
+      @destination = destination
 
       if destination.respond_to?(:read)
         # destination seems to be a socket, wrap it with Connection
@@ -142,17 +143,20 @@ module Cod
       @connection.read(@serializer)
     end
 
-    class OtherEnd
-    end
+    # A small structure that is constructed for a serialized tcp client on 
+    # the other end (the deserializing end). What the deserializing code does
+    # with this is his problem. 
+    #
+    OtherEnd = Struct.new(:destination)
 
     def _dump(level)
-      ""  # TODO replace with something that allows end-to-end id
+      @destination
     end
     def self._load(params)
       # Instead of a tcp client (no way to construct one at this point), we'll
       # insert a kind of marker in the object stream that will be replaced 
       # with a valid client later on. (hopefully)
-      OtherEnd.new
+      OtherEnd.new(params)
     end
   private
     def send(msg)

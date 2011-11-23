@@ -27,6 +27,9 @@ describe Cod::Beanstalk::Serializer do
       de("RESERVED 123 9\r\nA message\r\n").
         should == [:reserved, 123, "A message"]
     end
+    it "decodes OK bytes data" do
+      de("OK 9\r\nA message\r\n").should == [:ok, 'A message']
+    end 
     it "decodes arguments that contain numbers" do
       de("FUU fu123").
         should == [:fuu, 'fu123']

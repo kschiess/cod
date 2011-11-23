@@ -27,3 +27,4 @@ RSpec::Matchers.define(:serialize) do
 end
 
 require 'support/transport'
+require 'support/beanstalk'

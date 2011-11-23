@@ -41,7 +41,7 @@ module Cod::Beanstalk
       cmd = convert_cmd(raw.first)
       msg = [cmd, *convert_args(raw[1..-1])]
 
-      if cmd == :reserved
+      if [:ok, :reserved].include?(cmd)
         # More data to read:
         size = msg.last
         data = io.read(size+2)

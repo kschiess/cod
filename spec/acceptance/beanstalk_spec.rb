@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe "Beanstalk transport" do
+  include BeanstalkHelper
+  
   describe 'construction through the Cod module' do
     it "takes one argument" do
       Cod.beanstalk('tube_name').close
@@ -11,6 +13,7 @@ describe "Beanstalk transport" do
   end
   
   context "'simple' tube" do
+    before(:each) { clear_tube('simple') }
     let(:channel) { Cod.beanstalk('simple') }
     after(:each) { channel.close }
 
