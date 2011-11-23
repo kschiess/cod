@@ -20,8 +20,6 @@ module Cod::Beanstalk
     end
   
     def get(opts={})
-      @transport.put [:reserve]
-      
       answer, *rest = interact(:reserve)
       fail ":reserve fails, #{answer.inspect}" unless answer == :reserved
       
