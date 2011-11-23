@@ -1,4 +1,9 @@
 module BeanstalkHelper
+  # Ok, this is a mess, I admit it. I wrote it, and I will fix it, ok?
+  #
+  # Clears a beanstalk tube given by name, DELETING all jobs that remain in
+  # that tube. 
+  #
   def clear_tube(name, server='localhost:11300')
     beanstalk = Cod.tcp(server, Cod::Beanstalk::Serializer.new)
 
