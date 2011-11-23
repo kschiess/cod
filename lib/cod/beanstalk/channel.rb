@@ -1,4 +1,9 @@
 module Cod::Beanstalk
+
+  # NOTE: Beanstalk channels cannot currently be used in Cod.select. This is 
+  # due to limitations inherent in the beanstalkd protocol. We'll probably 
+  # try to get a patch into beanstalkd to change this. 
+  #
   class Channel    
     def initialize(tube_name, server_url='localhost:11300')
       @tube_name, @server_url = tube_name, server_url
