@@ -25,7 +25,9 @@ module Cod::Beanstalk
     end
   
     def get(opts={})
+      p :before
       answer, *rest = interact(:reserve)
+      p :here
       fail ":reserve fails, #{answer.inspect}" unless answer == :reserved
       
       id, msg = rest
@@ -35,7 +37,11 @@ module Cod::Beanstalk
       answer, *rest = interact(:delete, id)
       fail ":delete fails, #{answer.inspect}" unless answer == :deleted
       
-      @body_serializer.de(StringIO.new(msg))
+      @body_serializer.de(StringIO.new(msg)) { |obj| 
+        obj.kind_of?(Cod::TcpClient::OtherEnd) ?
+          Cod.tcp(obj.destination, Serializer.new) : 
+          obj
+      }
     end
   
     def close

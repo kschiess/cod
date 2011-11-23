@@ -45,6 +45,7 @@ describe "Beanstalk transport" do
         
         other.put channel
         clone = other.get
+        p clone
         
         clone.get.should == :test
       end 

@@ -129,6 +129,7 @@ module Cod
     #
     def put(obj)
       # TODO high watermark check
+      # NOTE: predicate will call #try_connect
       @work_queue.schedule {
         send(obj)
       }
@@ -140,6 +141,7 @@ module Cod
     # Options include: 
     #
     def get(opts={})
+      @connection.try_connect
       @connection.read(@serializer)
     end
 
