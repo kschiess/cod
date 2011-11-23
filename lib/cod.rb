@@ -1,5 +1,3 @@
-require 'uuid'
-
 # The core concept of Cod are 'channels'. (Cod::Channel::Base) You can create
 # such channels on top of the various transport layers. Once you have such a
 # channel, you #put messages into it and you #get messages out of it. Messages

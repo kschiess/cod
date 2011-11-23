@@ -1,7 +1,6 @@
 source "http://rubygems.org"
 
 gem 'rake'
-gem 'uuid'
 gem 'beanstalk-client'
 
 group :test do

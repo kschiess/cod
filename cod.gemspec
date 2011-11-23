@@ -16,8 +16,6 @@ Gem::Specification.new do |s|
   s.rubygems_version = '1.5.2'
   s.summary = %Q(Really simple IPC.)
   
-  s.add_dependency 'uuid', '~> 2'
-
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'flexmock'
   s.add_development_dependency 'sdoc'
