@@ -1,6 +1,15 @@
 require 'spec_helper'
 
 describe "Beanstalk transport" do
+  describe 'construction through the Cod module' do
+    it "takes one argument" do
+      Cod.beanstalk('tube_name').close
+    end 
+    it "and optionally the server" do
+      Cod.beanstalk('tube_name', 'localhost:11300').close
+    end
+  end
+  
   context "'simple' tube" do
     let(:channel) { Cod.beanstalk('simple') }
     after(:each) { channel.close }

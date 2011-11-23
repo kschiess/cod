@@ -5,7 +5,7 @@ module Cod::Beanstalk
   # try to get a patch into beanstalkd to change this. 
   #
   class Channel    
-    def initialize(tube_name, server_url='localhost:11300')
+    def initialize(tube_name, server_url)
       @tube_name, @server_url = tube_name, server_url
     
       @body_serializer = Cod::SimpleSerializer.new
