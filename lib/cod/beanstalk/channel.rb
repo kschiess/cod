@@ -9,9 +9,7 @@ module Cod::Beanstalk
       @tube_name, @server_url = tube_name, server_url
     
       @body_serializer = Cod::SimpleSerializer.new
-      @transport = Cod.tcp(server_url, Serializer.new)
-      
-      init_tube
+      @transport = connection(server_url, tube_name)
     end
     
     def put(msg)
@@ -20,28 +18,22 @@ module Cod::Beanstalk
       ttr   = 120
       body = @body_serializer.en(msg)
       
-      answer, *rest = interact(:put, pri, delay, ttr, body)
+      answer, *rest = @transport.interact(:put, pri, delay, ttr, body)
       fail "#put fails, #{answer.inspect}" unless answer == :inserted
     end
   
     def get(opts={})
-      p :before
-      answer, *rest = interact(:reserve)
-      p :here
+      answer, *rest = @transport.interact(:reserve)
       fail ":reserve fails, #{answer.inspect}" unless answer == :reserved
       
       id, msg = rest
       
       # We delete the job immediately, since we're being used as a channel, 
       # not as a queue:
-      answer, *rest = interact(:delete, id)
+      answer, *rest = @transport.interact(:delete, id)
       fail ":delete fails, #{answer.inspect}" unless answer == :deleted
       
-      @body_serializer.de(StringIO.new(msg)) { |obj| 
-        obj.kind_of?(Cod::TcpClient::OtherEnd) ?
-          Cod.tcp(obj.destination, Serializer.new) : 
-          obj
-      }
+      @body_serializer.de(StringIO.new(msg))
     end
   
     def close
@@ -52,18 +44,42 @@ module Cod::Beanstalk
       fail "Cod.select not supported with beanstalkd channels.\n"+
         "To support this, we will have to extend the beanstalkd protocol."
     end
-  private 
-    def init_tube
-      answer, *rest = interact(:use, @tube_name)
-      fail "#init_tube fails, #{answer.inspect}" unless answer == :using
-      
-      answer, *rest = interact(:watch, @tube_name)
-      fail "#init_tube fails, #{answer.inspect}" unless answer == :watching
+    
+    # ---------------------------------------------------------- serialization
+    def _dump(level)
+      Marshal.dump(
+        [@tube_name, @server_url])
+    end
+    def self._load(str)
+      tube_name, server_url = Marshal.load(str)
+      Cod.beanstalk(tube_name, server_url)
     end
     
-    def interact(*msg)
-      @transport.put msg
-      @transport.get
+  private 
+    def connection(server_url, tube_name)
+      conn = Cod.tcp(server_url, Serializer.new)
+      # TODO refactor this into a channel base class
+      conn.extend Interact
+
+      begin
+        answer, *rest = conn.interact(:use, tube_name)
+        fail "#init_tube fails, #{answer.inspect}" unless answer == :using
+      
+        answer, *rest = conn.interact(:watch, tube_name)
+        fail "#init_tube fails, #{answer.inspect}" unless answer == :watching
+      rescue 
+        conn.close
+        raise
+      end
+      
+      conn
+    end
+    
+    module Interact
+      def interact(*msg)
+        put msg
+        get
+      end
     end
   end
 end
