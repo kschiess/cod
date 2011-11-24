@@ -89,6 +89,8 @@ module Cod
   end
 end
 
+require 'cod/channel'
+
 require 'cod/simple_serializer'
 require 'cod/select'
 

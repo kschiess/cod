@@ -4,7 +4,7 @@ module Cod::Beanstalk
   # due to limitations inherent in the beanstalkd protocol. We'll probably 
   # try to get a patch into beanstalkd to change this. 
   #
-  class Channel    
+  class Channel < Cod::Channel
     def initialize(tube_name, server_url)
       @tube_name, @server_url = tube_name, server_url
     
@@ -18,19 +18,19 @@ module Cod::Beanstalk
       ttr   = 120
       body = @body_serializer.en(msg)
       
-      answer, *rest = @transport.interact(:put, pri, delay, ttr, body)
+      answer, *rest = @transport.interact([:put, pri, delay, ttr, body])
       fail "#put fails, #{answer.inspect}" unless answer == :inserted
     end
   
     def get(opts={})
-      answer, *rest = @transport.interact(:reserve)
+      answer, *rest = @transport.interact([:reserve])
       fail ":reserve fails, #{answer.inspect}" unless answer == :reserved
       
       id, msg = rest
       
       # We delete the job immediately, since we're being used as a channel, 
       # not as a queue:
-      answer, *rest = @transport.interact(:delete, id)
+      answer, *rest = @transport.interact([:delete, id])
       fail ":delete fails, #{answer.inspect}" unless answer == :deleted
       
       @body_serializer.de(StringIO.new(msg))
@@ -58,14 +58,12 @@ module Cod::Beanstalk
   private 
     def connection(server_url, tube_name)
       conn = Cod.tcp(server_url, Serializer.new)
-      # TODO refactor this into a channel base class
-      conn.extend Interact
 
       begin
-        answer, *rest = conn.interact(:use, tube_name)
+        answer, *rest = conn.interact([:use, tube_name])
         fail "#init_tube fails, #{answer.inspect}" unless answer == :using
       
-        answer, *rest = conn.interact(:watch, tube_name)
+        answer, *rest = conn.interact([:watch, tube_name])
         fail "#init_tube fails, #{answer.inspect}" unless answer == :watching
       rescue 
         conn.close
@@ -73,13 +71,6 @@ module Cod::Beanstalk
       end
       
       conn
-    end
-    
-    module Interact
-      def interact(*msg)
-        put msg
-        get
-      end
     end
   end
 end

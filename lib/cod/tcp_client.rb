@@ -4,7 +4,7 @@ module Cod
   # Acts as a channel that connects to a tcp listening socket on the other
   # end. 
   #
-  class TcpClient
+  class TcpClient < Channel
     # A connection that can be down. This allows elegant handling of
     # reconnecting and delaying connections. 
     #
