@@ -5,16 +5,14 @@ describe "Cod::Service" do
 
   # Helper method that allows shortcut definitions of servers.
   #
-  def self.forked_service(transport, &block)
-    before(:each) { 
-      @pid = fork do
-        server = transport.get_server
-        $stderr.reopen('/dev/null')
+  def forked_service(transport, &block)
+    pid = fork do
+      server = transport.get_server
+      # $stderr.reopen('/dev/null')
 
-        block.call(server)
-      end
-    }
-    after(:each) { Process.wait(@pid) }
+      block.call(server)
+    end
+    self.class.after(:each) { Process.wait(pid) }
   end
   
   [
@@ -41,21 +39,25 @@ describe "Cod::Service" do
       let(:service) { transport.get_client }
       
       context "adding two" do
-        forked_service(transport) do |server|
-          server.one { |request| request + 2 }
-        end
+        before(:each) { 
+          forked_service(transport) do |server|
+            server.one { |request| request + 2 }
+          end
+        }
 
         it "adds 2 with minimal ceremony" do
           service.call(1).should == 3
         end 
       end
-      context "asynch notification" do
-        let(:done) { Cod.pipe } 
-        forked_service(transport) do
-          server.one { |rq| done.put rq ? :yes : :no }
-        end
+      context "#notify" do
+        let!(:done) { Cod.pipe } 
+        before(:each) { 
+          forked_service(transport) do |server|
+            server.one { |rq| done.put rq ? :yes : :no }
+          end
+        }
         
-        it "receives an asynch notification" do
+        it "sends an asynch notification" do
           service.notify(true)
           done.get.should == :yes
         end 

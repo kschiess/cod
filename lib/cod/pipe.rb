@@ -115,9 +115,6 @@ module Cod
     # Using #get on a pipe instance will close the other pipe end. Subsequent
     # #put will receive a Cod::InvalidOperation.
     #
-    # Allowed options: 
-    #   :timeout :: time to wait for a message to arrive, raises Cod::Timeout
-    #
     # Example: 
     #   pipe.get # => obj
     #
@@ -129,6 +126,9 @@ module Cod
         ready = Cod.select(nil, self)
         return deserialize_one if ready
       end
+    rescue EOFError
+      fail "All pipe ends seem to be closed. Reading from this pipe will not "+
+        "return any data."
     end
     
     # Closes the pipe completely. All active ends are closed. Note that you

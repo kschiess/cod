@@ -15,7 +15,7 @@ module Cod
     def one
       rq, answer_chan = @channel.get
       res = yield(rq)
-      answer_chan.put res
+      answer_chan.put res if answer_chan
     end
 
     # A service client. 
@@ -28,6 +28,10 @@ module Cod
       def call(rq)
         @server_chan.put [rq, @answer_chan]
         @answer_chan.get
+      end
+      
+      def notify(rq)
+        @server_chan.put [rq, nil]
       end
       
       def close
