@@ -1,8 +1,22 @@
 require 'spec_helper'
 
-describe "Cod services" do
+describe "Cod::Service" do
   extend TransportHelper
-    
+
+  # Helper method that allows shortcut definitions of servers.
+  #
+  def self.forked_service(transport, &block)
+    before(:each) { 
+      @pid = fork do
+        server = transport.get_server
+        $stderr.reopen('/dev/null')
+
+        block.call(server)
+      end
+    }
+    after(:each) { Process.wait(@pid) }
+  end
+  
   [
     transport(:pipe) {
       server_pipe, client_pipe = Cod.pipe, Cod.pipe
@@ -20,25 +34,30 @@ describe "Cod services" do
       close { server_sock.close; client_sock.close }
     },
   ].each do |transport|
-    describe "using #{transport.name}" do
+    describe "using #{transport.name}s" do
       before(:each) { transport.init }
+      after(:each) { transport.call_close }
+
+      let(:service) { transport.get_client }
       
-      context "(a simple one)" do
-        let(:service) { transport.get_client }
-        after(:each) { transport.call_close }
-
-        attr_reader :pid
-        before(:each) { 
-          @pid = fork {
-            server = transport.get_server
-
-            server.one { |request| request + 2 }}}
-        after(:each) { 
-          Process.kill('QUIT', @pid)
-          Process.wait(@pid) }
+      context "adding two" do
+        forked_service(transport) do |server|
+          server.one { |request| request + 2 }
+        end
 
         it "adds 2 with minimal ceremony" do
           service.call(1).should == 3
+        end 
+      end
+      context "asynch notification" do
+        let(:done) { Cod.pipe } 
+        forked_service(transport) do
+          server.one { |rq| done.put rq ? :yes : :no }
+        end
+        
+        it "receives an asynch notification" do
+          service.notify(true)
+          done.get.should == :yes
         end 
       end
     end

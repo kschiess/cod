@@ -9,6 +9,7 @@ describe Cod::Pipe do
 
     after(:each) { read.close; write.close }
 
+    it "blocks when read from empty" 
     it "allows sending and receiving of message objects" do
       write.put [:an, :object]
       read.get.should == [:an, :object]
