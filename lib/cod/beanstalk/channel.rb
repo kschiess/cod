@@ -4,6 +4,10 @@ module Cod::Beanstalk
   # due to limitations inherent in the beanstalkd protocol. We'll probably 
   # try to get a patch into beanstalkd to change this. 
   #
+  # NOTE: If you embed a beanstalk channel into one of your messages, you will
+  # get a channel that connects to the same server and the same tube on the
+  # other end. This behaviour is useful for Cod::Service.
+  #
   class Channel < Cod::Channel
     def initialize(tube_name, server_url)
       @tube_name, @server_url = tube_name, server_url
