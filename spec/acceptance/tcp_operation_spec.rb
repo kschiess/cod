@@ -45,14 +45,6 @@ describe 'Cod TCP' do
     it "handles interruption of the connection" 
     
     describe 'TCP connection closed before answer is read' do
-      let!(:server) { Cod.tcp_server('localhost:12345') }
-      let!(:client) { Cod.tcp('localhost:12345') }
-
-      after(:each) { 
-        server.close rescue nil
-        client.close rescue nil
-      }
-
       before(:each) { 
         client.put :test
         msg, chan = server.get_ext

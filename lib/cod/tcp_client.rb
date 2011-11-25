@@ -69,9 +69,14 @@ module Cod
       end
     end
     
+    # Holds a connection that we don't create and therefore don't own. This
+    # is the case where a channel is created to communicate back to one of
+    # the TcpServers clients: the tcp server manages the back channels, so
+    # the created channel is lent its socket only.
+    #
     class Connection # :nodoc:
       def initialize(socket)
-        @socket = socket
+        @socket = socket.dup
       end
       attr_reader :socket
       def try_connect
