@@ -1,4 +1,33 @@
 module Cod
+  # Cod::Service abstracts the pattern where you send a request to a central
+  # location (with possibly multiple workers handling requests) and receive an
+  # answer. It solves problems related to timeouts, getting _your_ answer and
+  # not any kind of answer, etc... 
+  # 
+  # Synopsis: 
+  #   # On the server end: 
+  #   service = Cod.service(central_location)
+  #   service.one { |request| :answer }
+  #
+  #   # On the client end: 
+  #   service = Cod.client(central_location, answer_here)
+  #
+  #   # asynchronous, no answer
+  #   service.notify [:a, :request]   # => nil
+  #   # has an answer: 
+  #   service.call [:a, :request]   # => :answer
+  #
+  # Depending on the setup of the channels, this class can be used to
+  # implement intra- and interprocess communication, very close to RPC. There
+  # are two ways to build on this: 
+  #
+  # * Using method_missing, implement real RPC on top. This is usually rather
+  #   simple (since Cod does a lot of work), see github.com/kschiess/zack for
+  #   an example of this.
+  # 
+  # * Using the 'case' gem, implement servers in an (erlang) actor like
+  #   fashion. 
+  #
   class Service
     def initialize(channel)
       @channel = channel
