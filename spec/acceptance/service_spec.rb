@@ -31,6 +31,14 @@ describe "Cod::Service" do
       client { Cod.client(client_sock) }
       close { server_sock.close; client_sock.close }
     },
+    transport(:beanstalk) {
+      server_chan = Cod.beanstalk('server')
+      client_chan = Cod.beanstalk('answer')
+      
+      server { Cod.service(server_chan) }
+      client { Cod.client(server_chan, client_chan) }
+      close { server_chan.close; client_chan.close }
+    }
   ].each do |transport|
     describe "using #{transport.name}s" do
       before(:each) { transport.init }
