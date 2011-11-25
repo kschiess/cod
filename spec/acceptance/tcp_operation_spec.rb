@@ -59,22 +59,6 @@ describe 'Cod TCP' do
       it "should not throw EOF error" do
         client.get.should == :answer
       end 
-      it "should work on the underlaying level" do
-        server = TCPServer.new('localhost', 11300)
-        client = TCPSocket.new('localhost', 11300)
-
-        chan = server.accept
-        
-        answer_chan = chan.dup
-        answer_chan.write('a'*10)
-        answer_chan.close
-
-        client.read_nonblock(100).should == 'a'*10
-        
-        chan.close
-        server.close
-        client.close
-      end 
     end
     
   end
