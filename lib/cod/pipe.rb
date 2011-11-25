@@ -1,6 +1,4 @@
 
-require 'stringio'
-
 module Cod
   # A cod channel based on IO.pipe. 
   #
