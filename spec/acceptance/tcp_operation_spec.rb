@@ -60,6 +60,23 @@ describe 'Cod TCP' do
         client.get.should == :answer
       end 
     end
-    
+    describe 'TCP connection is read before it is written to' do
+      it "should not throw EOFError" do
+        begin
+          timeout(0.01) do
+            client.get
+          end
+        rescue Timeout::Error
+        end
+      end 
+      it "assumptions" do
+        server = TCPServer.new('localhost', 12445)
+        client = TCPSocket.new('localhost', 12445)
+        
+        # chan = server.accept
+        
+        Marshal.load(client)
+      end 
+    end
   end
 end
