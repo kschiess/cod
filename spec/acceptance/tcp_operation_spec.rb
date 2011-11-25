@@ -63,19 +63,15 @@ describe 'Cod TCP' do
     describe 'TCP connection is read before it is written to' do
       it "should not throw EOFError" do
         begin
+          # NOTE: Somewhat important for this test - the server hasn't been
+          # instantiated and therefore no listening socket exists at this
+          # point. This means that client will have no socket embedded -> 
+          # hence the endless wait.
           timeout(0.01) do
             client.get
           end
         rescue Timeout::Error
         end
-      end 
-      it "assumptions" do
-        server = TCPServer.new('localhost', 12445)
-        client = TCPSocket.new('localhost', 12445)
-        
-        # chan = server.accept
-        
-        Marshal.load(client)
       end 
     end
   end
