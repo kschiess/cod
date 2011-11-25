@@ -54,11 +54,15 @@ module Cod
       # Reads one message from the socket if possible. 
       #
       def read(serializer)
-        if @socket
-          return serializer.de(@socket)
-        end
+        return serializer.de(@socket) if @socket
         
-        raise EOFError  # or so
+        # assert: @socket is still nil, because no connection could be made. 
+        # Try to make one
+        loop do
+          try_connect
+          return serializer.de(@socket) if @socket
+          sleep 0.01
+        end
       end
 
       # Closes the connection and stops reconnection. 
