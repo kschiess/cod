@@ -28,8 +28,7 @@ module Cod::Beanstalk
       
       id, msg = rest
       
-      # We delete the job immediately, since we're being used as a channel, 
-      # not as a queue:
+      # We delete the job immediately, since #get should be definitive.
       answer, *rest = @transport.interact([:delete, id])
       fail ":delete fails, #{answer.inspect}" unless answer == :deleted
       
