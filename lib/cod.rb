@@ -23,14 +23,16 @@
 # most of the tricky stuff!
 #
 module Cod
-  # Creates a pipe connection that is visible to this process and its children. 
+  # Creates a pipe connection that is visible to this process and its
+  # children. (see Cod::Pipe)
   #
   def pipe
     Cod::Pipe.new
   end
   module_function :pipe
   
-  # Creates a tcp connection to the destination and returns a channel for it. 
+  # Creates a tcp connection to the destination and returns a channel for it.
+  # (see Cod::TcpClient)
   #
   def tcp(destination, serializer=nil)
     Cod::TcpClient.new(
@@ -39,30 +41,30 @@ module Cod
   end
   module_function :tcp
   
-  # Creates a tcp listener on bind_to and returns a channel for it. 
+  # Creates a tcp listener on bind_to and returns a channel for it. (see
+  # Cod::TcpServer)
   #
   def tcp_server(bind_to)
     Cod::TcpServer.new(bind_to)
   end
   module_function :tcp_server
 
-  # Creates a channel based on the beanstalkd messaging queue. 
+  # Creates a channel based on the beanstalkd messaging queue. (see
+  # Cod::Beanstalk::Channel)
   # 
   def beanstalk(tube_name, server='localhost:11300')
     Cod::Beanstalk::Channel.new(tube_name, server)
   end
   module_function :beanstalk
 
-  # Creates and returns a service (server process). 
-  # See Cod::Service for description. 
+  # Creates and returns a service (server process). (see Cod::Service)
   #
   def service(*args)
     Cod::Service.new(*args)
   end
   module_function :service
 
-  # Creates and returns a service client. 
-  # See Cod::Service::Client for description. 
+  # Creates and returns a service client. (see Cod::Service and Cod::Service::Client)
   #
   def client(*args)
     Cod::Service::Client.new(*args)
