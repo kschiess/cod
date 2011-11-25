@@ -52,8 +52,8 @@ module Cod
   # Creates a channel based on the beanstalkd messaging queue. (see
   # Cod::Beanstalk::Channel)
   # 
-  def beanstalk(tube_name, server='localhost:11300')
-    Cod::Beanstalk::Channel.new(tube_name, server)
+  def beanstalk(tube_name, server=nil)
+    Cod::Beanstalk::Channel.new(tube_name, server||'localhost:11300')
   end
   module_function :beanstalk
 
