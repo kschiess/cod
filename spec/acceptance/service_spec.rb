@@ -64,4 +64,17 @@ describe "Cod::Service" do
       end
     end
   end
+  
+  describe 'exception handling' do
+    describe '#retry_in(seconds, max_retries)' do
+      it "should call the service again in n seconds" 
+      it "should retry a few times" 
+    end
+    describe '#retry(max_retries)' do
+      it "should retry a few times" 
+    end
+    describe '#bury' do
+      it "should bury the request" 
+    end
+  end
 end

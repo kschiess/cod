@@ -43,5 +43,47 @@ describe 'Cod TCP' do
     it "handles a socket that already exists (bind error)"
     it "handles when the server socket isn't listening (yet)"
     it "handles interruption of the connection" 
+    
+    describe 'TCP connection closed before answer is read' do
+      let!(:server) { Cod.tcp_server('localhost:12345') }
+      let!(:client) { Cod.tcp('localhost:12345') }
+
+      after(:each) { 
+        server.close rescue nil
+        client.close rescue nil
+      }
+
+      before(:each) { 
+        client.put :test
+        msg, chan = server.get_ext
+
+        msg.should == :test
+        chan.put :answer
+
+        # Closing the answer channel before it is read from
+        chan.close
+      }
+
+      it "should not throw EOF error" do
+        client.get.should == :answer
+      end 
+      it "should work on the underlaying level" do
+        server = TCPServer.new('localhost', 11300)
+        client = TCPSocket.new('localhost', 11300)
+
+        chan = server.accept
+        
+        answer_chan = chan.dup
+        answer_chan.write('a'*10)
+        answer_chan.close
+
+        client.read_nonblock(100).should == 'a'*10
+        
+        chan.close
+        server.close
+        client.close
+      end 
+    end
+    
   end
 end

@@ -85,6 +85,9 @@ module Cod
       def write(buffer)
         @socket.write(buffer)
       end
+      def close
+        @socket.close
+      end
     end
     
     def initialize(destination, serializer)
