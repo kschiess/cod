@@ -4,10 +4,10 @@ describe "Beanstalk transport" do
   include BeanstalkHelper
   
   describe 'construction through the Cod module' do
-    it "takes one argument" do
+    it "takes one argument (tube_name)" do
       Cod.beanstalk('tube_name').close
     end 
-    it "and optionally the server" do
+    it "and optionally the server url" do
       Cod.beanstalk('tube_name', 'localhost:11300').close
     end
   end
