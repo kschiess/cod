@@ -7,7 +7,7 @@ module Cod
   # hashes during IO.select. The API user only ever gets to see the resulting
   # hash.
   #
-  class SelectGroup
+  class SelectGroup # :nodoc:
     def initialize(hash_or_value)
       if hash_or_value.respond_to?(:each)
         @h = hash_or_value

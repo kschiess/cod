@@ -49,11 +49,11 @@ module Cod::Beanstalk
     end
     
     # ---------------------------------------------------------- serialization
-    def _dump(level)
+    def _dump(level) # :nodoc:
       Marshal.dump(
         [@tube_name, @server_url])
     end
-    def self._load(str)
+    def self._load(str) # :nodoc:
       tube_name, server_url = Marshal.load(str)
       Cod.beanstalk(tube_name, server_url)
     end

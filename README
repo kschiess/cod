@@ -6,6 +6,8 @@ of Ruby objects a breeze.
 Currently, I am rewriting all of the code. This is why the master branch on 
 github hasn't got all the features that are in the released version. 
 
+A good place to start is the documentation for the Cod module.
+
 SYNOPSIS
 
   # Cod's basic elements are channels, unidirectional communication links. 

@@ -46,7 +46,7 @@ module Cod
     # basically an array instance; these methods add some calling safety and
     # convenience. 
     #
-    module SplitMethods
+    module SplitMethods # :nodoc:
       def read; first; end
       def write; last; end
     end
@@ -164,10 +164,10 @@ module Cod
     end
 
     # ---------------------------------------------------------- serialization
-    def _dump(depth)
+    def _dump(depth) # :nodoc:
       object_id.to_s
     end
-    def self._load(string)
+    def self._load(string) # :nodoc:
       ObjectSpace._id2ref(Integer(string))
     end
   private

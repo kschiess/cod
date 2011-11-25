@@ -17,7 +17,7 @@ module Cod
   #   # Will cleanly shutdown background threads, but not finish work. 
   #   queue.shutdown
   # 
-  class WorkQueue
+  class WorkQueue # :nodoc:
     def initialize
       # NOTE: This is an array that is protected by careful coding, rather
       # than a mutex. Queue would be right, but Rubys GIL will interfere with
@@ -102,7 +102,7 @@ module Cod
   # A section of code that is entered only once. Instead of blocking threads
   # that are waiting to enter, it just returns nil.
   #
-  class ExclusiveSection
+  class ExclusiveSection # :nodoc:
     def initialize
       @mutex = Mutex.new
       @threads_in_block = 0

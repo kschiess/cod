@@ -69,7 +69,7 @@ module Cod
       end
     end
     
-    class Connection
+    class Connection # :nodoc:
       def initialize(socket)
         @socket = socket
       end
@@ -149,12 +149,12 @@ module Cod
     # the other end (the deserializing end). What the deserializing code does
     # with this is his problem. 
     #
-    OtherEnd = Struct.new(:destination)
+    OtherEnd = Struct.new(:destination) # :nodoc:
 
-    def _dump(level)
+    def _dump(level) # :nodoc:
       @destination
     end
-    def self._load(params)
+    def self._load(params) # :nodoc:
       # Instead of a tcp client (no way to construct one at this point), we'll
       # insert a kind of marker in the object stream that will be replaced 
       # with a valid client later on. (hopefully)
