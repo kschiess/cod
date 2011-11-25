@@ -3,6 +3,17 @@ require 'stringio'
 
 module Cod
   # A cod channel based on IO.pipe. 
+  #
+  # NOTE: If you embed Cod::Pipe channels into your messages, Cod will insert
+  # the object id of that channel into the byte stream that is transmitted. On
+  # receiving such an object id (a machine pointer), Cod will try to
+  # reconstruct the channel that was at the origin of the id. This can
+  # obviously only work if you have such an object in your address space.
+  # There are multiple ways to construct such a situation. Say you want to
+  # send a pipe channel to one of your (forked) childs: This will work if you
+  # create the channel before forking the child, since master and child will
+  # share all objects that were available before the fork. 
+  #
   class Pipe
     attr_reader :pipe
     attr_reader :serializer
@@ -93,10 +104,6 @@ module Cod
       }
     end
     
-    # Writes a message object to the pipe. You can specify a custom object
-    # serializer (including a string passthrough if that is what you want)
-    # when constructing the pipe. 
-    #
     # Using #put on a pipe instance will close the other pipe end. Subsequent
     # #get will raise a Cod::InvalidOperation. 
     #
@@ -110,8 +117,6 @@ module Cod
         serializer.en(obj))
     end
     
-    # Reads a message object from the pipe. 
-    #
     # Using #get on a pipe instance will close the other pipe end. Subsequent
     # #put will receive a Cod::InvalidOperation.
     #
@@ -160,6 +165,7 @@ module Cod
       not pipe.w.nil?
     end
 
+    # ---------------------------------------------------------- serialization
     def _dump(depth)
       object_id.to_s
     end
