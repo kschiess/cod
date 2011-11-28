@@ -9,6 +9,9 @@ module Cod
       @serializer = serializer
       @destination = destination
 
+      # TcpClient handles two cases: Construction via an url (destination is a
+      # string) and construction via a connection that has been
+      # preestablished (destination is a socket):
       if destination.respond_to?(:read)
         # destination seems to be a socket, wrap it with Connection
         @connection = Connection.new(destination)
