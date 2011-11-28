@@ -53,9 +53,18 @@ describe "Beanstalk transport" do
       end
       it "releases the message when an exception occurs" do
         expect {
-          channel.try_get { |msg, control| raise Exception }
+          channel.try_get { |msg, control| 
+            raise Exception }
         }.to raise_error
         channel.get.should == :test
+        channel.get.should == :other
+      end  
+      it "doesn't release when it cannot (command already issued)" do
+        expect {
+          channel.try_get { |msg, control| 
+            control.delete
+            raise Exception }
+        }.to raise_error
         channel.get.should == :other
       end  
     end

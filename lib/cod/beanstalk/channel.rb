@@ -51,7 +51,7 @@ module Cod::Beanstalk
       begin
         retval = yield(deserialize(msg), control)
       rescue Exception
-        control.release
+        control.release unless control.command_given?
         raise
       ensure
         control.delete unless control.command_given?
