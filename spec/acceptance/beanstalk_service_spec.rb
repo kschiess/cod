@@ -14,7 +14,7 @@ describe Cod::Beanstalk::Service do
   let(:service) { service_channel.service }
   
   describe 'exception handling' do
-    describe '#retry_in(seconds, max_retries)' do
+    describe '#retry_in(seconds)' do
       it "should call the service again in n seconds" do
         client.notify(:request)
         
@@ -25,10 +25,9 @@ describe Cod::Beanstalk::Service do
           fail "Test took too long."
         end
       end
-      it "should retry a few times" 
     end
-    describe '#retry(max_retries)' do
-      it "should retry a few times" 
+    describe '#retry' do
+      it "should retry" 
     end
     describe '#bury' do
       it "should bury the request" 
