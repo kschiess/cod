@@ -37,12 +37,12 @@ describe "Beanstalk transport" do
         }
         channel.get.should == :test
       end 
-      xit "consumes messages at the end of the block" do
+      it "consumes messages at the end of the block" do
         m = channel.try_get { |msg, control| msg }
         m.should == :test
         channel.get.should == :other
       end 
-      xit "allows release with delay" do
+      it "allows release with delay" do
         channel.try_get { |msg, control|
           msg.should == :test
           # Releases the message, not consuming it.

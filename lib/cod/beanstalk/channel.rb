@@ -61,6 +61,13 @@ module Cod::Beanstalk
         @command_given = true
         @channel.bs_release(@msg_id)
       end
+      def release_with_delay(seconds)
+        fail ArgumentError, "Only integer number of seconds are allowed." \
+          unless seconds.floor == seconds
+        
+        @command_given = true
+        @channel.bs_release_with_delay(@msg_id, seconds)
+      end
     end
     
     def try_get 
@@ -102,6 +109,9 @@ module Cod::Beanstalk
     end
     def bs_release(msg_id)
       bs_command([:release, msg_id, JOB_PRIORITY, 0], :released)
+    end
+    def bs_release_with_delay(msg_id, seconds)
+      bs_command([:release, msg_id, JOB_PRIORITY, seconds], :released)
     end
   private 
     def bs_reserve
