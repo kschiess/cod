@@ -50,7 +50,14 @@ describe "Beanstalk transport" do
         }
         channel.get.should == :other
         channel.get.should == :test
-      end 
+      end
+      it "releases the message when an exception occurs" do
+        expect {
+          channel.try_get { |msg, control| raise Exception }
+        }.to raise_error
+        channel.get.should == :test
+        channel.get.should == :other
+      end  
     end
     
     context "and the 'other' tube" do
