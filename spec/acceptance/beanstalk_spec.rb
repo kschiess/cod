@@ -27,7 +27,32 @@ describe "Beanstalk transport" do
 
       channel.get.should == "\r\n"
     end
-
+    describe '#try_get' do
+      before(:each) { channel.put :test; channel.put :other }
+      it "reserves messages tentatively (control.release)" do
+        channel.try_get { |msg, control|
+          msg.should == :test
+          # Releases the message, not consuming it.
+          control.release
+        }
+        channel.get.should == :test
+      end 
+      xit "consumes messages at the end of the block" do
+        m = channel.try_get { |msg, control| msg }
+        m.should == :test
+        channel.get.should == :other
+      end 
+      xit "allows release with delay" do
+        channel.try_get { |msg, control|
+          msg.should == :test
+          # Releases the message, not consuming it.
+          control.release_with_delay(1)
+        }
+        channel.get.should == :other
+        channel.get.should == :test
+      end 
+    end
+    
     context "and the 'other' tube" do
       before(:each) { clear_tube('other') }
       after(:each) { other.close }

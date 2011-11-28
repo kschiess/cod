@@ -9,6 +9,8 @@ module Cod::Beanstalk
   # other end. This behaviour is useful for Cod::Service.
   #
   class Channel < Cod::Channel
+    JOB_PRIORITY = 0
+    
     def initialize(tube_name, server_url)
       @tube_name, @server_url = tube_name, server_url
     
@@ -17,7 +19,7 @@ module Cod::Beanstalk
     end
     
     def put(msg)
-      pri   = 1
+      pri   = JOB_PRIORITY
       delay = 0
       ttr   = 120
       body = @body_serializer.en(msg)
@@ -26,21 +28,57 @@ module Cod::Beanstalk
       fail "#put fails, #{answer.inspect}" unless answer == :inserted
     end
   
-    def get(opts={})
-      answer, *rest = @transport.interact([:reserve])
-      fail ":reserve fails, #{answer.inspect}" unless answer == :reserved
-      
-      id, msg = rest
+    def get
+      id, msg = bs_reserve
       
       # We delete the job immediately, since #get should be definitive.
-      answer, *rest = @transport.interact([:delete, id])
-      fail ":delete fails, #{answer.inspect}" unless answer == :deleted
-      
-      @body_serializer.de(StringIO.new(msg))
+      bs_delete(id)
+
+      deserialize(msg)
     end
   
     def close
       @transport.close
+    end
+    
+    # -------------------------------------------------------- queue interface 
+    class Control
+      def initialize(msg_id, channel)
+        @msg_id = msg_id
+        @channel = channel
+        @command_given = false
+      end
+        
+      def command_given?
+        @command_given
+      end
+      
+      def delete
+        @command_given = true
+        @channel.bs_delete(@msg_id)
+      end
+      def release
+        @command_given = true
+        @channel.bs_release(@msg_id)
+      end
+    end
+    
+    def try_get 
+      fail "No block given to #try_get" unless block_given?
+      
+      id, msg = bs_reserve
+      control = Control.new(id, self)
+      
+      begin
+        retval = yield(deserialize(msg), control)
+      rescue Exception
+        control.release
+        raise
+      ensure
+        control.delete unless control.command_given?
+      end
+      
+      return retval
     end
     
     def to_read_fds
@@ -57,8 +95,30 @@ module Cod::Beanstalk
       tube_name, server_url = Marshal.load(str)
       Cod.beanstalk(tube_name, server_url)
     end
-    
+
+    # ----------------------------------------------------- beanstalk commands
+    def bs_delete(msg_id)
+      bs_command([:delete, msg_id], :deleted)
+    end
+    def bs_release(msg_id)
+      bs_command([:release, msg_id, JOB_PRIORITY, 0], :released)
+    end
   private 
+    def bs_reserve
+      answer, *rest = bs_command([:reserve], :reserved)
+      rest
+    end
+    def bs_command(cmd, good_answer)
+      answer, *rest = @transport.interact(cmd)
+      fail "#{cmd.first.inspect} fails, #{answer.inspect}" \
+        unless answer == good_answer
+      [answer, *rest]
+    end
+    
+    def deserialize(msg)
+      @body_serializer.de(StringIO.new(msg))
+    end
+  
     def connection(server_url, tube_name)
       conn = Cod.tcp(server_url, Serializer.new)
 
