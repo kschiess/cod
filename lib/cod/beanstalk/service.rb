@@ -28,6 +28,10 @@ module Cod::Beanstalk
             
         @channel_control.release_with_delay(seconds)
       end
+      
+      def retry
+        @channel_control.release
+      end
     end
     
     class Client < Cod::Service::Client

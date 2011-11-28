@@ -27,7 +27,16 @@ describe Cod::Beanstalk::Service do
       end
     end
     describe '#retry' do
-      it "should retry" 
+      it "should retry" do
+        client.notify(:request)
+        
+        begin
+          service.one { |request, control| control.retry }
+          service.one { |request| request.should == :request }
+        rescue Timeout::Error
+          fail "Test took too long."
+        end
+      end
     end
     describe '#bury' do
       it "should bury the request" 
