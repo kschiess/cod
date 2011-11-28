@@ -41,8 +41,28 @@ module Cod::Beanstalk
       @transport.close
     end
     
-    # -------------------------------------------------------- queue interface 
-    class Control
+    # -------------------------------------------------------- queue interface     
+    def try_get 
+      fail "No block given to #try_get" unless block_given?
+      
+      id, msg = bs_reserve
+      control = Control.new(id, self)
+      
+      begin
+        retval = yield(deserialize(msg), control)
+      rescue Exception
+        control.release
+        raise
+      ensure
+        control.delete unless control.command_given?
+      end
+      
+      return retval
+    end
+    
+    # Holds a message id of a reserved message. Allows several commands to be
+    # executed on the message. See #try_get.
+    class Control # :nodoc:
       def initialize(msg_id, channel)
         @msg_id = msg_id
         @channel = channel
@@ -70,23 +90,6 @@ module Cod::Beanstalk
       end
     end
     
-    def try_get 
-      fail "No block given to #try_get" unless block_given?
-      
-      id, msg = bs_reserve
-      control = Control.new(id, self)
-      
-      begin
-        retval = yield(deserialize(msg), control)
-      rescue Exception
-        control.release
-        raise
-      ensure
-        control.delete unless control.command_given?
-      end
-      
-      return retval
-    end
     
     def to_read_fds
       fail "Cod.select not supported with beanstalkd channels.\n"+
@@ -104,13 +107,13 @@ module Cod::Beanstalk
     end
 
     # ----------------------------------------------------- beanstalk commands
-    def bs_delete(msg_id)
+    def bs_delete(msg_id) # :nodoc:
       bs_command([:delete, msg_id], :deleted)
     end
-    def bs_release(msg_id)
+    def bs_release(msg_id) # :nodoc:
       bs_command([:release, msg_id, JOB_PRIORITY, 0], :released)
     end
-    def bs_release_with_delay(msg_id, seconds)
+    def bs_release_with_delay(msg_id, seconds) # :nodoc:
       bs_command([:release, msg_id, JOB_PRIORITY, seconds], :released)
     end
   private 
