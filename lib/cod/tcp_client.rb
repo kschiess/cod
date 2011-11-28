@@ -72,6 +72,13 @@ module Cod
       fail "A tcp client cannot be a service."
     end
     def client
+      # NOTE: Normally, it doesn't make sense to ask the client channel for
+      # something for a service connection, since the service needs to know
+      # where to send requests in addition to knowing where to receive
+      # answers. In the case of sockets, this is different: The service will
+      # send its answers back the same way it got the requests from, so this
+      # is really ok:
+      #
       Service::Client.new(self, self)
     end
 
