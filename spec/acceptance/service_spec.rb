@@ -32,6 +32,7 @@ describe "Cod::Service" do
       close { server_sock.close; client_sock.close }
     },
     transport(:beanstalk) {
+      %w(server answer).each { |tube| clear_tube(tube) }
       server_chan = Cod.beanstalk('server')
       client_chan = Cod.beanstalk('answer')
       

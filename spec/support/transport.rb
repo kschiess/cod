@@ -1,5 +1,9 @@
+require 'support/beanstalk'
+
 module TransportHelper
   Transport = Struct.new(:name, :init_block) do
+    include BeanstalkHelper
+    
     def init
       instance_eval(&init_block)
     end
