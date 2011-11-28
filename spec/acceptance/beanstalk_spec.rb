@@ -67,6 +67,11 @@ describe "Beanstalk transport" do
         }.to raise_error
         channel.get.should == :other
       end  
+      it "buries messages" do
+        channel.try_get { |msg, control| control.bury }
+        # Currently no way to look at buried jobs: 
+        channel.get.should == :other
+      end 
     end
     
     context "and the 'other' tube" do

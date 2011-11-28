@@ -101,6 +101,10 @@ module Cod::Beanstalk
         @command_given = true
         @channel.bs_release_with_delay(@msg_id, seconds)
       end
+      def bury
+        @command_given = true
+        @channel.bs_bury(@msg_id)
+      end
     end
         
     # ---------------------------------------------------------- serialization
@@ -122,6 +126,11 @@ module Cod::Beanstalk
     end
     def bs_release_with_delay(msg_id, seconds) # :nodoc:
       bs_command([:release, msg_id, JOB_PRIORITY, seconds], :released)
+    end
+    def bs_bury(msg_id)
+      # NOTE: Why I need to assign a priority when burying I fail to
+      # understand. Like a priority for rapture?
+      bs_command([:bury, msg_id, JOB_PRIORITY], :buried)
     end
   private 
     def bs_reserve

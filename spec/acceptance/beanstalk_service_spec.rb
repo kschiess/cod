@@ -39,7 +39,17 @@ describe Cod::Beanstalk::Service do
       end
     end
     describe '#bury' do
-      it "should bury the request" 
+      it "should bury the request" do
+        client.notify(:request)
+        
+        begin
+          service.one { |request, control| control.bury }
+          timeout(0.1) do
+            service.one { |request| }
+          end
+        rescue Timeout::Error
+        end
+      end
     end
   end
 end
