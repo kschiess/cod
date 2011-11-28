@@ -40,6 +40,19 @@ module Cod
       get
     end
     
+    # Produces a service that has this channel as communication point. 
+    #
+    def service
+      abstract_method_error
+    end
+    
+    # Produces a service client that connects to this channel and receives
+    # service answers to the channel indicated by answers_to.
+    #
+    def client(answers_to)
+      abstract_method_error
+    end
+    
   private 
     def abstract_method_error
       fail "Abstract method called"
