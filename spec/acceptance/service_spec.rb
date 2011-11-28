@@ -12,7 +12,7 @@ describe "Cod::Service" do
 
       block.call(server)
     end
-    self.class.after(:each) { Process.kill('KILL', pid); Process.wait(pid) }
+    self.class.after(:each) { Process.kill('QUIT', pid); Process.wait(pid) }
   end
 
   [
