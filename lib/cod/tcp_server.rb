@@ -53,6 +53,9 @@ module Cod
     def service
       Service.new(self)
     end
+    # NOTE: It is really more convenient to just construct a Cod.tcp_client 
+    # and ask that for a client object. In the case of TCP, this is enough. 
+    #
     def client(answers_to)
       Service::Client.new(answers_to, answers_to)
     end
