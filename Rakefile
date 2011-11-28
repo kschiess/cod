@@ -8,6 +8,13 @@ RSpec::Core::RakeTask.new
 
 task :default => :spec
 
+task :stats do
+  %w(lib spec).each do |path|
+    printf "%10s:", path
+    system %Q(find #{path} -name "*.rb" | xargs wc -l | grep total)
+  end
+end
+
 require 'sdoc'
 
 # Generate documentation
