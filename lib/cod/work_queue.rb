@@ -86,7 +86,7 @@ module Cod
       Thread.current.abort_on_exception = true
       
       loop do
-        Thread.pass
+        sleep 0.01
         
         try_work
 
