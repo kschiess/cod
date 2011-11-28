@@ -5,6 +5,96 @@ module Cod
   # end. 
   #
   class TcpClient < Channel
+    def initialize(destination, serializer)
+      @serializer = serializer
+      @destination = destination
+
+      if destination.respond_to?(:read)
+        # destination seems to be a socket, wrap it with Connection
+        @connection = Connection.new(destination)
+      else
+        @connection = RobustConnection.new(destination)
+      end
+
+      @work_queue = WorkQueue.new
+
+      # The predicate for allowing sends: Is the connection up?
+      @work_queue.predicate {
+        # NOTE This will not be called unless we have some messages to send,
+        # so no useless connections are made
+        @connection.try_connect
+        @connection.established?
+      }
+    end
+    
+    # Closes all underlying connections. You should only call this if you
+    # don't want to use the channel again, since it will also stop
+    # reconnection attempts. 
+    #
+    def close
+      @work_queue.shutdown
+      @connection.close
+    end
+
+    # Sends an object to the other end of the channel, if it is connected. 
+    # If it is not connected, objects sent will queue up and once the internal
+    # storage reaches the high watermark, they will be dropped silently. 
+    #
+    # Example: 
+    #   channel.put :object
+    #   # Really, any Ruby object that the current serializer can turn into 
+    #   # a string!
+    #
+    def put(obj)
+      # TODO high watermark check
+      # NOTE: predicate will call #try_connect
+      @work_queue.schedule {
+        send(obj)
+      }
+      
+      @work_queue.try_work
+    end
+    
+    # Receives a message. opts may contain various options, see below. 
+    # Options include: 
+    #
+    def get(opts={})
+      @connection.try_connect
+      @connection.read(@serializer)
+    end
+
+    # --------------------------------------------------------- service/client
+    
+    def service
+      fail "A tcp client cannot be a service."
+    end
+    def client
+      Service::Client.new(self, self)
+    end
+
+    # ---------------------------------------------------------- serialization 
+    
+    # A small structure that is constructed for a serialized tcp client on 
+    # the other end (the deserializing end). What the deserializing code does
+    # with this is his problem. 
+    #
+    OtherEnd = Struct.new(:destination) # :nodoc:
+
+    def _dump(level) # :nodoc:
+      @destination
+    end
+    def self._load(params) # :nodoc:
+      # Instead of a tcp client (no way to construct one at this point), we'll
+      # insert a kind of marker in the object stream that will be replaced 
+      # with a valid client later on. (hopefully)
+      OtherEnd.new(params)
+    end
+  private
+    def send(msg)
+      @connection.write(
+        @serializer.en(msg))
+    end
+
     # A connection that can be down. This allows elegant handling of
     # reconnecting and delaying connections. 
     #
@@ -97,85 +187,6 @@ module Cod
       def close
         @socket.close
       end
-    end
-    
-    def initialize(destination, serializer)
-      @serializer = serializer
-      @destination = destination
-
-      if destination.respond_to?(:read)
-        # destination seems to be a socket, wrap it with Connection
-        @connection = Connection.new(destination)
-      else
-        @connection = RobustConnection.new(destination)
-      end
-
-      @work_queue = WorkQueue.new
-
-      # The predicate for allowing sends: Is the connection up?
-      @work_queue.predicate {
-        # NOTE This will not be called unless we have some messages to send,
-        # so no useless connections are made
-        @connection.try_connect
-        @connection.established?
-      }
-    end
-    
-    # Closes all underlying connections. You should only call this if you 
-    # don't want to use the channel again, since it will also stop reconnection
-    # attempts. 
-    #
-    def close
-      @work_queue.shutdown
-      @connection.close
-    end
-
-    # Sends an object to the other end of the channel, if it is connected. 
-    # If it is not connected, objects sent will queue up and once the internal
-    # storage reaches the high watermark, they will be dropped silently. 
-    #
-    # Example: 
-    #   channel.put :object
-    #   # Really, any Ruby object that the current serializer can turn into 
-    #   # a string!
-    #
-    def put(obj)
-      # TODO high watermark check
-      # NOTE: predicate will call #try_connect
-      @work_queue.schedule {
-        send(obj)
-      }
-      
-      @work_queue.try_work
-    end
-    
-    # Receives a message. opts may contain various options, see below. 
-    # Options include: 
-    #
-    def get(opts={})
-      @connection.try_connect
-      @connection.read(@serializer)
-    end
-
-    # A small structure that is constructed for a serialized tcp client on 
-    # the other end (the deserializing end). What the deserializing code does
-    # with this is his problem. 
-    #
-    OtherEnd = Struct.new(:destination) # :nodoc:
-
-    def _dump(level) # :nodoc:
-      @destination
-    end
-    def self._load(params) # :nodoc:
-      # Instead of a tcp client (no way to construct one at this point), we'll
-      # insert a kind of marker in the object stream that will be replaced 
-      # with a valid client later on. (hopefully)
-      OtherEnd.new(params)
-    end
-  private
-    def send(msg)
-      @connection.write(
-        @serializer.en(msg))
     end
   end
 end

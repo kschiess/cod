@@ -14,29 +14,29 @@ describe "Cod::Service" do
     end
     self.class.after(:each) { Process.wait(pid) }
   end
-  
+
   [
     transport(:pipe) {
       server_pipe, client_pipe = Cod.pipe, Cod.pipe
       
-      server { Cod.service(server_pipe) }
-      client { Cod.client(server_pipe, client_pipe) }
+      server { server_pipe.service }
+      client { server_pipe.client(client_pipe) }
       close { server_pipe.close; client_pipe.close }
     },
     transport(:tcp) {
       server_sock = Cod.tcp_server('localhost:12345')
       client_sock = Cod.tcp('localhost:12345')
       
-      server { Cod.service(server_sock) }
-      client { Cod.client(client_sock) }
+      server { server_sock.service }
+      client { server_sock.client(client_sock) }
       close { server_sock.close; client_sock.close }
     },
     transport(:beanstalk) {
       server_chan = Cod.beanstalk('server')
       client_chan = Cod.beanstalk('answer')
       
-      server { Cod.service(server_chan) }
-      client { Cod.client(server_chan, client_chan) }
+      server { server_chan.service }
+      client { server_chan.client(client_chan) }
       close { server_chan.close; client_chan.close }
     }
   ].each do |transport|
@@ -72,17 +72,5 @@ describe "Cod::Service" do
       end
     end
   end
-  
-  describe 'exception handling' do
-    describe '#retry_in(seconds, max_retries)' do
-      it "should call the service again in n seconds" 
-      it "should retry a few times" 
-    end
-    describe '#retry(max_retries)' do
-      it "should retry a few times" 
-    end
-    describe '#bury' do
-      it "should bury the request" 
-    end
-  end
+
 end

@@ -41,6 +41,19 @@ module Cod::Beanstalk
       @transport.close
     end
     
+    def to_read_fds
+      fail "Cod.select not supported with beanstalkd channels.\n"+
+        "To support this, we will have to extend the beanstalkd protocol."
+    end
+    
+    # --------------------------------------------------------- service/client
+    def service
+      Service.new(self)
+    end
+    def client(answers_to)
+      Service::Client.new(self, answers_to)
+    end
+    
     # -------------------------------------------------------- queue interface     
     def try_get 
       fail "No block given to #try_get" unless block_given?
@@ -89,13 +102,7 @@ module Cod::Beanstalk
         @channel.bs_release_with_delay(@msg_id, seconds)
       end
     end
-    
-    
-    def to_read_fds
-      fail "Cod.select not supported with beanstalkd channels.\n"+
-        "To support this, we will have to extend the beanstalkd protocol."
-    end
-    
+        
     # ---------------------------------------------------------- serialization
     def _dump(level) # :nodoc:
       Marshal.dump(

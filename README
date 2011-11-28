@@ -18,8 +18,8 @@ SYNOPSIS
   pipe.get # => :some_ruby_object   # Process B
   
   # Or use them as bricks for more: 
-  service = Cod::Service.new(beanstalk)
-  client = Cod::Client.new(beanstalk, pipe)
+  service = beanstalk.service
+  client  = beanstalk.client(pipe)
   
   service.one { |msg| :response }               # Process A
   client.call :ruby_object    # => :response    # Process B

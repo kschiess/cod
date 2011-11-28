@@ -163,6 +163,15 @@ module Cod
       not pipe.w.nil?
     end
 
+    # --------------------------------------------------------- service/client
+    
+    def service
+      Service.new(self)
+    end
+    def client(answers_to)
+      Service::Client.new(self, answers_to)
+    end
+
     # ---------------------------------------------------------- serialization
     def _dump(depth) # :nodoc:
       object_id.to_s

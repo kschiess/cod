@@ -57,21 +57,6 @@ module Cod
   end
   module_function :beanstalk
 
-  # Creates and returns a service (server process). (see Cod::Service)
-  #
-  def service(*args)
-    Cod::Service.new(*args)
-  end
-  module_function :service
-
-  # Creates and returns a service client. (see Cod::Service and Cod::Service::Client)
-  #
-  def client(*args)
-    Cod::Service::Client.new(*args)
-  end
-  module_function :client
-
-
   # Indicates that the given channel is write only. This gets raised on 
   # operations like #put.
   #
@@ -103,6 +88,6 @@ require 'cod/pipe'
 require 'cod/tcp_client'
 require 'cod/tcp_server'
 
+require 'cod/service'
 require 'cod/beanstalk'
 
-require 'cod/service'

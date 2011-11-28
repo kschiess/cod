@@ -48,6 +48,15 @@ module Cod
       @client_sockets
     end
 
+    # --------------------------------------------------------- service/client
+    
+    def service
+      Service.new(self)
+    end
+    def client(answers_to)
+      Service::Client.new(answers_to, answers_to)
+    end
+
   private
     def _get(opts)
       loop do
