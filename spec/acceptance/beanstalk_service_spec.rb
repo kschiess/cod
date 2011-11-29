@@ -44,12 +44,25 @@ describe Cod::Beanstalk::Service do
         
         begin
           service.one { |request, control| control.bury }
-          timeout(0.1) do
+          timeout(0.01) do
             service.one { |request| }
           end
         rescue Timeout::Error
         end
       end
+    end
+    describe '#delete' do
+      it "should delete the request" do
+        client.notify(:request)
+        
+        begin
+          service.one { |request, control| control.delete }
+          timeout(0.01) do
+            service.one { |request| }
+          end
+        rescue Timeout::Error
+        end
+      end 
     end
   end
 end

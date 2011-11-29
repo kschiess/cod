@@ -34,6 +34,13 @@ module Cod::Beanstalk
       def bury
         @channel_control.bury
       end
+      def delete
+        @channel_control.delete
+      end
+      
+      def command_issued?
+        @channel_control.command_given?
+      end
     end
     
     class Client < Cod::Service::Client
