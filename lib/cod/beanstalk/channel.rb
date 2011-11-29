@@ -76,6 +76,8 @@ module Cod::Beanstalk
     # Holds a message id of a reserved message. Allows several commands to be
     # executed on the message. See #try_get.
     class Control # :nodoc:
+      attr_reader :msg_id
+      
       def initialize(msg_id, channel)
         @msg_id = msg_id
         @channel = channel

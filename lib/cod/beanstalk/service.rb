@@ -41,6 +41,10 @@ module Cod::Beanstalk
       def command_issued?
         @channel_control.command_given?
       end
+      
+      def msg_id
+        @channel_control.msg_id
+      end
     end
     
     class Client < Cod::Service::Client

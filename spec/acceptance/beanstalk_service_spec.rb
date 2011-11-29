@@ -13,6 +13,20 @@ describe Cod::Beanstalk::Service do
   let(:client) { service_channel.client(answer_channel) }
   let(:service) { service_channel.service }
   
+  describe 'control parameter' do
+    it "has a msg_id accessor" do
+      client.notify(:request)
+      service.one { |rq, control| control.msg_id.should > 0 }
+    end
+    it "has a command_issued? method" do
+      client.notify(:request)
+      service.one { |rq, control| 
+        control.command_issued?.should == false
+        control.delete
+        control.command_issued?.should == true }
+    end  
+  end
+  
   describe 'exception handling' do
     describe '#retry_in(seconds)' do
       it "should call the service again in n seconds" do
