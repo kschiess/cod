@@ -19,7 +19,7 @@ require 'sdoc'
 
 # Generate documentation
 RDoc::Task.new do |rdoc|
-  rdoc.title    = "parslet - construction of parsers made easy"
+  rdoc.title    = "cod - IPC made really simple."
   rdoc.options << '--line-numbers'
   rdoc.options << '--fmt' << 'shtml' # explictly set shtml generator
   rdoc.template = 'direct' # lighter template used on railsapi.com
