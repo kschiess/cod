@@ -16,35 +16,6 @@ module Cod
     attr_reader :pipe
     attr_reader :serializer
     
-    IOPair = Struct.new(:r, :w) do
-      # Performs a deep copy of the structure. 
-      def initialize_copy(other)
-        super
-        self.r = other.r.dup if other.r
-        self.w = other.w.dup if other.w
-      end
-      def write(buf)
-        close_r
-        raise Cod::ReadOnlyChannel unless w
-        w.write(buf)
-      end
-      def read(serializer)
-        serializer.de(r)
-      end
-      def close
-        close_r
-        close_w
-      end
-      def close_r
-        r.close if r
-        self.r = nil
-      end
-      def close_w
-        w.close if w
-        self.w = nil
-      end
-    end
-
     # A few methods that a pipe split must answer to. The split itself is 
     # basically an array instance; these methods add some calling safety and
     # convenience. 
@@ -57,7 +28,7 @@ module Cod
     def initialize(serializer=nil)
       super
       @serializer = serializer || SimpleSerializer.new
-      @pipe = IOPair.new(*IO.pipe)
+      @pipe = IOPair.new
     end
     
     # Creates a copy of this pipe channel. This performs a shallow #dup except
