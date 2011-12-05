@@ -22,5 +22,11 @@ module Cod
       r.close
       w.close
     end
+    
+    # Swaps the end of this pipe around. 
+    #
+    def swap!
+      @r, @w = w, r
+    end
   end
 end
