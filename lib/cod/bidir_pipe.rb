@@ -22,12 +22,5 @@ module Cod
       r.close
       w.close
     end
-    
-    # This is a special method that allows closing the standard input of the
-    # commands run via Cod::Process. 
-    #
-    def terminate
-      w.close
-    end
   end
 end

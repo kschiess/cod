@@ -72,9 +72,7 @@ module Cod
   # Example: 
   #   pid, channel = Cod.process('cat')
   def process(command, serializer=nil)
-    process = Cod::Process.new(command, serializer)
-    
-    return process.pid, process.channel
+    Cod::Process.new(command, serializer)
   end
   module_function :process
 

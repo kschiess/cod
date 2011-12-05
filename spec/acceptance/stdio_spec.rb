@@ -20,29 +20,29 @@ describe "StdIO channels" do
   end
   describe 'Cod.process' do
     it "allows line-wise communication with any command" do
-      # pid, channel = Cod.process('tee debug.log | cat', LineSerializer.new)
-      pid, channel = Cod.process('cat', LineSerializer.new)
+      process = Cod.process('cat', LineSerializer.new)
+      channel = process.channel
       
       channel.put :test
       channel.get.should == :test
 
-      channel.close
-      
-      Process.wait(pid)
+      process.terminate
+      process.wait
     end
     it "does line counting (silly)" do
-      pid, channel = Cod.process('wc -l', StringLineSerializer.new)
+      process = Cod.process('wc -l', StringLineSerializer.new)
+      channel = process.channel
       
       channel.put 'line1'
       channel.put 'line2'
       channel.put 'line3'
       
-      channel.terminate
+      process.terminate
       
       Integer(channel.get).should == 3
       channel.close
       
-      Process.wait(pid)
+      process.wait
     end 
   end
 end

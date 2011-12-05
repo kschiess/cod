@@ -19,5 +19,13 @@ module Cod
     def channel
       @pipe
     end
+    
+    def terminate
+      @pipe.w.close
+    end
+    
+    def wait
+      ::Process.wait(@pid)
+    end
   end
 end
