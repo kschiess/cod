@@ -1,3 +1,11 @@
+= 0.4.1 / ???
+
+  + Cod.process spawns a process and allows communicating with that process
+    via stdin/stdout.
+    
+  + Cod.bidir_pipe spawns two Cod.pipe's, one for writing to the other end, 
+    one for reading from it. (see above...)
+
 == 0.4.0 / 29Nov2011
 
   * A complete rewrite, focusing on lean implementation and logical/useful 

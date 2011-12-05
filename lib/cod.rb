@@ -26,10 +26,19 @@ module Cod
   # Creates a pipe connection that is visible to this process and its
   # children. (see Cod::Pipe)
   #
-  def pipe
-    Cod::Pipe.new
+  def pipe(serializer=nil)
+    Cod::Pipe.new(serializer)
   end
   module_function :pipe
+  
+  # Creates two channels based on Cod.pipe (unidirectional IO.pipe) and links
+  # things up so that you communication is bidirectional. Writes go to 
+  # #out and reads come from #in.
+  #
+  def bidir_pipe(serializer=nil, pipe_pair=nil)
+    Cod::BidirPipe.new(serializer, pipe_pair)
+  end
+  module_function :bidir_pipe
   
   # Creates a tcp connection to the destination and returns a channel for it.
   # (see Cod::TcpClient)
@@ -57,6 +66,18 @@ module Cod
   end
   module_function :beanstalk
 
+  # Runs a command via Process.spawn, then links a channel to the commands
+  # stdout and stdin. Returns the commands pid and the channel. 
+  #
+  # Example: 
+  #   pid, channel = Cod.process('cat')
+  def process(command, serializer=nil)
+    process = Cod::Process.new(command, serializer)
+    
+    return process.pid, process.channel
+  end
+  module_function :process
+
   # Indicates that the given channel is write only. This gets raised on 
   # operations like #put.
   #
@@ -79,11 +100,16 @@ end
 require 'cod/select_group'
 require 'cod/select'
 
+require 'cod/iopair'
+
 require 'cod/channel'
 
 require 'cod/simple_serializer'
 
 require 'cod/pipe'
+require 'cod/bidir_pipe'
+
+require 'cod/process'
 
 require 'cod/tcp_client'
 require 'cod/tcp_server'
