@@ -1,7 +1,11 @@
 module Cod
   IOPair = Struct.new(:r, :w) do
-    def initialize
-      super(*IO.pipe)
+    def initialize(r=nil, w=nil)
+      if r && w
+        super(r, w)
+      else
+        super(*IO.pipe)
+      end
     end
     
     # Performs a deep copy of the structure. 

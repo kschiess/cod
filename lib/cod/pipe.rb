@@ -25,10 +25,10 @@ module Cod
       def write; last; end
     end
 
-    def initialize(serializer=nil)
+    def initialize(serializer=nil, pipe_pair=nil)
       super
       @serializer = serializer || SimpleSerializer.new
-      @pipe = IOPair.new
+      @pipe = IOPair.new(*pipe_pair)
     end
     
     # Creates a copy of this pipe channel. This performs a shallow #dup except
@@ -122,13 +122,13 @@ module Cod
       not result.nil?
     end
     def to_read_fds
-      pipe.r
+      r
     end
     
     # Returns true if you can read from this pipe. 
     #
     def can_read?
-      not pipe.r.nil?
+      not r.nil?
     end
     
     # Returns true if you can write to this pipe. 

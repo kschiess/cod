@@ -1,4 +1,6 @@
 = 0.4.1 / ???
+  + Cod.stdio returns a channel that is linked to this process' stdin and
+    stdout. 
 
   + Cod.process spawns a process and allows communicating with that process
     via stdin/stdout.

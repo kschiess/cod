@@ -26,7 +26,7 @@ module Cod
   # Creates a pipe connection that is visible to this process and its
   # children. (see Cod::Pipe)
   #
-  def pipe(serializer=nil)
+  def pipe(serializer=nil, pipe_pair=nil)
     Cod::Pipe.new(serializer)
   end
   module_function :pipe
@@ -75,7 +75,16 @@ module Cod
     Cod::Process.new(command, serializer)
   end
   module_function :process
-
+  
+  # Links a process' stdin and stdout up with a pipe. This means that the
+  # pipes #put method will print to stdout, and the #get method will read from 
+  # stdin.
+  #
+  def stdio(serializer=nil)
+    Cod::Pipe.new(serializer, [$stdin, $stdout])
+  end
+  module_function :stdio
+  
   # Indicates that the given channel is write only. This gets raised on 
   # operations like #put.
   #

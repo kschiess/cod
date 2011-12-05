@@ -18,6 +18,7 @@ describe "StdIO channels" do
       io.gets.chomp
     end
   end
+  
   describe 'Cod.process' do
     it "allows line-wise communication with any command" do
       process = Cod.process('cat', LineSerializer.new)
@@ -43,6 +44,52 @@ describe "StdIO channels" do
       channel.close
       
       process.wait
+    end 
+  end
+  describe 'Cod.stdio' do
+    let!(:child_chan) { Cod.bidir_pipe(LineSerializer.new) }
+
+    def redirected_child
+      fork do
+        o = child_chan.r.w
+        i = child_chan.w.r
+        
+        child_chan.r.r.close
+        child_chan.w.w.close
+        
+        STDOUT.reopen(o)
+        o.close
+        
+        STDIN.reopen(i)
+        i.close
+        
+        yield
+      end
+    end
+    
+    after(:each) { Process.waitall }
+    
+    it "has a working spec setup" do
+      redirected_child do
+        # gets executed in child
+        puts Marshal.dump(:test)
+      end
+      
+      child_chan.get.should == :test
+    end
+    it "links a process' stdin/stdout to a channel" do
+      redirected_child do
+        stdio = Cod.stdio(LineSerializer.new)
+        
+        stdio.put :test
+      end
+      
+      child_chan.get.should == :test
+    end
+    it "links the channel up correctly" do
+      stdio = Cod.stdio
+      stdio.r.should == $stdin
+      stdio.w.should == $stdout
     end 
   end
 end
