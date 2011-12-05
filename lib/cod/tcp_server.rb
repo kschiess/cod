@@ -1,3 +1,5 @@
+require 'socket'
+
 module Cod
   class TcpServer
     def initialize(bind_to)
