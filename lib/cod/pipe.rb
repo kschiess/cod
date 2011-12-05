@@ -137,6 +137,20 @@ module Cod
       not pipe.w.nil?
     end
 
+    # ------------------------------------------------------- internal helpers
+
+    # Returns the read end of the pipe
+    #
+    def r
+      pipe.r
+    end
+    
+    # Returns the write end of the pipe
+    #
+    def w
+      pipe.w
+    end
+
     # --------------------------------------------------------- service/client
     
     def service

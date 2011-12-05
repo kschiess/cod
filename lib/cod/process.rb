@@ -12,8 +12,8 @@ module Cod
       @pipe = Cod.bidir_pipe(@serializer)
       
       @pid = ::Process.spawn(command, 
-        :in => @pipe.w.pipe.r, 
-        :out => @pipe.r.pipe.w)
+        :in => @pipe.w.r, 
+        :out => @pipe.r.w)
     end
     
     def channel
