@@ -28,6 +28,9 @@ module Cod
         raise Cod::ReadOnlyChannel unless w
         w.write(buf)
       end
+      def read(serializer)
+        serializer.de(r)
+      end
       def close
         close_r
         close_w
@@ -182,7 +185,7 @@ module Cod
   private
     def deserialize_one
       # Now deserialize one message from the buffer in io
-      serializer.de(pipe.r)
+      pipe.read(serializer)
     end
   end
 end
