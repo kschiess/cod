@@ -45,6 +45,12 @@ describe "StdIO channels" do
       
       process.wait
     end 
+    it "allows killing the process" do
+      process = Cod.process('cat', LineSerializer.new)
+
+      process.kill
+      process.wait
+    end 
   end
   describe 'Cod.stdio' do
     let!(:child_chan) { Cod.bidir_pipe(LineSerializer.new) }

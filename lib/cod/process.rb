@@ -20,6 +20,9 @@ module Cod
       @pipe
     end
     
+    def kill
+      ::Process.kill :TERM, @pid
+    end
     def terminate
       @pipe.w.close
     end
