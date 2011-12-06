@@ -1,5 +1,5 @@
 module Cod
-  class BidirPipe
+  class BidirPipe < Channel
     # The Cod::Pipe instance we're currently #put'ting to. 
     attr_reader :w
     # The Cod::Pipe instance we're currently #get'ting from. 
