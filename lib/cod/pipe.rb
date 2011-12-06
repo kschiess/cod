@@ -12,7 +12,7 @@ module Cod
   # create the channel before forking the child, since master and child will
   # share all objects that were available before the fork. 
   #
-  class Pipe
+  class Pipe < Channel
     attr_reader :pipe
     attr_reader :serializer
     
@@ -26,7 +26,7 @@ module Cod
     end
 
     def initialize(serializer=nil, pipe_pair=nil)
-      super
+      super()
       @serializer = serializer || SimpleSerializer.new
       @pipe = IOPair.new(*pipe_pair)
     end
