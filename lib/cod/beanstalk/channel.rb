@@ -11,11 +11,25 @@ module Cod::Beanstalk
   class Channel < Cod::Channel
     JOB_PRIORITY = 0
     
+    # Which tube this channel is connected to
+    attr_reader :tube_name
+    # Beanstalkd server this channel is connected to
+    attr_reader :server_url
+    
     def initialize(tube_name, server_url)
+      super()
       @tube_name, @server_url = tube_name, server_url
     
       @body_serializer = Cod::SimpleSerializer.new
       @transport = connection(server_url, tube_name)
+    end
+    
+    # Allow #dup on beanstalkd channels, resulting in a _new_ connection to
+    # the beanstalkd server. 
+    #
+    def initialize_copy(other)
+      super(other)
+      initialize(other.tube_name, other.server_url)
     end
     
     def put(msg)

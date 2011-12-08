@@ -27,6 +27,19 @@ describe "Beanstalk transport" do
 
       channel.get.should == "\r\n"
     end
+    it "handles concurrency after being dupped with #dup" do
+      # NOTE If this spec hangs, you just encountered the bug it is here to
+      # fix.
+      threads = 10.times.map do
+        Thread.start(channel.dup) do |channel|
+          10.times do
+            channel.put :test
+            channel.get
+          end
+        end
+      end
+      threads.each { |t| t.join }
+    end 
     describe '#try_get' do
       before(:each) { channel.put :test; channel.put :other }
       it "reserves messages tentatively (control.release)" do
