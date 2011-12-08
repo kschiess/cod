@@ -36,10 +36,14 @@ describe "Cod::Service" do
       server_chan = Cod.beanstalk('server')
       client_chan = Cod.beanstalk('answer')
       
-      server { server_chan.service }
+      # NOTE that we need to dup either the client use of server_chan or 
+      # the server use, since beanstalk doesn't like when two processes
+      # share a connection, the protocol is stateful. 
+      
+      server { server_chan.dup.service }
       client { server_chan.client(client_chan) }
       close { server_chan.close; client_chan.close }
-    }
+    },
   ].each do |transport|
     describe "using #{transport.name}s" do
       before(:each) { transport.init }
