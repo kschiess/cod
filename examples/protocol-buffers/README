@@ -1,0 +1,3 @@
+A demonstration of what it takes to use googles protocol buffers (protobuf) on
+the wire. You will need the ruby-protocol-buffers gem for this to work. 
+

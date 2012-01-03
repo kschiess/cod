@@ -1,7 +1,7 @@
 source "http://rubygems.org"
 
 gem 'rake'
-gem 'beanstalk-client'
+
 
 group :test do
   gem 'rspec'
@@ -15,4 +15,6 @@ group :test do
   
   gem 'growl'
   gem 'rb-fsevent'
+
+  gem 'ruby-protocol-buffers'
 end
