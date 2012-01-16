@@ -1,4 +1,6 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require 'spec_helper'
+
+require 'tcp_proxy'
 
 describe 'Cod TCP' do
   context "on localhost:12345" do
@@ -79,27 +81,26 @@ describe 'Cod TCP' do
       xit "doesn't throw errors, just swallows messages"  
     end
     describe "when there is someone listening on the socket already" do
-      let!(:server) { TCPServer.new('localhost', 54321) }
+      let!(:server) { TCPServer.new('127.0.0.1', 54321) }
       after(:each) { server.close }
       
       it "errors out in the constructor" do
         expect {
-          server = Cod.tcp_server('localhost:54321')
+          Cod.tcp_server('127.0.0.1:54321')
         }.to raise_error(Errno::EADDRINUSE)
       end 
     end
     describe "when the server isn't listening" do
+      let(:client) { Cod.tcp('localhost:54321') }
+      let(:server) { Cod.tcp_server('localhost:54321') }
+      
+      after(:each) { client.close; server.close }
       it "ignores messages (no error)" do
-        client = Cod.tcp('localhost:54321')
         client.put :test
         
-        server = Cod.tcp_server('localhost:54321')
         timeout(1) {
           server.get.should == :test
         }
-        
-        client.close
-        server.close
       end
     end
     describe 'TCP connection closed before answer is read' do

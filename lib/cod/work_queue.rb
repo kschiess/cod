@@ -86,8 +86,8 @@ module Cod
       Thread.current.abort_on_exception = true
       
       loop do
-        sleep 0.01
-        
+        sleep 0.001
+
         try_work
 
         # Signal the outside world that we've been around this loop once.
