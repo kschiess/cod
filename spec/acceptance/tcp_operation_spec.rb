@@ -43,7 +43,20 @@ describe 'Cod TCP' do
   end
   describe 'error handling' do
     describe 'when the connection goes down and comes back up' do
-      it "looses messages in between"
+      let!(:client) { Cod.tcp('localhost:12345') }
+      let!(:proxy)  { TCPProxy.new('localhost', 12345, 12346) }
+      let!(:server) { Cod.tcp_server('localhost:12346') }
+
+      after(:each) { client.close; server.close; proxy.close }
+      
+      it "looses messages in between" do
+        client.put :test1
+        server.get.should == :test1
+        
+        proxy.drop proxy.connections.first
+        
+        
+      end
       it "doesn't throw errors, just swallows messages"  
     end
     describe "when there is someone listening on the socket already" do
