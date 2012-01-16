@@ -1,6 +1,33 @@
 require 'socket'
 
-module Cod
+module Cod       
+  # A tcp server channel. Messages are read from any of the connected sockets
+  # in a round robin fashion. 
+  #
+  # Synopsis: 
+  #   server = Cod.tcp_server('localhost:12345') 
+  #   server.get  # 'a message'
+  #   msg, chan = server.get_ext
+  #
+  # There is no implementation of #put that would broadcast back to all
+  # connected sockets, this is up to you to implement. Instead, you can use
+  # one of two ways to obtain a channel for talking back to a specific client:
+  # 
+  # Using #get_ext:
+  #   msg, chan = server.get_ext 
+  #
+  # chan is a two way connected channel to the specific client that has opened 
+  # its communication with msg. 
+  #
+  # Using plain #get: 
+  #   # on the client: 
+  #   client.put [client, :msg]
+  #   # on the server
+  #   chan, msg = server.get
+  #
+  # This means that you can transmit the client channel through the connection 
+  # as part of the message you send. 
+  # 
   class TcpServer
     def initialize(bind_to)
       @socket = TCPServer.new(*bind_to.split(':'))
