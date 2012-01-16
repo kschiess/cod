@@ -78,7 +78,12 @@ describe 'Cod TCP' do
         client.put :test
         
         server = Cod.tcp_server('localhost:54321')
-        server.get.should == :test
+        timeout(1) {
+          server.get.should == :test
+        }
+        
+        client.close
+        server.close
       end
     end
     describe 'TCP connection closed before answer is read' do
