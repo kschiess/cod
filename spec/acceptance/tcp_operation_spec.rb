@@ -5,8 +5,8 @@ describe 'Cod TCP' do
   # after the sending send), we force the test code to handle cases where 
   # one or the other is not around yet. 
   #
-  let(:client) { Cod.tcp('localhost:12345') }
-  let(:server) { Cod.tcp_server('localhost:12345') }
+  let!(:client) { Cod.tcp('localhost:12345') }
+  let!(:server) { Cod.tcp_server('localhost:12345') }
   
   after(:each) { client.close; server.close }
   
@@ -40,7 +40,15 @@ describe 'Cod TCP' do
     end 
   end
   describe 'error handling' do
-    it "handles a socket that already exists (bind error)"
+    context "when there is someone listening on the socket already" do
+      before(:each) { TCPServer.new('localhost', 54321) }
+      
+      it "errors out in the constructor" do
+        expect {
+          server = Cod.tcp_server('localhost:54321')
+        }.to raise_error(Errno::EADDRINUSE)
+      end 
+    end
     it "handles when the server socket isn't listening (yet)"
     it "handles interruption of the connection" 
     
