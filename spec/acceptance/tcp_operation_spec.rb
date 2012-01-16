@@ -1,47 +1,50 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe 'Cod TCP' do
-  # NOTE: By creating server and client in the wrong order (receiving end
-  # after the sending send), we force the test code to handle cases where 
-  # one or the other is not around yet. 
-  #
-  let!(:client) { Cod.tcp('localhost:12345') }
-  let!(:server) { Cod.tcp_server('localhost:12345') }
-  
-  after(:each) { client.close; server.close }
-  
-  it "follows simple messaging semantics" do
-    client.put :test
-    server.get.should == :test
-  end 
-  it "correctly shuts down the background thread" do
-    client.put :test
-    
-    expect {
-      client.close
-    }.to change { Thread.list.size }.by(-1)
-  end 
-  
-  describe 'server#get_ext' do
-    it "returns a tuple of <msg, channel>" do
-      client.put :test
-      msg, channel = server.get_ext
-      
-      msg.should == :test
-      # channel is connected to client: 
-      channel.put :answer
+  context "on localhost:12345" do
+    # NOTE: By creating server and client in the wrong order (receiving end
+    # after the sending send), we force the test code to handle cases where 
+    # one or the other is not around yet. 
+    #
+    let(:client) { Cod.tcp('localhost:12345') }
+    let(:server) { Cod.tcp_server('localhost:12345') }
 
-      client.get.should == :answer
+    after(:each) { client.close; server.close }
+
+    it "follows simple messaging semantics" do
+      client.put :test
+      server.get.should == :test
     end 
-  end
-  describe 'with Cod.select' do
-    it "times out when no data is there" do
-      Cod.select(0.01, test: server).should == {}
+    it "correctly shuts down the background thread" do
+      client.put :test
+
+      expect {
+        client.close
+      }.to change { Thread.list.size }.by(-1)
     end 
+
+    describe 'server#get_ext' do
+      it "returns a tuple of <msg, channel>" do
+        client.put :test
+        msg, channel = server.get_ext
+
+        msg.should == :test
+        # channel is connected to client: 
+        channel.put :answer
+
+        client.get.should == :answer
+      end 
+    end
+    describe 'with Cod.select' do
+      it "times out when no data is there" do
+        Cod.select(0.01, test: server).should == {}
+      end 
+    end
   end
   describe 'error handling' do
     context "when there is someone listening on the socket already" do
-      before(:each) { TCPServer.new('localhost', 54321) }
+      let!(:server) { TCPServer.new('localhost', 54321) }
+      after(:each) { server.close }
       
       it "errors out in the constructor" do
         expect {
@@ -49,10 +52,23 @@ describe 'Cod TCP' do
         }.to raise_error(Errno::EADDRINUSE)
       end 
     end
-    it "handles when the server socket isn't listening (yet)"
+    context "when the server isn't listening" do
+      it "ignores messages (no error)" do
+        client = Cod.tcp('localhost:54321')
+        client.put :test
+        
+        server = Cod.tcp_server('localhost:54321')
+        server.get.should == :test
+      end
+    end
     it "handles interruption of the connection" 
     
     describe 'TCP connection closed before answer is read' do
+      let(:client) { Cod.tcp('localhost:12345') }
+      let(:server) { Cod.tcp_server('localhost:12345') }
+
+      after(:each) { client.close; server.close }
+
       before(:each) { 
         client.put :test
         msg, chan = server.get_ext
@@ -69,6 +85,10 @@ describe 'Cod TCP' do
       end 
     end
     describe 'TCP connection is read before it is written to' do
+      let(:client) { Cod.tcp('localhost:12345') }
+
+      after(:each) { client.close }
+      
       it "should not throw EOFError" do
         begin
           # NOTE: Somewhat important for this test - the server hasn't been
