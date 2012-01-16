@@ -53,9 +53,12 @@ describe 'Cod TCP' do
         client.put :test1
         server.get.should == :test1
         
-        proxy.drop proxy.connections.first
+        proxy.drop_all
         
-        
+        timeout(2) {
+          client.put :test2
+          server.get.should == :test2
+        }
       end
       it "doesn't throw errors, just swallows messages"  
     end
