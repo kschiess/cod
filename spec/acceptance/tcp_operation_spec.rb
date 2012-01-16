@@ -42,8 +42,10 @@ describe 'Cod TCP' do
     end
   end
   describe 'error handling' do
-    it "handles interruption of the connection" 
-
+    describe 'when the connection goes down and comes back up' do
+      it "looses messages in between"
+      it "doesn't throw errors, just swallows messages"  
+    end
     describe "when there is someone listening on the socket already" do
       let!(:server) { TCPServer.new('localhost', 54321) }
       after(:each) { server.close }
