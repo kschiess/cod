@@ -42,7 +42,9 @@ describe 'Cod TCP' do
     end
   end
   describe 'error handling' do
-    context "when there is someone listening on the socket already" do
+    it "handles interruption of the connection" 
+
+    describe "when there is someone listening on the socket already" do
       let!(:server) { TCPServer.new('localhost', 54321) }
       after(:each) { server.close }
       
@@ -52,7 +54,7 @@ describe 'Cod TCP' do
         }.to raise_error(Errno::EADDRINUSE)
       end 
     end
-    context "when the server isn't listening" do
+    describe "when the server isn't listening" do
       it "ignores messages (no error)" do
         client = Cod.tcp('localhost:54321')
         client.put :test
@@ -61,8 +63,6 @@ describe 'Cod TCP' do
         server.get.should == :test
       end
     end
-    it "handles interruption of the connection" 
-    
     describe 'TCP connection closed before answer is read' do
       let(:client) { Cod.tcp('localhost:12345') }
       let(:server) { Cod.tcp_server('localhost:12345') }
