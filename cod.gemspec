@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = 'cod'
-  s.version = '0.4.0'
+  s.version = '0.4.1'
 
   s.authors = ['Kaspar Schiess']
   s.email = 'kaspar.schiess@absurd.li'
@@ -14,7 +14,11 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   s.summary = %Q(Really simple IPC.)
   
+  s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'flexmock'
   s.add_development_dependency 'sdoc'
+
+  s.add_development_dependency 'guard'
+  s.add_development_dependency 'growl'
 end
