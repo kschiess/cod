@@ -1,4 +1,4 @@
-= 0.4.1 / ???
+= 0.4.1 / 23Jan2012
   + Cod.stdio returns a channel that is linked to this process' stdin and
     stdout. 
 
@@ -7,6 +7,8 @@
     
   + Cod.bidir_pipe spawns two Cod.pipe's, one for writing to the other end, 
     one for reading from it. (see above...)
+    
+  + Small fixes, preparation for connection robustness
 
 == 0.4.0 / 29Nov2011
 
