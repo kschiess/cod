@@ -49,7 +49,7 @@ describe 'Cod TCP' do
 
       after(:each) { client.close; server.close; proxy.close }
       
-      it "looses messages in between" do
+      xit "looses messages in between" do
         client.put :test1
         server.get.should == :test1
         
@@ -60,7 +60,7 @@ describe 'Cod TCP' do
           server.get.should == :test2
         }
       end
-      it "doesn't throw errors, just swallows messages"  
+      xit "doesn't throw errors, just swallows messages"  
     end
     describe "when there is someone listening on the socket already" do
       let!(:server) { TCPServer.new('localhost', 54321) }
