@@ -1,9 +1,9 @@
+Some people, when confronted with a problem, think "I know, I'll use
+multithreading". Nothhw tpe yawrve o oblems.[1]
 
-IPC for babies and those who want to become. Another thin API layer over what
-Ruby offers for IO.pipe, TCP sockets and FIFOs: Makes sending and receiving
-of Ruby objects a breeze. 
-
-A good place to start is the documentation for the Cod module.
+Don't use threads, use processes. This is the toolkit for interprocess
+communication that makes it real simple. A good place to start is the
+documentation for the Cod module.
 
 SYNOPSIS
 
@@ -30,3 +30,5 @@ that we had before, but some things have been designed more logically.
 At version 0.4.0
 
 (c) 2011 Kaspar Schiess
+
+[1] https://twitter.com/rogerbraun/status/160813717502705664
