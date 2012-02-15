@@ -76,6 +76,13 @@ module Cod
     def to_read_fds
       @client_sockets
     end
+    
+    # Returns the number of clients that are connected to this server
+    # currently.
+    # 
+    def connections
+      @client_sockets.size
+    end
 
     # --------------------------------------------------------- service/client
     
@@ -104,7 +111,12 @@ module Cod
         next unless rr
         
         rr.each do |io|
-          consume_pending io, opts
+          if io.eof?
+            @client_sockets.delete(io)
+            io.close
+          else
+            consume_pending io, opts
+          end
         end
         
         return @messages.shift unless @messages.empty?

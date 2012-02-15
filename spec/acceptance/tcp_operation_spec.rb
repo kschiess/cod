@@ -42,6 +42,22 @@ describe 'Cod TCP' do
     end
   end
   describe 'error handling' do
+    describe 'when the client of a server goes away' do
+      let(:client) { Cod.tcp('localhost:12345') }
+      let(:server) { Cod.tcp_server('localhost:12345') }
+
+      after(:each) { client.close; server.close }
+
+      it "should remove it from its active connections" do
+        client.put :test
+        server.get.should == :test
+        
+        expect { 
+          client.close
+          timeout(0.1) { server.get } rescue TimeoutError
+        }.to change { server.connections }.by(-1)
+      end 
+    end
     describe 'when the connection goes down and comes back up' do
       let!(:client) { Cod.tcp('localhost:12345') }
       let!(:proxy)  { TCPProxy.new('localhost', 12345, 12346) }
