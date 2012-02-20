@@ -62,6 +62,9 @@ describe Cod::WorkQueue do
     end 
   end
   describe '#predicate' do
+    # shuts down the thread, so the sole interaction is through try_work
+    before(:each) { queue.shutdown }
+    
     # Start out with a predicate that blocks all work
     before(:each) {   
       @running = false

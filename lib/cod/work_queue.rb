@@ -37,11 +37,17 @@ module Cod
       @try_work_exclusive_section.enter {
         # NOTE if predicate is nil or not set, no work will be accomplished. 
         # This is the way I need it. 
-        while !@queue.empty? && @predicate && @predicate.call
+        while !@queue.empty? && predicate?
           wi = @queue.shift
           wi.call
         end
       }
+    end
+    
+    # Evaluates the predicate. If the predicate is not set, this returns nil.
+    #
+    def predicate?
+      @predicate && @predicate.call
     end
     
     # Before any kind of work is attempted, this predicate must evaluate to 
