@@ -4,7 +4,23 @@ module Cod
   # Acts as a channel that connects to a tcp listening socket on the other
   # end. 
   #
+  # Connection negotiation has three phases, as follows: 
+  # 1) Connection is establishing. Sent messages are buffered and really sent
+  #    down the wire once the connection stands. Reading from the channel
+  #    will block the client forever.
+  #
+  # 2) Connection is established: Sending and receiving are immediate and 
+  #    no buffering is done. 
+  #
+  # 3) Connection is down because of an interruption or exception. Sending and
+  #    receiving messages no longer works, instead a ConnectionLost error is
+  #    raised. 
+  #
   class TcpClient < Channel
+    # Constructs a tcp client channel. destination may either be a socket, 
+    # in which case phase 1) of connection negotiation is skipped, or a string
+    # that contains an 'address:port' part. 
+    #
     def initialize(destination, serializer)
       @serializer = serializer
       @destination = destination
