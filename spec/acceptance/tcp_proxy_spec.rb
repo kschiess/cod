@@ -4,8 +4,11 @@ require 'tcp_proxy'
 
 describe TCPProxy do
   let!(:client) { Cod.tcp('localhost:12345') }
+  let(:client2) { Cod.tcp('localhost:12345') }
   let!(:server) { Cod.tcp_server('localhost:12346') }
+
   after(:each) { client.close; server.close }
+  after(:each) { client2.close }
   
   let!(:proxy) { described_class.new('localhost', 12345, 12346) }
   after(:each) { proxy.close }
@@ -22,7 +25,7 @@ describe TCPProxy do
       client.get.should == :antwoord
     end
   end 
-  xit "allows dropping connections" do
+  it "allows dropping connections" do
     client.put :test1
     server.get.should == :test1
     
@@ -37,7 +40,7 @@ describe TCPProxy do
     
     proxy.allow
     
-    client.put :test3
+    client2.put :test3
     server.get.should == :test3
   end 
 end

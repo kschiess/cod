@@ -96,10 +96,10 @@ class TCPProxy
           buf = socket.read_nonblock(16*1024)
           
           if socket == @in_sock
-            puts "--> #{buf.size}"
+            puts "--> #{buf.size}" if $DEBUG
             @out_sock.write(buf)
           else
-            puts "<-- #{buf.size}"
+            puts "<-- #{buf.size}" if $DEBUG
             @in_sock.write(buf)
           end
         end
@@ -125,8 +125,18 @@ class TCPProxy
   
   def forward_data
     connections = @connections_m.synchronize { @connections.dup }
+    remove_list = []
     connections.each do |conn|
-      conn.pump_synchronized
+      begin
+        conn.pump_synchronized
+      rescue EOFError
+        # Socket was closed, remove from the collection.
+        remove_list << conn
+      end
     end
+
+    @connections_m.synchronize {
+      @connections -= remove_list
+    }
   end
 end
