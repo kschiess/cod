@@ -107,6 +107,17 @@ describe Cod::WorkQueue do
       }.to change { Thread.list.size }.by(-1)
     end
   end
+  describe '#exclusive' do
+    it "isn't interrupted by work in the thread" do
+      n = 0
+      100.times { queue.schedule { n += 1} }
+      queue.exclusive {
+        queue.predicate { true }
+        sleep 0.1
+        n.should == 0
+      }
+    end 
+  end
   describe 'after #shutdown' do
     before(:each) { queue.shutdown }
     

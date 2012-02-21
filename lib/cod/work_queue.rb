@@ -44,6 +44,13 @@ module Cod
       }
     end
     
+    # Allows to perform other work mutually exclusive with the work performed
+    # in the queue. (see ExclusiveSection)
+    #
+    def exclusive
+      @try_work_exclusive_section.enter { yield }
+    end
+    
     # Evaluates the predicate. If the predicate is not set, this returns nil.
     #
     def predicate?
