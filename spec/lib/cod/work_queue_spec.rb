@@ -104,6 +104,22 @@ describe Cod::WorkQueue do
       expect {
         queue.shutdown
       }.to change { Thread.list.size }.by(-1)
-    end 
+    end
+  end
+  describe 'after #shutdown' do
+    before(:each) { queue.shutdown }
+    
+    it "still works" do
+      queue.predicate { true }
+
+      answer = :no
+      queue.schedule { answer = :yes }
+      
+      queue.try_work
+      answer.should == :yes
+    end
+    it "ignores further shutdowns" do
+      queue.shutdown
+    end  
   end
 end

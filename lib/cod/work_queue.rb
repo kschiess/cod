@@ -71,8 +71,11 @@ module Cod
     # Shuts down the queue properly, without waiting for work to be completed.
     #
     def shutdown
+      return unless @thread
+      
       @shutdown_requested = true
       @thread.join
+      @thread = nil
     end
     
     # Returns the size of the queue. 
