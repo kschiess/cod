@@ -39,10 +39,7 @@ module Cod
 
       # The predicate for allowing sends: Is the connection up?
       @work_queue.predicate {
-        # NOTE This will not be called unless we have some messages to send,
-        # so no useless connections are made
-        @connection.try_connect
-        @connection.established?
+        cached_connection_established?
       }
     end
     
@@ -51,7 +48,7 @@ module Cod
     # reconnection attempts. 
     #
     def close
-      @work_queue.shutdown
+      @work_queue.shutdown if @work_queue
       @connection.close
     end
 
@@ -71,6 +68,12 @@ module Cod
         send(obj)
       }
       
+      @work_queue.exclusive {
+        # If we're connected, shut down the worker thread, do all the work
+        # here.
+        check_connection_state
+      }
+      
       @work_queue.try_work
     end
     
@@ -78,8 +81,18 @@ module Cod
     # Options include: 
     #
     def get(opts={})
-      @connection.try_connect
-      @connection.read(@serializer)
+      @work_queue.exclusive {
+        while @work_queue.size > 0
+          @work_queue.try_work
+        end
+          
+        check_connection_state
+
+        @connection.read(@serializer)
+      }
+    rescue Errno::ECONNRESET
+      # Connection reset by peer
+      raise ConnectionLost
     end
 
     # --------------------------------------------------------- service/client
@@ -116,9 +129,39 @@ module Cod
       OtherEnd.new(params)
     end
   private
+    # Checks to see in which of the three connection phases we're in. If we're
+    # past 1), shuts down the background worker thread.
+    #
+    def check_connection_state
+      # Has the connection been established in the meantime? If yes, shut
+      # down the work queues thread, all work will be done in this thread 
+      # from now on. 
+      if cached_connection_established?
+        @work_queue.shutdown
+      end
+    end
+  
+    # Returns false until the connection has been established once, at which
+    # point it always returns true. 
+    #
+    def cached_connection_established?
+      @cached_connection_established ||= begin
+        # NOTE This will not be called unless we have some messages to send,
+        # so no useless connections are made
+        @connection.try_connect
+        @connection.established?
+      end
+    end
+    
+    # Actual sending of messages. This is invoked from either the main thread 
+    # or the worker thread, but never both at the same time. 
+    #
     def send(msg)
       @connection.write(
         @serializer.en(msg))
+    rescue Exception => e
+      warn e
+      raise
     end
 
     # A connection that can be down. This allows elegant handling of

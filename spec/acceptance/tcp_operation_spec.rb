@@ -67,18 +67,17 @@ describe 'Cod TCP' do
 
       after(:each) { client.close; server.close; proxy.close }
       
-      xit "looses messages in between" do
+      it "throws a ConnectionLost error" do
         client.put :test1
         server.get.should == :test1
         
         proxy.drop_all
         
-        timeout(2) {
-          client.put :test2
-          server.get.should == :test2
-        }
+        expect { 
+          client.put :test2 
+          client.get
+        }.to raise_error(Cod::ConnectionLost)
       end
-      xit "doesn't throw errors, just swallows messages"  
     end
     describe "when there is someone listening on the socket already" do
       let!(:server) { TCPServer.new('127.0.0.1', 54321) }
