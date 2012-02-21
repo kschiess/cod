@@ -78,6 +78,7 @@ describe Cod::WorkQueue do
       queue.schedule { fail }
       queue.try_work
     end 
+    
     context "when the predicate evaluates to true" do
       it "should do work" do
         n = 0
@@ -121,5 +122,22 @@ describe Cod::WorkQueue do
     it "ignores further shutdowns" do
       queue.shutdown
     end  
+  end
+
+  describe 'when work is scheduled' do
+    before(:each) { queue.schedule { } }
+
+    it "should evaluate #predicate in one thread only" do
+      evaluating_threads = {}
+      queue.predicate { 
+        sleep 0.01
+        evaluating_threads[Thread.current] = true
+        false }
+      
+      sleep 0.01
+      queue.try_work
+      
+      evaluating_threads.size.should <= 1
+    end 
   end
 end
