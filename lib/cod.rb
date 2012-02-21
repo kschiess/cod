@@ -102,6 +102,14 @@ module Cod
       super("This channel is read only, attempted write operation.")
     end
   end
+  
+  # Indicates that a standing connection was lost and must be reconnected. 
+  # 
+  class ConnectionLost < StandardError
+    def initialize
+      super "Connection lost."
+    end
+  end
 end
 
 require 'cod/select_group'
