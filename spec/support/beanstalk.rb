@@ -10,8 +10,7 @@ module BeanstalkHelper
     # 'enhance' the tcp channel
     class << beanstalk
       def cmd(*cmd)
-        put cmd
-        code, *rest = get
+        code, *rest = interact(cmd)
 
         fail "beanstalk_cmd detected failure: #{code.inspect}" \
           unless [:watching, :ok, :reserved, :deleted].include?(code)

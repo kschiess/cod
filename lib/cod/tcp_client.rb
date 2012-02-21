@@ -81,15 +81,13 @@ module Cod
     # Options include: 
     #
     def get(opts={})
-      @work_queue.exclusive {
-        while @work_queue.size > 0
-          @work_queue.try_work
-        end
+      while @work_queue.size > 0
+        @work_queue.try_work
+      end
           
-        check_connection_state
+      check_connection_state
 
-        @connection.read(@serializer)
-      }
+      @connection.read(@serializer)
     rescue Errno::ECONNRESET, EOFError
       # Connection reset by peer
       raise ConnectionLost
