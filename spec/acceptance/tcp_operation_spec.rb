@@ -67,7 +67,7 @@ describe 'Cod TCP' do
 
       after(:each) { client.close; server.close; proxy.close }
       
-      it "throws a ConnectionLost error" do
+      it "throws a ConnectionLost error (Errno::ECONNRESET)" do
         client.put :test1
         server.get.should == :test1
         
@@ -75,6 +75,16 @@ describe 'Cod TCP' do
         
         expect { 
           client.put :test2 
+          client.get
+        }.to raise_error(Cod::ConnectionLost)
+      end
+      it "throws a ConnectionLost error (EOFError)" do
+        client.put :test1
+        server.get.should == :test1
+        
+        proxy.drop_all
+        
+        expect { 
           client.get
         }.to raise_error(Cod::ConnectionLost)
       end

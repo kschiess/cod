@@ -90,7 +90,7 @@ module Cod
 
         @connection.read(@serializer)
       }
-    rescue Errno::ECONNRESET
+    rescue Errno::ECONNRESET, EOFError
       # Connection reset by peer
       raise ConnectionLost
     end
