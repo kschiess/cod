@@ -27,6 +27,7 @@ module Cod
       @try_work_exclusive_section = ExclusiveSection.new
 
       @thread = Thread.start(&method(:thread_main))
+      @thread.priority = Thread.current.priority - 10
     end
     
     # The internal thread that is used to work on scheduled items in the
@@ -102,7 +103,7 @@ module Cod
       Thread.current.abort_on_exception = true
       
       loop do
-        sleep 0.001
+        Thread.pass
 
         try_work
 

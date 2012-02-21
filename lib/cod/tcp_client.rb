@@ -52,8 +52,8 @@ module Cod
       @connection.close
     end
 
-    # Sends an object to the other end of the channel, if it is connected. 
-    # If it is not connected, objects sent will queue up and once the internal
+    # Sends an object to the other end of the channel, if it is connected. If
+    # it is not connected, objects sent will queue up and once the internal
     # storage reaches the high watermark, they will be dropped silently. 
     #
     # Example: 
@@ -84,7 +84,7 @@ module Cod
       while @work_queue.size > 0
         @work_queue.try_work
       end
-          
+                
       check_connection_state
 
       @connection.read(@serializer)
