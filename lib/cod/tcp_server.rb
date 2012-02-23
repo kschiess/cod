@@ -29,12 +29,12 @@ module Cod
   # as part of the message you send. 
   # 
   class TcpServer
-    def initialize(bind_to)
+    def initialize(bind_to, serializer)
       @socket = TCPServer.new(*bind_to.split(':'))
       @client_sockets = []
       @round_robin_index = 0
       @messages = Array.new
-      @serializer = SimpleSerializer.new
+      @serializer = serializer
     end
     
     # Receives one object from the channel. 

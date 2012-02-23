@@ -53,8 +53,10 @@ module Cod
   # Creates a tcp listener on bind_to and returns a channel for it. (see
   # Cod::TcpServer)
   #
-  def tcp_server(bind_to)
-    Cod::TcpServer.new(bind_to)
+  def tcp_server(bind_to, serializer=nil)
+    Cod::TcpServer.new(
+      bind_to, 
+      serializer || SimpleSerializer.new)
   end
   module_function :tcp_server
 
