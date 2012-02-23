@@ -1,3 +1,8 @@
+= 0.4.3 / ???
+
+  ! Fixes a few bugs when using tcp channels (connection was not made or not
+    closed properly).
+
 = 0.4.2 / 15Feb2012
 
   ! Actively removes clients that have closed the sockets on their end
