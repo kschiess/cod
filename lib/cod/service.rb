@@ -6,11 +6,11 @@ module Cod
   # 
   # Synopsis: 
   #   # On the server end: 
-  #   service = Cod.service(central_location)
+  #   service = server_channel.service
   #   service.one { |request| :answer }
   #
   #   # On the client end: 
-  #   service = Cod.client(central_location, answer_here)
+  #   service = answer_channel.client(server_channel)
   #
   #   # asynchronous, no answer
   #   service.notify [:a, :request]   # => nil
