@@ -1,14 +1,19 @@
 module Cod::Beanstalk
 
-  # NOTE: Beanstalk channels cannot currently be used in Cod.select. This is 
-  # due to limitations inherent in the beanstalkd protocol. We'll probably 
-  # try to get a patch into beanstalkd to change this. 
+  # A channel based on a beanstalkd tube. A {#put} will insert messages into 
+  # the tube, and a {#get} will fetch the next message that is pending on the
+  # tube. 
   #
-  # NOTE: If you embed a beanstalk channel into one of your messages, you will
-  # get a channel that connects to the same server and the same tube on the
-  # other end. This behaviour is useful for Cod::Service.
+  # @note Beanstalk channels cannot currently be used in Cod.select. This is 
+  #   due to limitations inherent in the beanstalkd protocol. We'll probably 
+  #   try to get a patch into beanstalkd to change this. 
+  #
+  # @note If you embed a beanstalk channel into one of your messages, you will
+  #   get a channel that connects to the same server and the same tube on the
+  #   other end. This behaviour is useful for {Cod::Service}.
   #
   class Channel < Cod::Channel
+    # All messages get inserted into the beanstalk queue as this priority. 
     JOB_PRIORITY = 0
     
     # Which tube this channel is connected to
@@ -55,6 +60,7 @@ module Cod::Beanstalk
       @transport.close
     end
     
+    # @private
     def to_read_fds
       fail "Cod.select not supported with beanstalkd channels.\n"+
         "To support this, we will have to extend the beanstalkd protocol."
@@ -69,6 +75,40 @@ module Cod::Beanstalk
     end
     
     # -------------------------------------------------------- queue interface     
+    
+    # Like {#get}, read next message from the channel but reserve the right 
+    # to put it back. This uses beanstalkds flow control features to be able
+    # to control message flow in the case of exceptions and the like. 
+    #
+    # If the block given to this message raises an exception, the message 
+    # is released unless a control command has been given. This means that
+    # other workers on the same tube will get the chance to see the message. 
+    #
+    # If the block is exited without specifying a fate for the message, it
+    # is deleted from the tube. 
+    # 
+    # @yield [Object, Cod::Beanstalk::Channel::Control]
+    # @return the blocks return value
+    #
+    # @example All the flow control that beanstalkd allows
+    #   channel.try_get { |msg, ctl|
+    #     if msg == 1
+    #       ctl.release # don't handle messages of type 1
+    #     else
+    #       ctl.bury    # for example
+    #     end
+    #   }
+    #
+    # @example Exceptions release the message
+    #   # Will release the message and allow other connected channels to 
+    #   # #get it.
+    #   channel.try_get { |msg, ctl|
+    #     fail "No such message handler"
+    #   }
+    #   
+    #
+    # @see Cod::Beanstalk::Channel::Control
+    #
     def try_get 
       fail "No block given to #try_get" unless block_given?
       
@@ -124,25 +164,31 @@ module Cod::Beanstalk
     end
         
     # ---------------------------------------------------------- serialization
+    # @private
     def _dump(level) # :nodoc:
       Marshal.dump(
         [@tube_name, @server_url])
     end
+    # @private
     def self._load(str) # :nodoc:
       tube_name, server_url = Marshal.load(str)
       Cod.beanstalk(tube_name, server_url)
     end
 
     # ----------------------------------------------------- beanstalk commands
-    def bs_delete(msg_id) # :nodoc:
+    # @private
+    def bs_delete(msg_id)
       bs_command([:delete, msg_id], :deleted)
     end
-    def bs_release(msg_id) # :nodoc:
+    # @private
+    def bs_release(msg_id)
       bs_command([:release, msg_id, JOB_PRIORITY, 0], :released)
     end
-    def bs_release_with_delay(msg_id, seconds) # :nodoc:
+    # @private
+    def bs_release_with_delay(msg_id, seconds)
       bs_command([:release, msg_id, JOB_PRIORITY, seconds], :released)
     end
+    # @private
     def bs_bury(msg_id)
       # NOTE: Why I need to assign a priority when burying I fail to
       # understand. Like a priority for rapture?
