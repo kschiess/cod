@@ -34,5 +34,13 @@ describe Cod::Beanstalk::Serializer do
       de("FUU fu123").
         should == [:fuu, 'fu123']
     end 
+    
+    describe 'when the io is eof?' do
+      it "raises ConnectionLost" do
+        expect {
+          serializer.de(flexmock(:gets => nil))
+        }.to raise_error(Cod::ConnectionLost)
+      end
+    end
   end
 end

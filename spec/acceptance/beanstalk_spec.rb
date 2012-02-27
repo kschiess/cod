@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+require 'tcp_proxy'
+
 describe "Beanstalk transport" do
   include BeanstalkHelper
   
@@ -108,6 +110,33 @@ describe "Beanstalk transport" do
         clone.get.should == :test
       end 
     end
+  end
+  
+  describe 'error behaviour' do
+    before(:each) { clear_tube('errors') }
+    
+    let!(:proxy)  { TCPProxy.new('localhost', 11301, 11300) }
+    let(:beanstalk) { Cod.beanstalk('errors', 'localhost:11301') }
+
+    after(:each) { beanstalk.close }
+    after(:each) { proxy.close }
+    
+    # Test the connection before testing error behaviour
+    before(:each) { 
+      beanstalk.put :test
+      beanstalk.get.should == :test
+    }
+    
+    describe 'when the connection to beanstalkd gets interrupted' do
+      before(:each) { proxy.block }
+      
+      it "should throw a ConnectionLost error" do
+        expect {
+          proxy.drop_all
+          beanstalk.get
+        }.to raise_error(Cod::ConnectionLost)
+      end 
+    end 
   end
   
   describe '#select' do

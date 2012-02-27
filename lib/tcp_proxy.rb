@@ -28,13 +28,16 @@ class TCPProxy
     @connections.each do |connection|
       connection.close
     end
-    @ins.close
+    @ins.close if @ins
   end
   
   def block
     @accept_new = false
+    @ins.close
+    @ins = nil
   end
   def allow
+    @ins  = TCPServer.new(@host, @from_port)
     @accept_new = true
   end
   

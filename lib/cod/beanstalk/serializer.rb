@@ -36,6 +36,8 @@ module Cod::Beanstalk
     
     def de(io)
       str = io.gets("\r\n")
+      raise Cod::ConnectionLost unless str
+      
       raw = str.split
       
       cmd = convert_cmd(raw.first)
