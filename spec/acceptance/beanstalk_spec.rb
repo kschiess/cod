@@ -118,6 +118,22 @@ describe "Beanstalk transport" do
     it "raises an error" do
       expect(&predicate).to raise_error
     end 
+    # NOTE: The 'problem' appears to be the following: Let's assume that we 
+    # issue a RESERVE command with a timeout to beanstalk. Then select on the
+    # socket that would receive an answer if there is one: 
+    #   - reserve-with-timeout can only handle integer second amounts, which
+    #     seeems wrong and would limit this implementation.
+    #   - In the case where a job arrives within the timeout, we'll get a job
+    #     answer. We need to hold this in memory until the code issues a #get.
+    #     If it doesn't, it should somehow be released to beanstalk once again.
+    #   - If no job arrives, the connection is still in a reserve-with-timeout
+    #     and will block until the timeout expires. This is not what we want 
+    #     with a select, it should be able to return quickly for other sockets
+    #     and still accept commands for beanstalk channels.
+    # 
+    # We'd need a call that we can abort for this to work. This is not how 
+    # beanstalkd currently works.
+    #
     it "explains the problem" do
       begin
         predicate.call
