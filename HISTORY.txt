@@ -2,6 +2,10 @@
 
   ! Fixes a few bugs when using tcp channels (connection was not made or not
     closed properly).
+    
+  + Cod::ConnectionLost should be raised when the connection goes down. This 
+    allows simply reconnecting on error, see 
+    examples/bs_ping_pong/{ping,pong}.rb on how to do this.
 
 = 0.4.2 / 15Feb2012
 
