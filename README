@@ -23,11 +23,17 @@ SYNOPSIS
     
 STATUS
 
-Complete rewrite of the code: Did away with some of the complexities that
-stemmed from early design work. The functionality that is there is much like
-that we had before, but some things have been designed more logically. 
+Working library. Some rough edges and potential for growth. 
 
-At version 0.4.0
+Working transports include: 
+
+ * process (spawn, connecting to $stdout and $stdin)
+ * stdio (connects to $stdout and $stdin of current process)
+ * pipe (akin to IO.pipe)
+ * tcp (server and client)
+ * beanstalk (connects to beanstalkd)
+
+At version 0.4.2
 
 (c) 2011 Kaspar Schiess
 
