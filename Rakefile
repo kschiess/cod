@@ -15,17 +15,10 @@ task :stats do
   end
 end
 
-require 'sdoc'
-
-# Generate documentation
-RDoc::Task.new do |rdoc|
-  rdoc.title    = "cod - IPC made really simple."
-  rdoc.options << '--line-numbers'
-  rdoc.options << '--fmt' << 'shtml' # explictly set shtml generator
-  rdoc.template = 'direct' # lighter template used on railsapi.com
-  rdoc.main = "README"
-  rdoc.rdoc_files.include("README", "lib/**/*.rb")
-  rdoc.rdoc_dir = "rdoc"
+require 'yard'
+YARD::Rake::YardocTask.new do |t|
+  # t.files   = ['lib/**/*.rb']
+  # t.options = ['--any', '--extra', '--opts'] # optional
 end
 
 desc 'Clear out RDoc'

@@ -1,6 +1,6 @@
 require 'stringio'
 
-# The core concept of Cod are 'channels'. (Cod::Channel::Base) You can create
+# The core concept of Cod are 'channels'. (@see Cod::Channel::Base) You can create
 # such channels on top of the various transport layers. Once you have such a
 # channel, you #put messages into it and you #get messages out of it. Messages
 # are retrieved in FIFO manner, making channels look like a communication pipe

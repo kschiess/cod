@@ -1,3 +1,8 @@
+
+# Proxies tcp connections on a machine from one port to the next. This is used
+# for debugging and writing specifications for cod. This is not officially
+# part of cod's API. 
+#
 class TCPProxy
   attr_reader :connections
   
@@ -17,6 +22,8 @@ class TCPProxy
     @thread = Thread.start(&method(:thread_main))
   end
   
+  # Closes the proxy, disrupting every connection made to it. 
+  #
   def close
     @shutdown = true
     
@@ -31,16 +38,24 @@ class TCPProxy
     @ins.close if @ins
   end
   
+  # Disallows new connections. 
+  #
   def block
     @accept_new = false
     @ins.close
     @ins = nil
   end
+  
+  # Allows new connections to be made. This is the default, so you only need
+  # this to reenable connections after a {#block}. 
+  #
   def allow
     @ins  = TCPServer.new(@host, @from_port)
     @accept_new = true
   end
   
+  # Drops all established connections. 
+  #
   def drop_all
     # Copy the connections and then empty the collection
     connections = @connections_m.synchronize {
@@ -54,6 +69,8 @@ class TCPProxy
   
   # Inside the background thread ----------------------------------------
   
+  # Internal thread that pumps messages from and to ports. 
+  # @private
   def thread_main
     loop do
       accept_connections if @accept_new
@@ -70,6 +87,7 @@ class TCPProxy
     raise
   end
 
+  # @private
   class Connection
     def initialize(in_sock, out_sock)
       @m = Mutex.new
@@ -114,6 +132,7 @@ class TCPProxy
     end
   end
 
+  # @private
   def accept_connections
     loop do
       in_sock = @ins.accept_nonblock
@@ -126,6 +145,7 @@ class TCPProxy
     # No more connections pending, stop accepting new connections
   end
   
+  # @private
   def forward_data
     connections = @connections_m.synchronize { @connections.dup }
     remove_list = []

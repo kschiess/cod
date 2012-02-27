@@ -23,15 +23,16 @@ SYNOPSIS
     
 STATUS
 
-Working library. Some rough edges and potential for growth. 
+Working library. Some rough edges and potential for growth. Have a look at the 
+Cod module to get started.
 
 Working transports include: 
 
- * process (spawn, connecting to $stdout and $stdin)
- * stdio (connects to $stdout and $stdin of current process)
- * pipe (akin to IO.pipe)
- * tcp (server and client)
- * beanstalk (connects to beanstalkd)
+* process (spawn, connecting to $stdout and $stdin)
+* stdio (connects to $stdout and $stdin of current process)
+* pipe (akin to IO.pipe)
+* tcp (server and client)
+* beanstalk (connects to beanstalkd)
 
 At version 0.4.2
 
