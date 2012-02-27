@@ -9,7 +9,7 @@ service_channel = Cod.pipe
 answer_channel = Cod.pipe
 
 child_pid = fork do
-  service = Cod.service(service_channel)
+  service = service_channel.service()
   service.one { |call| 
     puts "Service got called with #{call.inspect}" 
     time = Time.now
@@ -17,7 +17,7 @@ child_pid = fork do
     time }
 end
 
-client = Cod.client(service_channel, answer_channel)
+client = service_channel.client(answer_channel)
 puts "Calling service..."
 answer = client.call('42')
 
