@@ -1,4 +1,4 @@
-= 0.4.3 / ???
+= 0.4.3 / 28Feb2012
 
   ! Fixes a few bugs when using tcp channels (connection was not made or not
     closed properly).

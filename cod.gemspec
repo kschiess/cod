@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = 'cod'
-  s.version = '0.4.2'
+  s.version = '0.4.3'
 
   s.authors = ['Kaspar Schiess']
   s.email = 'kaspar.schiess@absurd.li'
@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.homepage = 'http://kschiess.github.com/cod'
   s.rdoc_options = ['--main', 'README']
   s.require_paths = ['lib']
-  s.summary = %Q(Really simple IPC.)
+  s.summary = %Q(Really simple IPC. Pipes, TCP sockets, beanstalkd, ...)
   
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'

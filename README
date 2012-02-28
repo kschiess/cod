@@ -34,7 +34,7 @@ Working transports include:
 * tcp (server and client)
 * beanstalk (connects to beanstalkd)
 
-At version 0.4.2
+At version 0.4.3
 
 (c) 2011 Kaspar Schiess
 
