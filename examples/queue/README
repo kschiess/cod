@@ -1,9 +1,0 @@
-A small queue like example. 
-
-run ruby send.rb N to send N messages through queue.rb to client.rb. 
-Client will print statistics (calls per second) every 100 messages.
-
-Problems: 
-  - queue.rb seems to always consume 100% CPU
-  - number of messages per second is way low
-  - some exceptions are still not handled correctly 
