@@ -1,3 +1,4 @@
 A demonstration of what it takes to use googles protocol buffers (protobuf) on
-the wire. You will need the ruby-protocol-buffers gem for this to work. 
+the wire. You will need the ruby-protocol-buffers gem and of course the protoc
+compiler for this to work.
 
