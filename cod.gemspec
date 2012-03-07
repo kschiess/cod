@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.email = 'kaspar.schiess@absurd.li'
 
   s.extra_rdoc_files = ['README']
-  s.files = %w(Gemfile HISTORY.txt LICENSE Rakefile README) + Dir.glob("{lib,examples}/**/*")
+  s.files = %w(HISTORY.txt LICENSE Rakefile README) + Dir.glob("{lib,examples}/**/*")
   s.homepage = 'http://kschiess.github.com/cod'
   s.rdoc_options = ['--main', 'README']
   s.require_paths = ['lib']
