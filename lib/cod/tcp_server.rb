@@ -37,10 +37,14 @@ module Cod
       @serializer = serializer
     end
     
-    # Receives one object from the channel. 
+    # Receives one object from the channel. This will receive one message from
+    # one of the connected clients in a round-robin fashion. 
     #
-    # Example: 
+    # @example
     #   channel.get # => object
+    #
+    # @param opts [Hash] 
+    # @return [Object] message sent by one of the clients
     #   
     def get(opts={})
       msg, socket = _get(opts)
@@ -54,9 +58,13 @@ module Cod
     # Using this method, the server can communicate back to its clients
     # individually instead of collectively. 
     #
-    # Example: 
+    # @example Answering to the client that sent a specific message
     #   msg, chan = server.get_ext
     #   chan.put :answer
+    #
+    # @param opts [Hash]
+    # @return [Array<Object, TcpClient>] tuple of the message that was sent 
+    #   a channel back to the client that sent the message
     def get_ext(opts={})
       msg, socket = _get(opts)
       return [
@@ -99,27 +107,40 @@ module Cod
   private
     def _get(opts)
       loop do
-        # Check if there are pending connects
-        accept_new_connections
+        # Return a buffered message if there is one left.
+        return @messages.shift unless @messages.empty?
 
-        # shuffle the socket list around, so we don't always read from the
-        # same client.
+        # Shuffle the socket list around, so we don't always read from the
+        # same client first.
         socket_list = round_robin(@client_sockets)
-
-        # select for readiness
-        rr, rw, re = IO.select(socket_list, nil, nil, 0.1)
+        
+        # Append the server socket to be able to react to new connections
+        # that are made.
+        socket_list << @socket
+      
+        # Sleep until either a new connection is made or data is available on 
+        # one of the old connections. 
+        rr, _, _ = IO.select(socket_list, nil, nil)
         next unless rr
         
-        rr.each do |io|
-          if io.eof?
-            @client_sockets.delete(io)
-            io.close
-          else
-            consume_pending io, opts
-          end
+        # Accept new connections
+        if rr.include?(@socket)
+          accept_new_connections
+          rr.delete(@socket)
         end
         
-        return @messages.shift unless @messages.empty?
+        handle_socket_events(rr, opts)
+      end
+    end
+    
+    def handle_socket_events(sockets, opts)
+      sockets.each do |io|
+        if io.eof?
+          @client_sockets.delete(io)
+          io.close
+        else
+          consume_pending io, opts
+        end
       end
     end
   
@@ -130,7 +151,7 @@ module Cod
           io]
           
         # More messages from this socket? 
-        return unless IO.select([io], nil, nil, 0.01)
+        return unless IO.select([io], nil, nil, 0.0001)
       end
     end
     

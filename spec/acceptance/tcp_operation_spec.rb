@@ -152,4 +152,25 @@ describe 'Cod TCP' do
       end 
     end
   end
+  describe 'regression' do
+    describe '"pending messages loop" bug' do
+      let(:client) { Cod.tcp('localhost:12345') }
+      let(:server) { Cod.tcp_server('localhost:12345') }
+      
+      after(:each) { client.close; server.close }
+      
+      it "still returns even if nothing is on the wire" do
+        client.put :test1
+        client.put :test2
+        
+        msg, chan = server.get_ext
+        msg.should == :test1
+        
+        timeout(1) {
+          msg, chan = server.get_ext
+          msg.should == :test2
+        }
+      end 
+    end
+  end
 end
