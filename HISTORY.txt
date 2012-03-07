@@ -1,4 +1,13 @@
-= 0.4.4 / ??? (next version)
+= 0.4.4 / 7Mar2012
+
+  + Uses IO.select in the server as well, not polling for accept. This should
+    further reduce the CPU time consumed by servers. 
+    
+  ! Fixes a bug where server would hang forever with messages to return in
+    its queue. 
+    
+  + Switching to YARD for documentation, please be patient while the whole 
+    gets a workover. This should be finished by 0.4.6 at the latest.
 
 = 0.4.3 / 28Feb2012
 
