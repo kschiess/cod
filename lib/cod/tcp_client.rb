@@ -28,9 +28,9 @@ module Cod
       # TcpClient handles two cases: Construction via an url (destination is a
       # string) and construction via a connection that has been
       # preestablished (destination is a socket):
-      if destination.respond_to?(:read)
-        # destination seems to be a socket, wrap it with Connection
-        @connection = Connection.new(destination)
+      if destination.respond_to?(:established?)
+        # Should be a connection already.
+        @connection = destination
       else
         @connection = RobustConnection.new(destination)
       end
@@ -114,6 +114,8 @@ module Cod
     # A small structure that is constructed for a serialized tcp client on 
     # the other end (the deserializing end). What the deserializing code does
     # with this is his problem. 
+    #
+    # @private
     #
     OtherEnd = Struct.new(:destination) # :nodoc:
 
@@ -235,9 +237,12 @@ module Cod
     # the TcpServers clients: the tcp server manages the back channels, so
     # the created channel is lent its socket only.
     #
+    # @private
+    #
     class Connection # :nodoc:
-      def initialize(socket)
-        @socket = socket.dup
+      def initialize(socket, owner)
+        @owner = owner
+        @socket = socket
       end
       attr_reader :socket
       def try_connect
@@ -252,7 +257,7 @@ module Cod
         @socket.write(buffer)
       end
       def close
-        @socket.close
+        @owner.request_close(socket)
       end
     end
   end

@@ -4,7 +4,7 @@ module Cod
   # A tcp server channel. Messages are read from any of the connected sockets
   # in a round robin fashion. 
   #
-  # Synopsis: 
+  # == Synopsis
   #   server = Cod.tcp_server('localhost:12345') 
   #   server.get  # 'a message'
   #   msg, chan = server.get_ext
@@ -13,13 +13,11 @@ module Cod
   # connected sockets, this is up to you to implement. Instead, you can use
   # one of two ways to obtain a channel for talking back to a specific client:
   # 
-  # Using #get_ext:
   #   msg, chan = server.get_ext 
-  #
+  # 
   # chan is a two way connected channel to the specific client that has opened 
   # its communication with msg. 
   #
-  # Using plain #get: 
   #   # on the client: 
   #   client.put [client, :msg]
   #   # on the server
@@ -69,7 +67,7 @@ module Cod
       msg, socket = _get(opts)
       return [
         msg, 
-        TcpClient.new(socket, @serializer)]
+        TcpClient.new(TcpClient::Connection.new(socket, self), @serializer)]
     end
     
     # Closes the channel. 
@@ -104,6 +102,20 @@ module Cod
       Service::Client.new(answers_to, answers_to)
     end
 
+    # ------------------------------------------------------- connection owner
+    
+    # Notifies the TcpServer that one of its connections needs to be closed. 
+    # This can be triggered by using #get_ext to obtain a handle to connections
+    # and then calling #close on that connection. 
+    #
+    # @param socket [TCPSocket] the socket that needs to be closed
+    # @return [void]
+    #
+    def request_close(socket)
+      @client_sockets.delete(socket)
+      socket.close
+    end
+    
   private
     def _get(opts)
       loop do
