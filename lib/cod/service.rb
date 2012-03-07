@@ -4,7 +4,7 @@ module Cod
   # answer. It solves problems related to timeouts, getting _your_ answer and
   # not any kind of answer, etc... 
   # 
-  # Synopsis: 
+  # == Synopsis
   #   # On the server end: 
   #   service = server_channel.service
   #   service.one { |request| :answer }
@@ -40,6 +40,8 @@ module Cod
     # Use Cod::Client to perform the service call. This will keep track of 
     # messages sent and answers received and a couple of other things. 
     # 
+    # @yield [Object] request made by the client. The return value of the 
+    #   block will be returned to the client.
     #
     def one
       rq, answer_chan = @channel.get

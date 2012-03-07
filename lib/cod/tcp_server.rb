@@ -67,7 +67,7 @@ module Cod
       msg, socket = _get(opts)
       return [
         msg, 
-        TcpClient.new(TcpClient::Connection.new(socket, self), @serializer)]
+        produce_back_channel(socket)]
     end
     
     # Closes the channel. 
@@ -95,7 +95,8 @@ module Cod
     def service
       Service.new(self)
     end
-    # NOTE: It is really more convenient to just construct a Cod.tcp_client 
+    
+    # @note It is really more convenient to just construct a Cod.tcp_client 
     # and ask that for a client object. In the case of TCP, this is enough. 
     #
     def client(answers_to)
@@ -170,7 +171,7 @@ module Cod
     def deserialize(io)
       @serializer.de(io) { |obj|
         obj.kind_of?(TcpClient::OtherEnd) ? 
-          TcpClient.new(io, @serializer) :
+          produce_back_channel(io) : 
           obj
       }
     end
@@ -193,6 +194,12 @@ module Cod
       end
     rescue Errno::EAGAIN
       # This means that there are no sockets to accept. Continue.
+    end
+
+    def produce_back_channel(socket)
+      TcpClient.new(
+        TcpClient::Connection.new(socket, self), 
+        @serializer)
     end
   end
 end

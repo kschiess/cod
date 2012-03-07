@@ -25,6 +25,9 @@ module Cod
       @serializer = serializer
       @destination = destination
 
+      # TODO remove this soon
+      fail "Deprecated API" if destination.kind_of?(TCPSocket)
+      
       # TcpClient handles two cases: Construction via an url (destination is a
       # string) and construction via a connection that has been
       # preestablished (destination is a socket):
