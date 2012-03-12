@@ -9,3 +9,7 @@ The server accepts connections, writes its pid to it and then closes the
 connections. It will wait at most TIMEOUT seconds for a new connection to 
 be made, otherwise it will terminate. This is to ensure that the example exits
 cleanly and leaves no processes laying around.
+
+You can try (for kicks) to double/triple/n-uple the number of clients that
+does this counting. Server should keep up its even load distribution up to 
+a high number of clients.
