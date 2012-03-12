@@ -7,7 +7,9 @@ require 'timeout'
 
 def timeout_no_exception(seconds)
   timeout(seconds, &Proc.new)
+  false
 rescue Timeout::Error
+  true
 end
 
 client {
@@ -28,10 +30,10 @@ client {
 
 server {
   server = Cod.tcp_server('localhost:32423')
-  4.times do 
+  8.times do 
     fork {
       loop do
-        timeout_no_exception(1) do
+        break if timeout_no_exception(1) do
           m, chan = server.get_ext
           chan.put Process.pid
           chan.close

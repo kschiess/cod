@@ -1,2 +1,11 @@
 Demonstrates a server that uses more than one worker process to handle a 
 single tcp port.
+
+This example forks one client that repeatedly makes connections to a tcp 
+server and then reads the servers pid from that connection. It counts what
+pid has answered how many times and prints that result in the end.
+
+The server accepts connections, writes its pid to it and then closes the
+connections. It will wait at most TIMEOUT seconds for a new connection to 
+be made, otherwise it will terminate. This is to ensure that the example exits
+cleanly and leaves no processes laying around.
