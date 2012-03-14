@@ -1,3 +1,7 @@
+= 0.4.5 / ???
+
+  + Process#wait will not throw Errno::ECHILD anymore.
+
 = 0.4.4 / 7Mar2012
 
   + Uses IO.select in the server as well, not polling for accept. This should

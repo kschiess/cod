@@ -29,6 +29,7 @@ module Cod
     
     def wait
       ::Process.wait(@pid)
+    rescue Errno::ECHILD
     end
   end
 end
