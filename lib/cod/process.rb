@@ -7,6 +7,10 @@ module Cod
   # @example
   #   process = Cod.process('ls', Cod::LineSerializer.new)
   #   process.wait
+  #   loop do
+  #     msg = process.get rescue nil
+  #     break unless msg
+  #   end
   #
   class Process
     attr_reader :pid 

@@ -21,11 +21,9 @@ describe "Cod.process" do
       messages = []
       
       loop do
-        begin
-          messages << channel.get
-        rescue Cod::ConnectionLost
-          break
-        end
+        msg = channel.get rescue nil
+        break unless msg
+        messages << msg
       end
       
       messages.should =~ `ls`.lines.map(&:chomp)
