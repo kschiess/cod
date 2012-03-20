@@ -8,11 +8,13 @@ module Cod
   #   process = Cod.process('ls', Cod::LineSerializer.new)
   #   process.wait
   #   loop do
+  #     # Will list all entries of the current dir in turn, already chomped.
   #     msg = process.get rescue nil
   #     break unless msg
   #   end
   #
   class Process
+    # The pid of the process that was spawned.
     attr_reader :pid 
     
     def initialize(command, serializer=nil)
