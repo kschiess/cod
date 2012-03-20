@@ -1,13 +1,6 @@
 require 'spec_helper'
 
 describe "Cod.process" do
-  # class LineSerializer
-  #   def en(msg)
-  #   end
-  #   def de(io)
-  #     io.gets
-  #   end
-  # end
   let(:process) { Cod.process('true') }
   after(:each) { process.wait }
   
@@ -15,7 +8,7 @@ describe "Cod.process" do
   
   it "throws ConnectionLost if the process goes away" do
     expect {
-      p channel.get
+      channel.get
     }.to raise_error(Cod::ConnectionLost)
   end 
 end
