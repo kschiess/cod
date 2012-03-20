@@ -130,8 +130,8 @@ module Cod
   # Indicates that a standing connection was lost and must be reconnected. 
   # 
   class ConnectionLost < StandardError
-    def initialize
-      super "Connection lost."
+    def initialize(msg=nil)
+      super msg || "Connection lost."
     end
   end
 end

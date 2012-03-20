@@ -104,7 +104,8 @@ module Cod
         return deserialize_one if ready
       end
     rescue EOFError
-      fail "All pipe ends seem to be closed. Reading from this pipe will not "+
+      raise Cod::ConnectionLost, 
+        "All pipe ends seem to be closed. Reading from this pipe will not "+
         "return any data."
     end
     
