@@ -88,9 +88,12 @@ module Cod
   # Runs a command via Process.spawn, then links a channel to the commands
   # stdout and stdin. Returns the commands pid and the channel. 
   #
-  # Example: 
+  # == Synopsis: 
   #   pid, channel = Cod.process('cat')
   #
+  # @param command [String] command to execute in a subprocess 
+  #   (using +Process.spawn+)
+  # @param serializer [#en,#de] serializer to use for all messages in channel
   # @see Cod::Process
   #
   def process(command, serializer=nil)
@@ -144,6 +147,7 @@ require 'cod/iopair'
 require 'cod/channel'
 
 require 'cod/simple_serializer'
+require 'cod/line_serializer'
 
 require 'cod/pipe'
 require 'cod/bidir_pipe'

@@ -1,14 +1,34 @@
 require 'spec_helper'
 
 describe "Cod.process" do
-  let(:process) { Cod.process('true') }
   after(:each) { process.wait }
   
   let(:channel) { process.channel }
-  
-  it "throws ConnectionLost if the process goes away" do
-    expect {
-      channel.get
-    }.to raise_error(Cod::ConnectionLost)
+
+  describe 'when starting a process that exits immediately' do
+    let(:process) { Cod.process('true') }
+
+    it "throws ConnectionLost if the process goes away" do
+      expect {
+        channel.get
+      }.to raise_error(Cod::ConnectionLost)
+    end 
+  end
+  describe "when starting 'ls'" do
+    let(:process) { Cod.process('ls', Cod::LineSerializer.new) }
+    
+    it "reads output one line at a time" do
+      messages = []
+      
+      loop do
+        begin
+          messages << channel.get
+        rescue Cod::ConnectionLost
+          break
+        end
+      end
+      
+      messages.should =~ `ls`.lines.map(&:chomp)
+    end 
   end 
 end

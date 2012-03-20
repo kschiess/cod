@@ -7,6 +7,7 @@ module Cod
     def de(io)
       msg = io.gets
       return msg.chomp if msg
+      raise EOFError
     end
   end
 end

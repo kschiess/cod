@@ -1,4 +1,13 @@
 module Cod
+  
+  # A subprocess that is being run in server mode (think git-server). Use 
+  # {Cod}.process to obtain an instance of this. You can then call {#channel} to 
+  # obtain a Cod channel to communicate with the $stdio server you've spawned. 
+  #
+  # @example
+  #   process = Cod.process('ls', Cod::LineSerializer.new)
+  #   process.wait
+  #
   class Process
     attr_reader :pid 
     
