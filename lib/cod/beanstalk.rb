@@ -1,3 +1,4 @@
+# Implements communication via a beanstalkd server. See {Cod::Beanstalk::Channel}.
 module Cod::Beanstalk
 end
 

@@ -17,8 +17,10 @@ module Cod::Beanstalk
     JOB_PRIORITY = 0
     
     # Which tube this channel is connected to
+    # @return [String]
     attr_reader :tube_name
     # Beanstalkd server this channel is connected to
+    # @return [String]
     attr_reader :server_url
     
     def initialize(tube_name, server_url)
@@ -37,6 +39,11 @@ module Cod::Beanstalk
       initialize(other.tube_name, other.server_url)
     end
     
+    # Puts a job on the tube after serializing. 
+    #
+    # @param msg [Object] message to send
+    # @return [void]
+    #
     def put(msg)
       pri   = JOB_PRIORITY
       delay = 0
@@ -47,6 +54,10 @@ module Cod::Beanstalk
       fail "#put fails, #{answer.inspect}" unless answer == :inserted
     end
   
+    # Reads a job from the tube and decodes it as a message.
+    #
+    # @return [Object]
+    #
     def get
       id, msg = bs_reserve
       
@@ -67,6 +78,8 @@ module Cod::Beanstalk
     end
     
     # --------------------------------------------------------- service/client
+    
+    # 
     def service
       Service.new(self)
     end
