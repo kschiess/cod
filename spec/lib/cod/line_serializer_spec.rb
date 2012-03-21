@@ -24,6 +24,8 @@ describe Cod::LineSerializer do
       end
       
       messages
+    rescue EOFError
+      messages
     end
     
     it "should decode one line at a time" do
