@@ -4,7 +4,7 @@ module Cod
   # {Cod}.process to obtain an instance of this. You can then call {#channel} to 
   # obtain a Cod channel to communicate with the $stdio server you've spawned. 
   #
-  # @example
+  # @example List the files in a directory
   #   process = Cod.process('ls', Cod::LineSerializer.new)
   #   process.wait
   #   loop do
