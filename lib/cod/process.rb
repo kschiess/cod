@@ -17,12 +17,16 @@ module Cod
     # The pid of the process that was spawned.
     attr_reader :pid 
     
+    # Constructs a process object and runs the command. 
+    #
+    # @see Cod#process
     def initialize(command, serializer=nil)
       @serializer = serializer || SimpleSerializer.new
 
       run(command)
     end
     
+    # @private
     def run(command)
       @pipe = Cod.bidir_pipe(@serializer)
       
@@ -31,17 +35,38 @@ module Cod
         :out => @pipe.r.w)
     end
     
+    # Returns the cod channel associated with this process. The channel will
+    # have the process' standard output bound to its #get (input), and the
+    # process' standard input will be bound to #put (output).
+    #
+    # Note that when the process exits and all communication has been read from
+    # the channel, it will probably raise a Cod::ConnectionLost error. 
+    #
+    # @example
+    #   process = Cod.process('uname', LineSerializer.new)
+    #   process.channel.get # => {Darwin,Linux,...}
+    #
     def channel
       @pipe
     end
     
+    # Stops the process unilaterally. 
+    #
     def kill
+      terminate
       ::Process.kill :TERM, @pid
     end
+    
+    # Asks the process to terminate by closing its stanard input. This normally
+    # closes down the process, but no guarantees are made. 
+    #
     def terminate
       @pipe.w.close
     end
     
+    # Waits for the process to terminate and returns its exit value. May
+    # return nil, in which case someone else already reaped the process.
+    #
     def wait
       ::Process.wait(@pid)
     rescue Errno::ECHILD
