@@ -54,6 +54,8 @@ module Cod
     end
     
     # Stops the process unilaterally. 
+    # 
+    # @return [void]
     #
     def kill
       terminate
@@ -63,12 +65,16 @@ module Cod
     # Asks the process to terminate by closing its stanard input. This normally
     # closes down the process, but no guarantees are made. 
     #
+    # @return [void]
+    #
     def terminate
       @pipe.w.close
     end
     
     # Waits for the process to terminate and returns its exit value. May
     # return nil, in which case someone else already reaped the process.
+    #
+    # @return [Number,nil]
     #
     def wait
       ::Process.wait(@pid)
