@@ -1,4 +1,11 @@
 module Cod
+  # A shortcurt for constructing a {Select}. See {Select#do} for more
+  # information.
+  #
+  # @param timeout [Number] seconds to block before giving up
+  # @param groups channels or io selectors to wait for
+  # @return [Hash,Array,Cod::Channel,IO]
+  # 
   def select(timeout, groups)
     Select.new(timeout, groups).do
   end
@@ -23,6 +30,8 @@ module Cod
     
     # Performs the IO.select and returns a thinned out version of that initial
     # groups, containing only FDs and channels that are ready for reading. 
+    #
+    # @return [Hash,Array,Cod::Channel,IO]
     #
     def do
       fds = groups.values { |e| to_read_fd(e) }
