@@ -57,9 +57,10 @@ module Cod
   # Creates a pipe connection that is visible to this process and its
   # children. 
   #
-  # @see Cod::Pipe
+  # @param serializer [#en,#de] optional serializer to use
+  # @return [Cod::Pipe]
   #
-  def pipe(serializer=nil, pipe_pair=nil)
+  def pipe(serializer=nil)
     Cod::Pipe.new(serializer)
   end
   module_function :pipe
@@ -68,7 +69,9 @@ module Cod
   # things up so that you communication is bidirectional. Writes go to 
   # #out and reads come from #in. 
   #
-  # @see Cod::BidirPipe
+  # @overload bidir_pipe(serializer=nil)
+  #   @param serializer [#en,#de] optional serializer to use
+  #   @return [Cod::BidirPipe]
   #
   def bidir_pipe(serializer=nil, pipe_pair=nil)
     Cod::BidirPipe.new(serializer, pipe_pair)
@@ -77,7 +80,9 @@ module Cod
   
   # Creates a tcp connection to the destination and returns a channel for it.
   # 
-  # @see Cod::TcpClient
+  # @param destination [String] an address to connect to, like 'localhost:1234'
+  # @param serializer [#en,#de] optional serializer to use
+  # @return [Cod::TcpClient]
   #
   def tcp(destination, serializer=nil)
     Cod::TcpClient.new(
@@ -88,7 +93,9 @@ module Cod
   
   # Creates a tcp listener on bind_to and returns a channel for it. 
   #
-  # @see Cod::TcpServer
+  # @param bind_to [String] an address and port to bind to, in the form "host:port"
+  # @param serializer [#en,#de] optional serializer to use
+  # @return [Cod::TcpServer]
   #
   def tcp_server(bind_to, serializer=nil)
     Cod::TcpServer.new(
@@ -99,7 +106,11 @@ module Cod
 
   # Creates a channel based on the beanstalkd messaging queue. 
   #
-  # @see Cod::Beanstalk::Channel
+  # @overload beanstalk(tube_name, server='localhost:11300')
+  #   @param tube_name [String] name of the tube to send messages to / 
+  #     receive messages from
+  #   @param server [String] address of the server to connect to
+  #   @return [Cod::Beanstalk::Channel]
   # 
   def beanstalk(tube_name, server=nil)
     Cod::Beanstalk::Channel.new(tube_name, server||'localhost:11300')
@@ -107,15 +118,12 @@ module Cod
   module_function :beanstalk
 
   # Runs a command via Process.spawn, then links a channel to the commands
-  # stdout and stdin. Returns the commands pid and the channel. 
-  #
-  # == Synopsis: 
-  #   pid, channel = Cod.process('cat')
+  # stdout and stdin. 
   #
   # @param command [String] command to execute in a subprocess 
   #   (using +Process.spawn+)
   # @param serializer [#en,#de] serializer to use for all messages in channel
-  # @see Cod::Process
+  # @return [Cod::Process]
   #
   def process(command, serializer=nil)
     Cod::Process.new(command, serializer)
@@ -126,7 +134,8 @@ module Cod
   # pipes #put method will print to stdout, and the #get method will read from 
   # stdin.
   #
-  # @see Cod::Pipe
+  # @param serializer [#en,#de] optional serializer to use
+  # @return [Cod::Pipe]
   #
   def stdio(serializer=nil)
     Cod::Pipe.new(serializer, [$stdin, $stdout])
