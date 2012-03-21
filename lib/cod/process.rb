@@ -15,6 +15,7 @@ module Cod
   #
   class Process
     # The pid of the process that was spawned.
+    # @return [Number]
     attr_reader :pid 
     
     # Constructs a process object and runs the command. 
@@ -45,6 +46,8 @@ module Cod
     # @example
     #   process = Cod.process('uname', LineSerializer.new)
     #   process.channel.get # => {Darwin,Linux,...}
+    # 
+    # @return [Cod::Pipe]
     #
     def channel
       @pipe
