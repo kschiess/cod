@@ -3,34 +3,55 @@ require 'stringio'
 # The core concept of Cod are 'channels'. (see {Cod::Channel::Base}) You can
 # create such channels on top of the various transport layers. Once you have
 # such a channel, you #put messages into it and you #get messages out of it.
-# Messages are retrieved in FIFO manner, making channels look like a
-# communication pipe most of the time. 
+# Messages are retrieved in FIFO manner.
+# 
+#   channel.put :test1
+#   channel.put :test2
+#   channel.get # => :test1
 #
 # Cod also brings a few abstractions layered on top of channels: You can use
 # channels to present 'services' (Cod::Service) to the network: A service is a
 # simple one or two way RPC call. (one way = asynchronous) 
+#
+#   client = channel.client
+#   client.notify [:foo, :bar]
 #
 # Cod channels are serializable whereever possible. If you want to tell
 # somebody where to write his answers and/or questions to, send him the
 # channel! This is really powerful and used extensively in constructing the
 # higher order primitives. 
 #
+#   server.put [:some_request, my_channel]
+#   # Server will receive my_channel and be able to contact us there.
+#
 # All Cod channels have a serializer. If you don't specify your own
 # serializer, they will use Marshal.dump and Marshal.load. (see
 # {Cod::SimpleSerializer}) This allows to send Ruby objects and not just
 # strings by default. If you want to, you can of course go back to very strict
-# wire formats, see {Cod::ProtocolBuffersSerializer} for an example of that.
+# wire formats, see {Cod::ProtocolBuffersSerializer} or {Cod::LineSerializer}
+# for an example of that.
+#
+#   line_protocol_channel = Cod.pipe(Cod::LineSerializer.new)
+#   line_protocol_channel.put 'some_string'
 #
 # The goal of Cod is that you have to know only very few things about the
 # network (the various transports) to be able to construct complex things. It
-# handles reconnection and reliability for you. It also translates cryptic OS
-# errors into plain text messages where it can't just handle them. This should
-# give you a clear place to look at if things go wrong. Note that this can
-# only be ever as good as the sum of situations Cod has been tested in.
-# Contribute your observations and we'll come up with a way of dealing with
-# most of the tricky stuff!
+# also translates cryptic OS errors into plain text messages where it can't
+# just handle them. This should give you a clear place to look at if things go
+# wrong. Note that this can only be ever as good as the sum of situations Cod
+# has been tested in. Contribute your observations and we'll come up with a
+# way of dealing with most of the tricky stuff!
 #
 # @see Cod::Channel
+# 
+# == Types of channels in this version
+# 
+# {Cod.pipe} :: Transports via +IO.pipe+
+# {Cod.tcp}  :: Transports via TCP (client)
+# {Cod.tcp_server} :: Transports via TCP (as a server)
+# {Cod.stdio} :: Connects to +$stdin+ and +$stdout+ (+IO.pipe+)
+# {Cod.process} :: Spawn a child process and connects to that process' +$stdin+ and +$stdout+ (+IO.pipe+)
+# {Cod.beanstalk} :: Transports via a tube on beanstalkd
 #
 module Cod
   # Creates a pipe connection that is visible to this process and its
