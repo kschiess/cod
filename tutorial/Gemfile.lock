@@ -1,0 +1,10 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    case (0.5.2.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  case
