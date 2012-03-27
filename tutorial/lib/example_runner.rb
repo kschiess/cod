@@ -70,6 +70,9 @@ class ExampleRunner
     end
     
     puts 'ok.'.green
+    
+    puts @example.produce_modified_code
+    
     @example = nil
   end
 end

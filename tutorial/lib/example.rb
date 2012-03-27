@@ -7,6 +7,7 @@ class Example
     @file, @line = file, line
     @lines = []
     @sites = {}
+    @site_by_line = {}
   end
   
   def to_s
@@ -31,7 +32,7 @@ class Example
     # Where code results are communicated.  
     $instrumentation = Cod.pipe
     
-    code = example_code
+    code = produce_example_code
     Process.wait fork { 
       redirect_streams(tempfiles)
       # puts example_code
@@ -64,7 +65,7 @@ class Example
     end
   end
   
-  def example_code
+  def produce_example_code
     root = File.expand_path(File.dirname(__FILE__))
 
     '' <<
@@ -85,10 +86,21 @@ class Example
   end
   def add_site(site)
     @sites[site.id] = site
+    @site_by_line[site.original_line] = site
+  end
+  def produce_modified_code
+    @lines.map { |line| 
+      site = @site_by_line[line]
+      next line unless site 
+      
+      site.format_documentation_line }
   end
   
   class Site
+    attr_reader :original_line
+    
     def initialize(original_line, code, expectation)
+      @original_line = original_line
       @code = code
       @values = []
     end
@@ -97,6 +109,9 @@ class Example
     end
     def to_instrumented_line
       "(#@code).tap { |o| $instrumentation.put [#{id}, o] }"
+    end
+    def format_documentation_line
+      "#@code # => #{@values.last.inspect}"
     end
     def store(value)
       @values << value

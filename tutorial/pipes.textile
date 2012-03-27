@@ -49,7 +49,7 @@ this easy:
   fork do
     channel.put heavy_computation()
   end
-  fail
+
   channel.get   # => 42
 </code></pre>
 
