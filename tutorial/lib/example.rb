@@ -1,10 +1,12 @@
 require 'tempfile'
+require 'cod'
 
 class Example
-  def initialize(title)
+  def initialize(title, file, line)
     @title = title
+    @file, @line = file, line
     @lines = []
-    @sites = []
+    @sites = {}
   end
   
   def to_s
@@ -26,11 +28,15 @@ class Example
     tempfiles = [:err, :out].inject({}) { |h, name| 
       h[name] = Tempfile.new(name.to_s); h }
     
+    # Where code results are communicated.  
+    $instrumentation = Cod.pipe
+    
+    code = example_code
     Process.wait fork { 
-      # redirect_streams(tempfiles)
-      puts example_code
-      # eval(example_code) 
-      }
+      redirect_streams(tempfiles)
+      # puts example_code
+      eval(code, nil, @file, @line) 
+    }
 
     # Read these tempfiles.
     @output = tempfiles.inject({}) { |h, (name, io)| 
@@ -38,6 +44,13 @@ class Example
       h[name] = io.read; 
       io.close 
       h }
+      
+    loop do
+      site_id, probe_value = $instrumentation.get rescue break
+      fail "No such site #{site_id}." unless @sites.has_key?(site_id)
+
+      @sites[site_id].store probe_value
+    end
 
     return $?.success?
   end
@@ -66,19 +79,27 @@ class Example
       next line unless md
       
       site = Site.new(line, md[:pre], md[:expectation]) 
-      @sites << site
+      add_site site
+      
       site.to_instrumented_line }
+  end
+  def add_site(site)
+    @sites[site.id] = site
   end
   
   class Site
     def initialize(original_line, code, expectation)
       @code = code
+      @values = []
     end
     def id
       object_id
     end
     def to_instrumented_line
       "(#@code).tap { |o| $instrumentation.put [#{id}, o] }"
+    end
+    def store(value)
+      @values << value
     end
   end
 end

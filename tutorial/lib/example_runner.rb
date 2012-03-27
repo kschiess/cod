@@ -7,15 +7,18 @@ require 'example'
 class ExampleRunner
   def initialize
     @state = :outside
+    @line_count = 0
   end
   
-  def consume(line)
+  def consume(line, file)
+    @line_count += 1
+    
     a = lambda { |*args| Case::Array[*args] }
     any = Case::Any
     
     case [@state, line]
       when a[:outside, /<pre><code class="sh_ruby" title="(.*)">/]
-        extract_title(line)
+        extract_title(line, file)
         enter :inside
       when a[:inside, %r(</code></pre>)]
         enter :outside
@@ -26,9 +29,9 @@ class ExampleRunner
     end
   end
   
-  def extract_title(line)
+  def extract_title(line, file)
     if md=line.match(/title="(.*)"/)
-      @example = Example.new(md[1])
+      @example = Example.new(md[1], file, @line_count)
     end
   end
   
@@ -46,7 +49,7 @@ class ExampleRunner
   def run(args)
     Dir['*.textile'].each do |name|
       File.readlines(name).each { |line|
-        consume(line.chomp) }
+        consume(line.chomp, name) }
     end
   end
   
