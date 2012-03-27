@@ -2,10 +2,12 @@
 require 'tempfile'
 require 'case'
 
+$:.unshift '.'
+require 'example'
+
 class ExampleRunner
   def initialize
     @state = :outside
-    reset_example
   end
   
   def consume(line)
@@ -19,7 +21,7 @@ class ExampleRunner
       when a[:inside, %r(</code></pre>)]
         enter :outside
       when a[:inside, any]
-        @current_example << line
+        @example << line
     else
       # do nothing
     end
@@ -27,7 +29,7 @@ class ExampleRunner
   
   def extract_title(line)
     if md=line.match(/title="(.*)"/)
-      @title = md[1]
+      @example = Example.new(md[1])
     end
   end
   
@@ -37,7 +39,6 @@ class ExampleRunner
     case [@state, new_state]
       when a[:inside, :outside]
         run_example
-        reset_example
     end
     
     @state = new_state
@@ -50,34 +51,13 @@ class ExampleRunner
     end
   end
   
-  def reset_example
-    @title = nil
-    @current_example = []
-  end
   def run_example
-    return unless @title
-    unless @current_example.grep(/# =>/)
-      puts "Skipping #{@title}, doesn't contain inspection points."
+    print "Running #@example..."
+    unless @example.run
+      puts "Skipped, no inspection points."
     end
-
-    print "Running '#@title'..."
-    tempfile = Tempfile.new('exrun')
-    root = File.expand_path(File.dirname(__FILE__))
-    begin
-      tempfile.puts "$:.unshift #{root.inspect}"
-      tempfile.puts "load 'prelude.rb'"
-      tempfile.write(@current_example.join("\n"))
-      tempfile.puts "\nload 'postscriptum.rb'"
-      tempfile.close(false)
-      
-      # puts File.read(tempfile.path)
-    
-      pid = Process.spawn("ruby #{tempfile.path}")
-      Process.wait(pid)
-      puts 'done.'
-    ensure 
-      tempfile.close(true)
-    end
+    puts 'ok.'
+    @example = nil
   end
 end
 
