@@ -1,5 +1,6 @@
 
 require 'case'
+require 'text/highlight'
 
 require 'example'
 
@@ -50,11 +51,22 @@ class ExampleRunner
   end
   
   def run_example
-    print "Running #@example..."
-    unless @example.run
+    String.highlighter = Text::ANSIHighlighter.new
+    print "Running #@example... "
+    
+    if @example.skip?
       puts "Skipped, no inspection points."
+      return
     end
-    puts 'ok.'
+    
+    unless @example.run
+      puts "error".red
+      @example.output[:err].lines.each { |line| 
+        print "  " + line.magenta }
+      return
+    end
+    
+    puts 'ok.'.green
     @example = nil
   end
 end

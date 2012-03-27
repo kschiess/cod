@@ -14,29 +14,29 @@ class Example
     @lines << line
   end
   
+  attr_reader :output
+  
+  def skip?
+    !@lines.grep(/# =>/)
+  end
+  
   def run
-    unless @lines.grep(/# =>/)
-      return false
-    end
-    
-    tempfiles = {
-      err: Tempfile.new('exerr'),
-      out: Tempfile.new('exout')
-    }
+    # Create a tempfile per output
+    tempfiles = [:err, :out].inject({}) { |h, name| 
+      h[name] = Tempfile.new(name.to_s); h }
     
     Process.wait fork { 
       redirect_streams(tempfiles)
       eval(example_code) }
-      
-    tempfiles.each do |name, io|
-      puts "Tempfile #{name} contains: ---------------------------------"
-      print File.read(io.path)
-      puts "------------------------------------------------------------"
 
-      io.close(false)
-    end
-    
-    return true
+    # Read these tempfiles.
+    @output = tempfiles.inject({}) { |h, (name, io)| 
+      io.rewind
+      h[name] = io.read; 
+      io.close 
+      h }
+
+    return $?.success?
   end
   
   def redirect_streams(io_hash)
@@ -44,18 +44,17 @@ class Example
       out: $stdout, 
       err: $stderr
     }.each do |name, io|
-      
       io.reopen(io_hash[name])
     end
   end
   
-  def write_instrumented_example(io)
+  def example_code
     root = File.expand_path(File.dirname(__FILE__))
-    io.puts "$:.unshift #{root.inspect}"
-    io.puts "load 'prelude.rb'"
-    io.write(@current_example.join("\n"))
-    io.puts "\nload 'postscriptum.rb'"
-    io.close(false)
+
+    '' <<
+      "$:.unshift #{root.inspect}\n" <<
+      "load 'prelude.rb'\n" <<
+      @lines.join("\n") <<
+      "\nload 'postscriptum.rb'\n"
   end
-  
 end
