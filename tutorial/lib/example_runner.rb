@@ -1,7 +1,6 @@
 
 require 'case'
 
-$:.unshift '.'
 require 'example'
 
 class ExampleRunner

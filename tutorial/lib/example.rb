@@ -23,16 +23,17 @@ class Example
       err: Tempfile.new('exerr'),
       out: Tempfile.new('exout')
     }
-    # Close the files, but don't unlink
-    tempfiles.each { |_,io| io.close(false) }
     
     Process.wait fork { 
       redirect_streams(tempfiles)
       eval(example_code) }
       
     tempfiles.each do |name, io|
-      puts "Tempfile #{name} contains:"
+      puts "Tempfile #{name} contains: ---------------------------------"
       print File.read(io.path)
+      puts "------------------------------------------------------------"
+
+      io.close(false)
     end
     
     return true
@@ -43,6 +44,7 @@ class Example
       out: $stdout, 
       err: $stderr
     }.each do |name, io|
+      
       io.reopen(io_hash[name])
     end
   end
