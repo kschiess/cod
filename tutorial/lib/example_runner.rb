@@ -71,6 +71,7 @@ class ExampleRunner
     
     puts 'ok.'.green
     
+    @example.check_expectations
     puts @example.produce_modified_code
     
     @example = nil
