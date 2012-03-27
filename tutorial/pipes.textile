@@ -40,7 +40,7 @@ Let's assume we want to run a subprocess and have it produce a value for us.
 This is really a solved problem[3], but let's assume it isn't. _cod_ makes
 this easy:
 
-<pre><code class="sh_ruby">
+<pre><code class="sh_ruby" title="Heavy Computation">
   def heavy_computation # nomen est omen
     41 + 1
   end
@@ -66,7 +66,7 @@ other work, please look at "Cod.select":select.html
 
 Have a look at this nifty trick: 
 
-<pre><code class="sh_ruby">
+<pre><code class="sh_ruby" title="Passing back exceptions">
   channel = Cod.pipe
   fork do
     begin
