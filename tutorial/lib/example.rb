@@ -4,6 +4,7 @@ class Example
   def initialize(title)
     @title = title
     @lines = []
+    @sites = []
   end
   
   def to_s
@@ -26,8 +27,10 @@ class Example
       h[name] = Tempfile.new(name.to_s); h }
     
     Process.wait fork { 
-      redirect_streams(tempfiles)
-      eval(example_code) }
+      # redirect_streams(tempfiles)
+      puts example_code
+      # eval(example_code) 
+      }
 
     # Read these tempfiles.
     @output = tempfiles.inject({}) { |h, (name, io)| 
@@ -54,7 +57,28 @@ class Example
     '' <<
       "$:.unshift #{root.inspect}\n" <<
       "load 'prelude.rb'\n" <<
-      @lines.join("\n") <<
+      instrument(@lines).join("\n") <<
       "\nload 'postscriptum.rb'\n"
+  end
+  def instrument(code)
+    code.map { |line| 
+      md = line.match(/(?<pre>.*)# =>(?<expectation>.*)/) 
+      next line unless md
+      
+      site = Site.new(line, md[:pre], md[:expectation]) 
+      @sites << site
+      site.to_instrumented_line }
+  end
+  
+  class Site
+    def initialize(original_line, code, expectation)
+      @code = code
+    end
+    def id
+      object_id
+    end
+    def to_instrumented_line
+      "(#@code).tap { |o| $instrumentation.put [#{id}, o] }"
+    end
   end
 end
