@@ -25,10 +25,13 @@ class Site
   end
   def check
     return true if !@expectation || @expectation.match(/^\s*$/)
-    if format_values != @expectation
-      fail "Expectation violated, should have gotten: \n"+
-        "  #{@expectation}, but was \n"+
-        "  #{format_values}."
+
+    str = format_values
+    if str != @expectation
+      puts "      #@code # => #{str.red}"
+      puts "      #{' '*@code.size} # expected: #@expectation"
+    else
+      puts "      #@code # => #{str.green}"
     end
   end
   def store(value)
