@@ -32,7 +32,7 @@ class Document
         
       when a[:inside, %r(</code></pre>)]
         @state = :outside
-        # run_example
+        run_example
 
       when a[:inside, any]
         @example << line

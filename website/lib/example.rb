@@ -37,11 +37,13 @@ class Example
     $instrumentation = Cod.pipe
     
     code = produce_example_code
-    Process.wait fork { 
-      redirect_streams(tempfiles)
-      # puts example_code
-      eval(code, nil, @file, @line) 
-    }
+    pid = fork do
+    #   redirect_streams(tempfiles)
+    #   # puts example_code
+    #   eval(code, nil, @file, @line) 
+    end
+    p Process.pid
+    Process.wait(pid)
 
     # Read these tempfiles.
     @output = tempfiles.inject({}) { |h, (name, io)| 
@@ -56,6 +58,8 @@ class Example
 
       @sites[site_id].store probe_value
     end
+    
+    $instrumentation.close; $instrumentation = nil
 
     return $?.success?
   end
