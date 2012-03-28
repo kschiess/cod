@@ -10,6 +10,7 @@ class Document
 
     File.open(@name, 'r') do |original|
       while line = original.gets
+        p line
         consume(line.chomp)
       end
     end

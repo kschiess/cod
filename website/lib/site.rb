@@ -28,10 +28,10 @@ class Site
 
     str = format_values
     if str != @expectation
-      puts "      #@code # => #{str.red}"
+      puts "      #{@code.strip} # => #{str.red}"
       puts "      #{' '*@code.size} # expected: #@expectation"
     else
-      puts "      #@code # => #{str.green}"
+      puts "      #{@code.strip} # => #{str.green}"
     end
   end
   def store(value)
