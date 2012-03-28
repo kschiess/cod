@@ -74,7 +74,7 @@ Have a look at this nifty trick:
   channel = Cod.pipe
   fork do
     begin
-      fail "Meanwhile, back at the ranch, something bad happens."
+      fail "Meanwhile, back at the ranch:"
     rescue => ex
       channel.put ex
     end

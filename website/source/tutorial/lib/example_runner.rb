@@ -17,7 +17,7 @@ class ExampleRunner
     any = Case::Any
     
     case [@state, line]
-      when a[:outside, /<pre><code class="sh_ruby" title="(.*)">/]
+      when a[:outside, /<pre class="sh_ruby"><code title="(.*)">/]
         extract_title(line, file)
         enter :inside
       when a[:inside, %r(</code></pre>)]
