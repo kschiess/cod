@@ -1,11 +1,15 @@
 require 'tempfile'
 require 'cod'
 
+require 'site'
+
 class Example
   def initialize(title, file, line)
     @title = title
     @file, @line = file, line
+    
     @lines = []
+    
     @sites = {}
     @site_by_line = {}
   end
@@ -88,6 +92,7 @@ class Example
     @sites[site.id] = site
     @site_by_line[site.original_line] = site
   end
+  
   def produce_modified_code
     @lines.map { |line| 
       site = @site_by_line[line]
@@ -95,47 +100,10 @@ class Example
       
       site.format_documentation_line }
   end
+  
   def check_expectations
     @sites.each do |_, site|
       site.check
-    end
-  end
-  
-  class Site
-    attr_reader :original_line
-    
-    def initialize(original_line, code, expectation)
-      @original_line = original_line
-      @code = code
-      @expectation = expectation
-      @values = []
-    end
-    def id
-      object_id
-    end
-    def to_instrumented_line
-      "(#@code).tap { |o| $instrumentation.put [#{id}, o] }"
-    end
-    def format_documentation_line
-      value_str = format_values
-      "#@code # => #{value_str}"
-    end
-    def format_values
-      v = @values.size == 1 ? @values.first : @values
-      s = v.inspect
-      
-      s.size > 47 ? s[0,47] + '...' : s
-    end
-    def check
-      return true if !@expectation || @expectation.match(/^\s*$/)
-      if format_values != @expectation
-        fail "Expectation violated, should have gotten: \n"+
-          "  #{@expectation}, but was \n"+
-          "  #{format_values}."
-      end
-    end
-    def store(value)
-      @values << value
     end
   end
 end
