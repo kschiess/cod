@@ -10,13 +10,12 @@ class Document
 
     File.open(@name, 'r') do |original|
       while line = original.gets
-        p line
         consume(line.chomp)
       end
     end
     
     @target.close(false)
-    FileUtils.mv(@target.path, @name)
+    # FileUtils.mv(@target.path, @name)
   end
   
   def consume(line)
