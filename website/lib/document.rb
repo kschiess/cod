@@ -15,7 +15,7 @@ class Document
     end
     
     @target.close(false)
-    # FileUtils.mv(@target.path, @name)
+    FileUtils.mv(@target.path, @name)
   end
   
   def consume(line)
@@ -26,12 +26,13 @@ class Document
     
     case [@state, line]
       when a[:outside, /<pre class="sh_ruby"><code title="(.*)">/]
+        @target.puts(line)
         @state = :inside
         extract_title(line)
         
       when a[:inside, %r(</code></pre>)]
         @state = :outside
-        run_example
+        # run_example
 
       when a[:inside, any]
         @example << line
@@ -40,7 +41,7 @@ class Document
     end
     
     # Write lines outside a code block directly to target.
-    @target.puts line if @state == :outside
+    @target.puts(line) if @state == :outside
   end
   
   def run_example

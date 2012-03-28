@@ -8,7 +8,7 @@ require 'example'
 class ExampleRunner
   def run(args)
     Dir[File.join(args.last, '*.textile')].each do |name|
-      puts name
+      puts name.white
       Document.new(name).process
     end
   end
