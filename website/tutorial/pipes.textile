@@ -1,0 +1,88 @@
+h1. Pipes
+
+A pipe is a descriptor pair for interprocess communication.[1] It allows data
+to flow in one direction, from its read end to the write end. In a way, a 
+pipe is the prototypical _cod_ channel; they have been standing model for how
+channels work. 
+
+Pipes are mainly used to communicate with subprocesses; they can be accessed
+by everyone in the process group of the creating process. The patterns shown
+here will illustrate what real uses such communication can have. 
+
+Pipes can be closed on either end. If the last write end is closed, further
+reads will raise a <code>Cod::ConnectionLost[2]</code>.
+
+h2. Basics
+
+Pipes in _cod_ are constructed using 
+  
+<pre><code class="sh_ruby">
+  Cod.pipe
+</code></pre>
+
+This returns a pipe that is either to be used for writing or for reading, 
+but never both. If you really need both ends of a pipe in one and the same
+process, you should use either of these two obtain two copies: 
+
+<pre><code class="sh_ruby">
+  # either call #dup
+  copy = pipe.dup
+
+  # or call #split (this closes pipe)
+  read, write = pipe.split
+</code></pre>
+
+The penalty for not doing this is exceptions, so there, I warned you. 
+
+h2. Communicate with Subprocesses, 101
+
+Let's assume we want to run a subprocess and have it produce a value for us.
+This is really a solved problem[3], but let's assume it isn't. _cod_ makes
+this easy:
+
+<pre><code class="sh_ruby" title="Heavy Computation">
+  def heavy_computation # nomen est omen
+    41 + 1
+  end
+  
+  channel = Cod.pipe
+  fork do
+    channel.put heavy_computation()
+  end
+
+  channel.get   # => 42
+</code></pre>
+
+No need to stop the world just to get a simple answer; you fork a subprocess
+and read the answer from a _cod_ channel.
+
+A few things to note. _cod_ is a friendly fellow, it communicates in Ruby values by default. This frequently comes in very handy indeed. If you happen
+to run into one of the infrequent cases where this bothers you, please skip
+ahead to the chapter on "serialisation":serialisation.html.
+
+Also, _cod_ will often block if you issue a <code>#get</code>. This is really
+a feature, not a bug. If you need to wait for new data to come in while doing
+other work, please look at "Cod.select":select.html
+
+Have a look at this nifty trick: 
+
+<pre><code class="sh_ruby" title="Passing back exceptions">
+  channel = Cod.pipe
+  fork do
+    begin
+      fail "Meanwhile, back at the ranch, something bad happens."
+    rescue => ex
+      channel.put ex
+    end
+  end
+  
+  channel.get   # => 
+</code></pre>
+
+h2. The Self Pipe
+
+[1] man 2 pipe 
+[2] @code_link(Cod::ConnectionLost) 
+[3] Something that another library of mine could help you with: "procrastinate":https://github.com/kschiess/procrastinate
+
+
