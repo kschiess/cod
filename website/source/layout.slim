@@ -4,17 +4,12 @@ html
     link(
       href='http://fonts.googleapis.com/css?family=Dosis' 
       rel='stylesheet' type='text/css')
-    
-    link(
-      href="/stylesheets/sh_whitengrey.css" media="screen" 
-      rel="stylesheet" type="text/css")
-    
-    link{
-      href="/stylesheets/site.css" media="screen"
-      rel="stylesheet" type="text/css" }
 
-    script src="/javascripts/sh_main.min.js"
-    script src="/javascripts/sh_ruby.min.js"
+    == stylesheet_link_tag 'sh_whitengrey'
+    == stylesheet_link_tag 'site'
+    
+    == javascript_include_tag 'sh_main.min'
+    == javascript_include_tag 'sh_ruby.min'
     
     title = data.page.title || 'cod - IPC made simple.'
   body onload="sh_highlightDocument();"
