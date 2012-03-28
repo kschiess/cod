@@ -1,8 +1,24 @@
 body {
-  font-size: 12pt;
-  font-family: "Asap", sans-serif; }
+  font-size: 1.5em;
+  font-family: "Dosis", "Helvetica", serif;
+  width: 25em;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  line-height: 1.4em; }
   body a {
     text-decoration: none; }
+  body h1, body h2, body h3, body h4 {
+    color: #454545; }
+  body h2 {
+    margin-top: 1.5em;
+    margin-bottom: 0em; }
+  body code {
+    color: #696969; }
+  body pre.sh_sourceCode {
+    border-radius: 0.5em;
+    background-color: #f8f8f8;
+    padding-bottom: 1.4em; }
 
 .links {
   text-align: center; }
