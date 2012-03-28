@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="http://fonts.googleapis.com/css?family=Asap" rel="stylesheet" type="text/css" />
+    <link href="/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/stylesheet/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="/javascripts/sh_main.min.js"></script>
+    <script src="/javascripts/sh_ruby.min.js"></script>
+    <title>Pipes</title>
+  </head>
+  <body><h1>Pipes</h1>
+<p>A pipe is a descriptor pair for interprocess communication.<sup class="footnote" id="fnr1"><a href="#fn1">1</a></sup> It allows data
+to flow in one direction, from its read end to the write end. In a way, a 
+pipe is the prototypical <em>cod</em> channel; they have been standing model for how
+channels work.</p>
+<p>Pipes are mainly used to communicate with subprocesses; they can be accessed
+by everyone in the process group of the creating process. The patterns shown
+here will illustrate what real uses such communication can have.</p>
+<p>Pipes can be closed on either end. If the last write end is closed, further
+reads will raise a <code>Cod::ConnectionLost[2]</code>.</p>
+<h2>Basics</h2>
+<p>Pipes in <em>cod</em> are constructed using</p>
+<pre class="sh_ruby"><code>
+  Cod.pipe
+</code></pre>
+<p>This returns a pipe that is either to be used for writing or for reading, 
+but never both. If you really need both ends of a pipe in one and the same
+process, you should use either of these two obtain two copies:</p>
+<pre class="sh_ruby"><code>
+  # either call #dup
+  copy = pipe.dup
+
+  # or call #split (this closes pipe)
+  read, write = pipe.split
+</code></pre>
+<p>The penalty for not doing this is exceptions, so there, I warned you.</p>
+<h2>Communicate with Subprocesses, 101</h2>
+<p>Let&#8217;s assume we want to run a subprocess and have it produce a value for us.
+This is really a solved problem<sup class="footnote" id="fnr3"><a href="#fn3">3</a></sup>, but let&#8217;s assume it isn&#8217;t. <em>cod</em> makes
+this easy:</p>
+<pre><code class="sh_ruby" title="Heavy Computation">
+  def heavy_computation # nomen est omen
+    41 + 1
+  end
+  
+  channel = Cod.pipe
+  fork do
+    channel.put heavy_computation()
+  end
+
+  channel.get   # =&gt; 42
+</code></pre>
+<p>No need to stop the world just to get a simple answer; you fork a subprocess
+and read the answer from a <em>cod</em> channel.</p>
+<p>A few things to note. <em>cod</em> is a friendly fellow, it communicates in Ruby values by default. This frequently comes in very handy indeed. If you happen
+to run into one of the infrequent cases where this bothers you, please skip
+ahead to the chapter on <a href="serialisation.html">serialisation</a>.</p>
+<p>Also, <em>cod</em> will often block if you issue a <code>#get</code>. This is really
+a feature, not a bug. If you need to wait for new data to come in while doing
+other work, please look at <a href="select.html">Cod.select</a></p>
+<p>Have a look at this nifty trick:</p>
+<pre><code class="sh_ruby" title="Passing back exceptions">
+  channel = Cod.pipe
+  fork do
+    begin
+      fail "Meanwhile, back at the ranch, something bad happens."
+    rescue =&gt; ex
+      channel.put ex
+    end
+  end
+  
+  channel.get   # =&gt; 
+</code></pre>
+<h2>The Self Pipe</h2>
+<p><sup class="footnote" id="fnr1"><a href="#fn1">1</a></sup> man 2 pipe 
+<sup class="footnote" id="fnr2"><a href="#fn2">2</a></sup> @code_link(Cod::ConnectionLost) 
+<sup class="footnote" id="fnr3"><a href="#fn3">3</a></sup> Something that another library of mine could help you with: <a href="https://github.com/kschiess/procrastinate">procrastinate</a></p></body>
+</html>

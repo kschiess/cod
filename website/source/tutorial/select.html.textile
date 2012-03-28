@@ -1,1 +1,5 @@
+---
+title: Pipes
+---
+
 h1. Selecting channels

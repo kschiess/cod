@@ -1,3 +1,7 @@
+---
+title: "Pipes"
+---
+
 h1. Pipes
 
 A pipe is a descriptor pair for interprocess communication.[1] It allows data
@@ -16,7 +20,7 @@ h2. Basics
 
 Pipes in _cod_ are constructed using 
   
-<pre><code class="sh_ruby">
+<pre class="sh_ruby"><code>
   Cod.pipe
 </code></pre>
 
@@ -24,7 +28,7 @@ This returns a pipe that is either to be used for writing or for reading,
 but never both. If you really need both ends of a pipe in one and the same
 process, you should use either of these two obtain two copies: 
 
-<pre><code class="sh_ruby">
+<pre class="sh_ruby"><code>
   # either call #dup
   copy = pipe.dup
 
@@ -40,7 +44,7 @@ Let's assume we want to run a subprocess and have it produce a value for us.
 This is really a solved problem[3], but let's assume it isn't. _cod_ makes
 this easy:
 
-<pre><code class="sh_ruby" title="Heavy Computation">
+<pre class="sh_ruby"><code title="Heavy Computation">
   def heavy_computation # nomen est omen
     41 + 1
   end
@@ -66,7 +70,7 @@ other work, please look at "Cod.select":select.html
 
 Have a look at this nifty trick: 
 
-<pre><code class="sh_ruby" title="Passing back exceptions">
+<pre class="sh_ruby"><code title="Passing back exceptions">
   channel = Cod.pipe
   fork do
     begin

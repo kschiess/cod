@@ -1,16 +1,21 @@
 doctype 5
 html
   head
-    link{
-      href='http://fonts.googleapis.com/css?family=Asap'
-      rel='stylesheet'
-      type='text/css' }
+    link(
+      href='http://fonts.googleapis.com/css?family=Dosis' 
+      rel='stylesheet' type='text/css')
     
     link{
-      href="./stylesheets/snazzy.css" 
-      media="screen"
+      href="/stylesheets/site.css" media="screen"
       rel="stylesheet" type="text/css" }
     
-    title The Technology Astronauts
-  body
+    link(
+      href="/stylesheets/sh_whitengrey.css" media="screen" 
+      rel="stylesheet" type="text/css")
+    
+    script src="/javascripts/sh_main.min.js"
+    script src="/javascripts/sh_ruby.min.js"
+    
+    title = data.page.title || 'cod - IPC made simple.'
+  body onload="sh_highlightDocument();"
     == yield

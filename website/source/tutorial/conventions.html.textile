@@ -1,3 +1,6 @@
+---
+title: Pipes
+---
 
 channel often means a cod channel
 cod is _cod_

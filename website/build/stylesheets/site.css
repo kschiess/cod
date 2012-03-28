@@ -1,6 +1,9 @@
 body {
   font-size: 12pt;
-  font-family: "Asap", sans-serif; }
+  font-family: "Asap", sans-serif;
+  width: 600px;
+  margin-left: auto;
+  margin-right: auto; }
   body a {
     text-decoration: none; }
 
