@@ -54,7 +54,7 @@ this easy:
     channel.put heavy_computation()
   end
 
-  channel.get   # => 42
+  channel.get    # => 42
 </code></pre>
 
 No need to stop the world just to get a simple answer; you fork a subprocess
@@ -80,7 +80,7 @@ Have a look at this nifty trick:
     end
   end
   
-  channel.get   # => 
+  channel.get    # => #<RuntimeError: Meanwhile, back at the ranch:>
 </code></pre>
 
 h2. The Self Pipe
