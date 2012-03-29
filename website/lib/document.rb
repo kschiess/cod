@@ -61,15 +61,12 @@ class Document
       puts "error".red
       @example.output[:err].lines.each { |line| 
         print "   " + line.magenta }
-      return
+    else
+      puts 'ok.'.green
+      @example.check_expectations
     end
     
-    puts 'ok.'.green
-    
-    @example.check_expectations
-    
     @target.puts @example.produce_modified_code
-    
     @example = nil
   end
   def extract_title(line)
