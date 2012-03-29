@@ -53,6 +53,10 @@ class Document
       return
     end
     
+    # Prevent Ruby from buffering the script for too long. After a fork, 
+    # Ruby buffers become a problem. 
+    @target.flush
+    
     unless @example.run
       puts "error".red
       @example.output[:err].lines.each { |line| 

@@ -38,11 +38,10 @@ class Example
     
     code = produce_example_code
     pid = fork do
-    #   redirect_streams(tempfiles)
-    #   # puts example_code
-    #   eval(code, nil, @file, @line) 
+      redirect_streams(tempfiles)
+      # puts example_code
+      eval(code, nil, @file, @line) 
     end
-    p Process.pid
     Process.wait(pid)
 
     # Read these tempfiles.
