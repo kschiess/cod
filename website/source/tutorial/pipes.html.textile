@@ -38,6 +38,8 @@ process, you should use either of these two obtain two copies:
 
 The penalty for not doing this is exceptions, so there, I warned you. 
 
+h2. When using forked processes
+
 When you create a process fork (<code>Kernel.fork</code>) on the other hand,
 things become really simple. The only thing you need to be sure of is that you
 don't access the pipes you create before you create the fork. This would close
@@ -51,7 +53,7 @@ either end and render them useless:
   end
 </code></pre>
 
-Instead, create your pipes and then fork all the processes you need to
+Instead, create your pipes and only then fork all the processes you need to
 communicate with. They will see your pipes because they inherit memory and
 open IO streams from you; writing or reading from the pipes will still close
 the other end, but that will happen in separate processes. This is the
@@ -83,7 +85,7 @@ this easy:
     channel.put heavy_computation()
   end
 
-  channel.get    # => 42
+  channel.get # => 42
 </code></pre>
 
 No need to stop the world just to get a simple answer; you fork a subprocess
@@ -114,8 +116,12 @@ Have a look at this nifty trick:
 
 h2. The Self Pipe
 
-[1] man 2 pipe 
-[2] @code_link(Cod::ConnectionLost) 
-[3] Something that another library of mine could help you with: "procrastinate":https://github.com/kschiess/procrastinate
+fn1. man 2 pipe 
+
+fn2. @code_link(Cod::ConnectionLost) 
+
+fn3. Something that another library of mine could help you with:
+"procrastinate":https://github.com/kschiess/procrastinate by doing your work
+in child processes.
 
 
