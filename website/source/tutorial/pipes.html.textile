@@ -145,6 +145,10 @@ Using _cod_, it boils down to this:
   self_pipe.read.get # => :USR1
 </code></pre>
 
+Did you notice that a split pipe returns an array that also answers to 
+<code>#read</code> and <code>#write</code>? This is useful for when you cannot
+come up with a name for both ends, as in the above example. 
+
 
 fn1. man 2 pipe 
 

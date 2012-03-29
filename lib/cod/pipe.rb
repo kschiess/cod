@@ -2,10 +2,10 @@
 module Cod
   # A cod channel based on IO.pipe. 
   #
-  # NOTE: If you embed Cod::Pipe channels into your messages, Cod will insert
-  # the object id of that channel into the byte stream that is transmitted. On
-  # receiving such an object id (a machine pointer), Cod will try to
-  # reconstruct the channel that was at the origin of the id. This can
+  # Note that if you embed Cod::Pipe channels into your messages, Cod will
+  # insert the object id of that channel into the byte stream that is
+  # transmitted. On receiving such an object id (a machine pointer), Cod will
+  # try to reconstruct the channel that was at the origin of the id. This can
   # obviously only work if you have such an object in your address space.
   # There are multiple ways to construct such a situation. Say you want to
   # send a pipe channel to one of your (forked) childs: This will work if you
@@ -13,18 +13,26 @@ module Cod
   # share all objects that were available before the fork. 
   #
   class Pipe < Channel
+    # The underlying IOPair.
+    # @private 
     attr_reader :pipe
+    
+    # The serializer for this pipe.
     attr_reader :serializer
     
     # A few methods that a pipe split must answer to. The split itself is 
     # basically an array instance; these methods add some calling safety and
     # convenience. 
     #
+    # @private
+    #
     module SplitMethods # :nodoc:
       def read; first; end
       def write; last; end
     end
-
+    
+    # Creates a {Cod::Pipe}.
+    #
     def initialize(serializer=nil, pipe_pair=nil)
       super()
       @serializer = serializer || SimpleSerializer.new
@@ -34,6 +42,9 @@ module Cod
     # Creates a copy of this pipe channel. This performs a shallow #dup except
     # for the file descriptors stored in the pipe, so that a #close affects
     # only one copy. 
+    #
+    # @example
+    #   pipe.dup  # => anotherpipe
     #
     def initialize_copy(other)
       super
@@ -48,6 +59,8 @@ module Cod
     # Returns self so that you can write for example: 
     #   read_end = pipe.dup.readonly
     #
+    # @private
+    #
     def readonly
       pipe.close_w
       self
@@ -58,6 +71,8 @@ module Cod
     # Returns self so that you can write for example: 
     #   write_end = pipe.dup.writeonly
     #
+    # @private
+    #
     def writeonly
       pipe.close_r
       self
@@ -65,8 +80,10 @@ module Cod
     
     # Actively splits this pipe into two ends, a read end and a write end. The
     # original pipe is closed, leaving only the two ends to work with. The 
-    # read end can only be read from (#get) and the write end can only be 
-    # written to (#put).
+    # read end can only be read from ({#get}) and the write end can only be 
+    # written to ({#put}).
+    #
+    # @return [Array<Cod::Channel>]
     #
     def split
       [self.dup.readonly, self.dup.writeonly].tap { |split|
@@ -79,7 +96,10 @@ module Cod
     # Using #put on a pipe instance will close the other pipe end. Subsequent
     # #get will raise a Cod::InvalidOperation. 
     #
-    # Example: 
+    # @param obj [Object] message to send to the channel
+    # @return [void]
+    #
+    # @example 
     #   pipe.put [:a, :message]
     #
     def put(obj)
@@ -92,7 +112,7 @@ module Cod
     # Using #get on a pipe instance will close the other pipe end. Subsequent
     # #put will receive a Cod::InvalidOperation.
     #
-    # Example: 
+    # @example 
     #   pipe.get # => obj
     #
     def get(opts={})
@@ -112,6 +132,8 @@ module Cod
     # Closes the pipe completely. All active ends are closed. Note that you
     # can call this function on a closed pipe without getting an error raised.
     #
+    # @return [void]
+    #
     def close
       pipe.close
     end
@@ -122,6 +144,9 @@ module Cod
       result = Cod.select(timeout, self)
       not result.nil?
     end
+    
+    # @private
+    #
     def to_read_fds
       r
     end
@@ -142,11 +167,15 @@ module Cod
 
     # Returns the read end of the pipe
     #
+    # @private
+    #
     def r
       pipe.r
     end
     
     # Returns the write end of the pipe
+    #
+    # @private
     #
     def w
       pipe.w
@@ -154,17 +183,33 @@ module Cod
 
     # --------------------------------------------------------- service/client
     
+    # Produces a service using this pipe as service channel. 
+    # @see Cod::Service 
+    #
+    # @return [Cod::Service]
+    #
     def service
       Service.new(self)
     end
+    
+    # Produces a service client. Requests are sent to this channel, and answers
+    # are routed back to +answers_to+.
+    #
+    # @param answers_to [Cod::Channel] Where answers should be addressed to.
+    # @return [Cod::Service::Client]
+    #
     def client(answers_to)
       Service::Client.new(self, answers_to)
     end
 
     # ---------------------------------------------------------- serialization
+    
+    # @private
     def _dump(depth) # :nodoc:
       object_id.to_s
     end
+
+    # @private
     def self._load(string) # :nodoc:
       ObjectSpace._id2ref(Integer(string))
     end
