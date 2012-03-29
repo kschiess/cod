@@ -63,9 +63,10 @@ class Document
         print "   " + line.magenta }
     else
       puts 'ok.'.green
-      @example.check_expectations
     end
     
+    @example.check_expectations
+
     @target.puts @example.produce_modified_code
     @example = nil
   end
