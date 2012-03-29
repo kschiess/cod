@@ -5,6 +5,16 @@ class FailSite < Site
     value_str = format_values
     "#@code# raises #{value_str}"
   end
+  def format_values
+    return 'NOT REACHED!' if @values.empty?
+    
+    v = @values.last
+    s = v.inspect
+    
+    s = s[1..-1]
+    
+    s.size > 47 ? s[0,47] + '...' : s
+  end
 
   def check
     return true if !@expectation || @expectation.match(/^\s*$/)

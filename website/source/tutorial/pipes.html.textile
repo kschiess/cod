@@ -47,9 +47,9 @@ either end and render them useless:
 
 <pre class="sh_ruby"><code title="Access before fork">
   chan = Cod.pipe
-  chan.put          # XXX Don't do this.
+  chan.put :smthng  # raises <Errno::EPIPE: Broken pipe>
   fork do
-    chan.get        # raises 
+    chan.get
   end
 </code></pre>
 

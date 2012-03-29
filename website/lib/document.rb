@@ -2,7 +2,7 @@ class Document
   def initialize(name)
     @name = name
     @state = :outside
-    @line_count = 0
+    @line_count = 1
   end
   
   def process

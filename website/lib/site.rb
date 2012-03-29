@@ -12,13 +12,12 @@ class Site
   end
   
   def to_instrumented_line
-    "
-      begin
-        (#@code).tap { |o| $instrumentation.put [#{id}, [:ok, o]] }
-      rescue => exception
-        $instrumentation.put [#{id}, [:raised, exception]]
-      end
-    "
+    "begin "+
+      "(#@code).tap { |o| $instrumentation.put [#{id}, [:ok, o]] }; "+
+    "rescue Exception => exception; "+
+      "$instrumentation.put [#{id}, [:raised, exception]];"+
+      "raise;"+
+    "end"
   end
   
   def format_documentation_line
@@ -49,7 +48,7 @@ class Site
   end
   
 private
-  def store_if(msg, code)
+  def store_if(code, msg)
     code, value = msg 
     @values << value if code == code
   end

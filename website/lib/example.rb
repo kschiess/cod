@@ -2,6 +2,7 @@ require 'tempfile'
 require 'cod'
 
 require 'site'
+require 'fail_site'
 
 class Example
   def initialize(title, file, line)
