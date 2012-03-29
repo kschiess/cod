@@ -38,6 +38,35 @@ process, you should use either of these two obtain two copies:
 
 The penalty for not doing this is exceptions, so there, I warned you. 
 
+When you create a process fork (<code>Kernel.fork</code>) on the other hand,
+things become really simple. The only thing you need to be sure of is that you
+don't access the pipes you create before you create the fork. This would close
+either end and render them useless:
+
+<pre class="sh_ruby"><code title="Access before fork">
+  chan = Cod.pipe
+  chan.put          # XXX Don't do this.
+  fork do
+    chan.get        # raises 
+  end
+</code></pre>
+
+Instead, create your pipes and then fork all the processes you need to
+communicate with. They will see your pipes because they inherit memory and
+open IO streams from you; writing or reading from the pipes will still close
+the other end, but that will happen in separate processes. This is the
+advantage of share-nothing concurrency. Do this: 
+
+<pre class="sh_ruby"><code title="simple IPC, in the right order">
+  chan = Cod.pipe
+  fork do
+    chan.put :test
+  end
+  chan.get # => :test
+</code></pre>
+
+
+
 h2. Communicate with Subprocesses, 101
 
 Let's assume we want to run a subprocess and have it produce a value for us.
