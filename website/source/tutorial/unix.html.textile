@@ -1,0 +1,23 @@
+---
+title: Tricks and Gotchas to be aware of
+---
+
+h1. Tricks and Gotchas to be aware of
+
+When you start using _cod_ for your own projects, I assume you want to cross
+over to the unixy, using-forks-instead-of-threads side of things. This is fine
+with me, and one of the reasons I created cod. 
+
+But all is not butter and honey in the land of forks. As it is the case with 
+every style of programming, there are a number of things to be aware of. 
+This section of the tutorial strives to give you a heads-up to most of them. 
+Please tell me if something is missing. 
+
+h2. Forks flush io streams
+
+h2. Signal handling might mess up library X
+
+h2. COW-friendliness of various Rubies
+
+Enterprise Ruby
+Ruby 2.0
