@@ -135,13 +135,13 @@ Using _cod_, it boils down to this:
   # Register a handler for USR1
   trap(:USR1) { self_pipe.write.put :USR1 }
 
-  ppid = Process.pid
-  fork do
-    Process.kill(:USR1, ppid)
-  end
+  Process.kill(:USR1, 
+    Process.pid)
   
-  # Here's the advantage of self-pipe: You can decide when to listen for 
-  # signals. Otherwise trap is very preemptive.
+  # Do something without worrying about signals
+  
+  # Here's the advantage of self-pipe: You can decide when 
+  # to listen for signals. Otherwise trap is very preemptive.
   self_pipe.read.get # => :USR1
 </code></pre>
 
