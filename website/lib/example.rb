@@ -83,12 +83,16 @@ class Example
   end
   def instrument(code)
     code.map { |line| 
-      md = line.match(/(?<pre>.*)# =>(?<expectation>.*)/) 
+      md = line.match(/(?<pre>.*)# (?<type>=>|raises) (?<expectation>.*)/) 
       next line unless md
       
-      site = Site.new(line, md[:pre], md[:expectation].strip) 
+      if md[:type] == 'raises'
+        site = FailSite.new(line, md[:pre], md[:expectation].strip)
+      else
+        site = Site.new(line, md[:pre], md[:expectation].strip) 
+      end
+
       add_site site
-      
       site.to_instrumented_line }
   end
   def add_site(site)

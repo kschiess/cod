@@ -10,14 +10,24 @@ class Site
   def id
     object_id
   end
+  
   def to_instrumented_line
-    "(#@code).tap { |o| $instrumentation.put [#{id}, o] }"
+    "
+      begin
+        (#@code).tap { |o| $instrumentation.put [#{id}, [:ok, o]] }
+      rescue => exception
+        $instrumentation.put [#{id}, [:raised, exception]]
+      end
+    "
   end
+  
   def format_documentation_line
     value_str = format_values
     "#@code# => #{value_str}"
   end
   def format_values
+    return 'NOT REACHED!' if @values.empty?
+    
     v = @values.size == 1 ? @values.first : @values
     s = v.inspect
     
@@ -34,7 +44,13 @@ class Site
       puts "      #{@code.strip} # => #{str.green}"
     end
   end
-  def store(value)
-    @values << value
+  def store(msg)
+    store_if(:ok, msg)
+  end
+  
+private
+  def store_if(msg, code)
+    code, value = msg 
+    @values << value if code == code
   end
 end
