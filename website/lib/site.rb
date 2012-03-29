@@ -15,7 +15,7 @@ class Site
   end
   def format_documentation_line
     value_str = format_values
-    "#@code # => #{value_str}"
+    "#@code# => #{value_str}"
   end
   def format_values
     v = @values.size == 1 ? @values.first : @values
