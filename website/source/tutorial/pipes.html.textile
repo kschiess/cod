@@ -116,6 +116,36 @@ Have a look at this nifty trick:
 
 h2. The Self Pipe
 
+When using processes instead of threads, you will sooner or later have to
+handle signals using <code>Kernel.trap</code>.[4] To be able to integrate this
+nicely with the rest of your code that probably blocks in
+<code>Cod.select</code> as much as possible, you can use the self-pipe
+trick. 
+
+Rather than cover what a self-pipe is again, I refer you to the
+"extensive":http://cr.yp.to/docs/selfpipe.html
+"documentation":http://osiris.978.org/~alex/safesignalhandling.html
+"online":news://gmane.org:119/20120326222500.GA20806@dcvr.yhbt.net. 'cause
+this is an old trick!
+
+Using _cod_, it boils down to this: 
+
+<pre class="sh_ruby"><code title="Self Pipe trick">
+  self_pipe = Cod.pipe.split
+  # Register a handler for USR1
+  trap(:USR1) { self_pipe.write.put :USR1 }
+
+  ppid = Process.pid
+  fork do
+    Process.kill(:USR1, ppid)
+  end
+  
+  # Here's the advantage of self-pipe: You can decide when to listen for 
+  # signals. Otherwise trap is very preemptive.
+  self_pipe.read.get # => :USR1
+</code></pre>
+
+
 fn1. man 2 pipe 
 
 fn2. @code_link(Cod::ConnectionLost) 
@@ -124,4 +154,6 @@ fn3. Something that another library of mine could help you with:
 "procrastinate":https://github.com/kschiess/procrastinate by doing your work
 in child processes.
 
+fn4. This has pitfalls. Have a look at the section titled "Signal handling
+might mess up library X" in the "chapter on unix tricks":unix.html.
 

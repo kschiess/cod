@@ -38,7 +38,7 @@ class Site
     str = format_values
     if str != @expectation
       puts "      #{@code.strip} # => #{str.red}"
-      puts "      #{' '*@code.size} # expected: #@expectation"
+      puts "      #{' '*@code.strip.size} # expected: #@expectation"
     else
       puts "      #{@code.strip} # => #{str.green}"
     end
@@ -48,8 +48,8 @@ class Site
   end
   
 private
-  def store_if(code, msg)
+  def store_if(cond, msg)
     code, value = msg 
-    @values << value if code == code
+    @values << value if code == cond
   end
 end

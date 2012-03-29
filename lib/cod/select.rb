@@ -7,6 +7,7 @@ module Cod
   # @return [Hash,Array,Cod::Channel,IO]
   # 
   def select(timeout, groups)
+    # TODO create an overload without the timeout
     Select.new(timeout, groups).do
   end
   module_function :select
