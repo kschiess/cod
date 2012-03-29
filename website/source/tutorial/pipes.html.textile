@@ -111,7 +111,7 @@ Have a look at this nifty trick:
     end
   end
   
-  channel.get    # => #<RuntimeError: Meanwhile, back at the ranch:>
+  channel.get    # => #<RuntimeError: Meanwhile, back at th...
 </code></pre>
 
 h2. The Self Pipe
