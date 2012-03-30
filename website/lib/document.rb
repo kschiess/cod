@@ -28,11 +28,17 @@ class Document
       when a[:outside, /<pre class="sh_ruby"><code title="(.*)">/]
         @target.puts(line)
         @state = :inside
-        extract_title(line)
-        
+        extract_title(line)        
       when a[:inside, %r(</code></pre>)]
         @state = :outside
         run_example
+        
+      when a[:outside, /<pre class="output">/]
+        @target.puts(line)
+        @state = :inside_old_output
+      when a[:inside_old_output, %r(</pre>)]
+        @target.puts(@last_output) if @last_output
+        @state = :outside
 
       when a[:inside, any]
         @example << line
@@ -63,6 +69,10 @@ class Document
         print "   " + line.magenta }
     else
       puts 'ok.'.green
+      
+      # Stores last output for an eventual <pre class="output"> that might 
+      # come somewhere.
+      @last_output = @example.output[:out]
     end
     
     @example.check_expectations
