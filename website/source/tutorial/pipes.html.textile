@@ -133,10 +133,6 @@ for that as well. Here's an example of N message producers, one consumer:
   pids.sort == communicated_pids.sort  # => true
 </code></pre>
 
-<pre class="output">
-</pre>
-
-
 And here 's an example of one producer, M consumers: 
 
 <pre class="sh_ruby"><code title="m consumers">
@@ -153,6 +149,11 @@ And here 's an example of one producer, M consumers:
   pids.each { |pid| Process.kill(:TERM, pid) }
 </code></pre>
 
+outputs:
+
+<pre class="output">
+3680 received 1.
+</pre>
 
 h2. The Self Pipe
 
