@@ -119,10 +119,7 @@ module Cod
       raise Cod::WriteOnlyChannel unless can_read?
       pipe.close_w
       
-      loop do
-        ready = Cod.select(nil, self)
-        return deserialize_one if ready
-      end
+      return deserialize_one
     rescue EOFError
       raise Cod::ConnectionLost, 
         "All pipe ends seem to be closed. Reading from this pipe will not "+

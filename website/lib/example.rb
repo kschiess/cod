@@ -41,7 +41,7 @@ class Example
     pid = fork do
       redirect_streams(tempfiles)
       # puts example_code
-      eval(code, nil, @file, @line) 
+      eval(code, nil, @file, @line-2) 
     end
     Process.wait(pid)
 
