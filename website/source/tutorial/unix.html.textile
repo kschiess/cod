@@ -2,7 +2,7 @@
 title: Tricks and Gotchas to be aware of
 ---
 
-h1. Tricks and Gotchas to be aware of
+h1. Tricks and Gotchas
 
 When you start using _cod_ for your own projects, I assume you want to cross
 over to the unixy, using-forks-instead-of-threads side of things. This is fine
@@ -19,5 +19,5 @@ h2. Signal handling might mess up library X
 
 h2. COW-friendliness of various Rubies
 
-Enterprise Ruby
-Ruby 2.0
+* Enterprise Ruby
+* Ruby 2.0

@@ -1,1 +1,13 @@
 This is a work in progress...
+
+Want to watch this happen? Here's a list of things I've worked on recently
+and what I changed: 
+
+h2. 2012-03-30
+
+* "tutorial/unix":tutorial/unix.html Headlines only; stuff that you need to
+  be aware of in this mode of programming.
+* "tutorial/pipe":tutorial/pipes.html A few examples and the example runner.
+  Examples for a lot of the pattern you'd need in reality.
+  
+Come back later - this is undergoing frequent changes. 

@@ -88,8 +88,73 @@ other work, please look at <a href="select.html">Cod.select</a></p>
     end
   end
   
-  channel.get    # =&gt; #&lt;RuntimeError: Meanwhile, back at the ranch:&gt;
+  channel.get    # =&gt; #&lt;RuntimeError: Meanwhile, back at th...
 </code></pre>
+<p>One could even raise the error returned in the parent process, simulating a 
+single process executing.</p>
+<h2>N:M patterns</h2>
+<p>Want to distribute work to a few workers and gather their results? <em>cod</em> works
+for that as well. Here&#8217;s an example of N message producers, one consumer:</p>
+<pre class="sh_ruby"><code title="n producers">
+  pipe = Cod.pipe
+  
+  pids = 10.times.map { 
+    fork { 
+      pipe.put Process.pid } }
+  
+  communicated_pids = 10.times.map { pipe.get }
+  pids.sort == communicated_pids.sort  # =&gt; true
+</code></pre>
+<p>And here &#8217;s an example of one producer, M consumers:</p>
+<pre class="sh_ruby"><code title="m consumers">  
+  # A simple worker class
+  Worker = Struct.new(:n) do
+    def work_on(from, to)
+      loop do
+        work_item = from.get
+        to.put [n, work_item]
+      end
+    end
+  end
+  def Worker(n)
+    Worker.new(n)
+  end
+  
+  work = Cod.pipe   # for sending work to workers
+  result = Cod.pipe # for receiving results from workers
+  
+  # Set up ten worker processes
+  pids = 10.times.map do |i| 
+    fork { Worker[i].work_on(work, result) }
+  end
+  
+  # Distribute some work
+  10.times { |i| work.put (i+1) }
+  
+  # Read back the results
+  10.times.map { 
+    p result.get } 
+  
+  pids.each { |pid| Process.kill(:TERM, pid) }
+</code></pre>
+<p>Output will look like this:</p>
+<pre class="output dontrepeat">
+[1, 1]
+[3, 2]
+[9, 3]
+[6, 4]
+[4, 5]
+[0, 6]
+[2, 7]
+[2, 8]
+[5, 9]
+[7, 10]
+</pre>
+<p>&#8230; in best case. Be warned, process scheduling is not as fine in granularity
+as thread scheduling is. The number of cores of the system you&#8217;re on and the
+operating system that you&#8217;re running this under will dramatically effect these
+results. Sometimes it is hard to get more than one processor to read from 
+a single pipe.</p>
 <h2>The Self Pipe</h2>
 <p>When using processes instead of threads, you will sooner or later have to
 handle signals using <code>Kernel.trap</code>.<sup class="footnote" id="fnr4"><a href="#fn4">4</a></sup> To be able to integrate this
