@@ -15,11 +15,12 @@ body {
     margin-bottom: 0em; }
   body code {
     color: #696969; }
-  body pre.sh_sourceCode {
-    border-radius: 0.5em;
-    background-color: #f8f8f8;
-    padding-bottom: 1.4em;
+  body pre {
     line-height: 1.4em; }
+    body pre.sh_sourceCode {
+      border-radius: 0.5em;
+      background-color: #f8f8f8;
+      padding-bottom: 1.4em; }
 
 .links {
   text-align: center; }
