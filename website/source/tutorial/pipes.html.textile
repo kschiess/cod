@@ -136,6 +136,7 @@ for that as well. Here's an example of N message producers, one consumer:
 And here 's an example of one producer, M consumers: 
 
 <pre class="sh_ruby"><code title="m consumers">  
+  # A simple worker class
   Worker = Struct.new(:n) do
     def work_on(from, to)
       loop do
@@ -148,9 +149,10 @@ And here 's an example of one producer, M consumers:
     Worker.new(n)
   end
   
-  work = Cod.pipe
-  result = Cod.pipe 
+  work = Cod.pipe   # for sending work to workers
+  result = Cod.pipe # for receiving results from workers
   
+  # Set up ten worker processes
   pids = 10.times.map do |i| 
     fork { Worker[i].work_on(work, result) }
   end
@@ -165,9 +167,9 @@ And here 's an example of one producer, M consumers:
   pids.each { |pid| Process.kill(:TERM, pid) }
 </code></pre>
 
-Output will something like this: 
+Output will look like this: 
 
-<pre class="output">
+<pre class="output dontrepeat">
 [1, 1]
 [3, 2]
 [9, 3]
@@ -179,6 +181,12 @@ Output will something like this:
 [5, 9]
 [7, 10]
 </pre>
+
+... in best case. Be warned, process scheduling is not as fine in granularity
+as thread scheduling is. The number of cores of the system you're on and the
+operating system that you're running this under will dramatically effect these
+results. Sometimes it is hard to get more than one processor to read from 
+a single pipe.
 
 h2. The Self Pipe
 
