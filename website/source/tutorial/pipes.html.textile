@@ -135,24 +135,49 @@ for that as well. Here's an example of N message producers, one consumer:
 
 And here 's an example of one producer, M consumers: 
 
-<pre class="sh_ruby"><code title="m consumers">
-  pipe = Cod.pipe
-  
-  pids = 10.times.map do
-    fork do 
-      work_item_no = pipe.get
-      puts "#{Process.pid} received #{work_item_no}."
+<pre class="sh_ruby"><code title="m consumers">  
+  Worker = Struct.new(:n) do
+    def work_on(from, to)
+      loop do
+        work_item = from.get
+        to.put [n, work_item]
+      end
     end
   end
+  def Worker(n)
+    Worker.new(n)
+  end
   
-  10.times { |i| pipe.put (i+1) }
+  work = Cod.pipe
+  result = Cod.pipe 
+  
+  pids = 10.times.map do |i| 
+    fork { Worker[i].work_on(work, result) }
+  end
+  
+  # Distribute some work
+  10.times { |i| work.put (i+1) }
+  
+  # Read back the results
+  10.times.map { 
+    p result.get } 
+  
   pids.each { |pid| Process.kill(:TERM, pid) }
 </code></pre>
 
-outputs:
+Output will something like this: 
 
 <pre class="output">
-3680 received 1.
+[1, 1]
+[3, 2]
+[9, 3]
+[6, 4]
+[4, 5]
+[0, 6]
+[2, 7]
+[2, 8]
+[5, 9]
+[7, 10]
 </pre>
 
 h2. The Self Pipe
