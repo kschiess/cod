@@ -223,10 +223,11 @@ Did you notice that a split pipe returns an array that also answers to
 <code>#read</code> and <code>#write</code>? This is useful for when you cannot
 come up with a name for both ends, as in the above example. 
 
+!/images/fish.png!
 
 fn1. man 2 pipe 
 
-fn2. @code_link(Cod::ConnectionLost) 
+fn2. @code_link(Cod::ConnectionLost)
 
 fn3. Something that another library of mine could help you with:
 "procrastinate":https://github.com/kschiess/procrastinate by doing your work

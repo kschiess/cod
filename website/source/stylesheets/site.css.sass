@@ -12,28 +12,37 @@ body
   color: #333
     
   line-height: 1.4em
-  
-  a
-    text-decoration: none
-    
-  h1,h2,h3,h4
-    color: #454545
-  h2
-    margin:
-      top: 1.5em
-      bottom: 0em
-      
-  code
-    color: #696969
-    
-  pre
-    line-height: 1.4em
-  
-    &.sh_sourceCode
-      border-radius: 0.5em
-      background-color: #f8f8f8
-      padding-bottom: 1.4em
 
+img
+  margin-left: auto
+  margin-right: auto
+  display: block
+  margin-top: 3em
+  
+a
+  text-decoration: none
+
+/* Headers  
+h1,h2,h3,h4
+  color: #454545
+h2
+  font-size: 1.5em
+  margin:
+    top: 1em
+    bottom: 0em
+
+/* Source code style    
+code
+  color: #696969
+pre
+  line-height: 1.4em
+
+  &.sh_sourceCode
+    border-radius: 0.5em
+    background-color: #f8f8f8
+    padding-bottom: 1.4em
+
+/* Table of Contents
 #toc
   font-size: 1.1em
   background-color: #f8f8f8
@@ -46,12 +55,14 @@ body
     bottom: 1px
   margin-top: 2em
   
+  /* Content style
   h1
     font-size: 1.1em
     color: #aaa5a5
   a
     color: #aaa5a5
 
+  /* List style
   li 
     list-style: none
     
@@ -62,5 +73,7 @@ body
       
   ul
     padding-left: 0
-.links
-  text-align: center
+    
+.footnote
+  padding: 0
+  margin: 0
