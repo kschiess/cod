@@ -17,9 +17,15 @@ html
   body onload="sh_highlightDocument();"
   
     a href="#{{asset_url 'tutorial/pipes.html'}}" IO.pipes
+    | -
+    a href="#{{asset_url 'tutorial/pipes.html'}}" TCP streams
+    | -
+    a href="#{{asset_url 'tutorial/pipes.html'}}" Beanstalkd tubes
     
-    #toc
-      h1 Table of Contents
+    - if data.page.toc
+      #toc
+        img src="#{{asset_url 'images/fish.png'}}"
+        h1 Table of Contents
     
     == yield
     

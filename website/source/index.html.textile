@@ -1,7 +1,15 @@
+---
+title: cod - ipc, not beards
+---
+
 This is a work in progress...
 
 Want to watch this happen? Here's a list of things I've worked on recently
 and what I changed: 
+
+h2. 2012-04-02
+  
+* Style changes, added a fish image courtesy of "Norwegian Institute of Marine Research":http://www.fisheries.no/ecosystems-and-stocks/marine_stocks/fish_stocks/cod/. (Thanks!)
 
 h2. 2012-03-30
 
@@ -9,5 +17,3 @@ h2. 2012-03-30
   be aware of in this mode of programming.
 * "tutorial/pipe":tutorial/pipes.html A few examples and the example runner.
   Examples for a lot of the pattern you'd need in reality.
-  
-Come back later - this is undergoing frequent changes. 

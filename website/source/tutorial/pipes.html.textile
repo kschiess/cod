@@ -1,5 +1,6 @@
 ---
 title: "Pipes"
+toc: true
 ---
 
 h1. Pipes
@@ -47,7 +48,7 @@ either end and render them useless:
 
 <pre class="sh_ruby"><code title="Access before fork">
   chan = Cod.pipe
-  chan.put :smthng  # raises <Errno::EPIPE: Broken pipe>
+  chan.put :smthng # raises <Errno::EPIPE: Broken pipe>
   fork do
     chan.get
   end
@@ -111,7 +112,7 @@ Have a look at this nifty trick:
     end
   end
   
-  channel.get    # => #<RuntimeError: Meanwhile, back at th...
+  channel.get # => #<RuntimeError: Meanwhile, back at th...
 </code></pre>
 
 One could even raise the error returned in the parent process, simulating a 
@@ -149,8 +150,8 @@ And here 's an example of one producer, M consumers:
     Worker.new(n)
   end
   
-  work = Cod.pipe   # for sending work to workers
-  result = Cod.pipe # for receiving results from workers
+  work = Cod.pipe   # for issuing work
+  result = Cod.pipe # for receiving results 
   
   # Set up ten worker processes
   pids = 10.times.map do |i| 
@@ -214,8 +215,9 @@ Using _cod_, it boils down to this:
   
   # Do something without worrying about signals
   
-  # Here's the advantage of self-pipe: You can decide when 
-  # to listen for signals. Otherwise trap is very preemptive.
+  # Here's the advantage of self-pipe: You can 
+  # decide when to listen for signals. Otherwise 
+  # trap is very preemptive.
   self_pipe.read.get # => :USR1
 </code></pre>
 
