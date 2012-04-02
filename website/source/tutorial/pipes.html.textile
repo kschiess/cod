@@ -117,7 +117,7 @@ Have a look at this nifty trick:
 One could even raise the error returned in the parent process, simulating a 
 single process executing. 
 
-h2. N:M patterns
+h1. N:M patterns
 
 Want to distribute work to a few workers and gather their results? _cod_ works
 for that as well. Here's an example of N message producers, one consumer: 
@@ -188,7 +188,7 @@ operating system that you're running this under will dramatically effect these
 results. Sometimes it is hard to get more than one processor to read from 
 a single pipe.
 
-h2. The Self Pipe
+h1. The Self Pipe
 
 When using processes instead of threads, you will sooner or later have to
 handle signals using <code>Kernel.trap</code>.[4] To be able to integrate this

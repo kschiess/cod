@@ -1,9 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><title>Tricks and Gotchas to be aware of</title>
+    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>Tricks and Gotchas to be aware of</title>
   </head>
-  <body onload="sh_highlightDocument();"><h1>Tricks and Gotchas</h1>
+  <body onload="sh_highlightDocument();">
+    <a href="/cod/tutorial/pipes.html">IO.pipes</a>
+    <script type="text/javascript">(function() { 
+        $('h1').each(function(el) {
+          return document.writeln(el);
+        });
+      
+      }).call(this);
+      
+    </script><h1>Tricks and Gotchas</h1>
     <p>When you start using <em>cod</em> for your own projects, I assume you want to cross
     over to the unixy, using-forks-instead-of-threads side of things. This is fine
     with me, and one of the reasons I created cod.</p>

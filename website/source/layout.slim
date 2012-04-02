@@ -10,7 +10,25 @@ html
     
     == javascript_include_tag 'sh_main.min'
     == javascript_include_tag 'sh_ruby.min'
+
+    == javascript_include_tag 'jquery-1.7.2.min'
     
     title = data.page.title || 'cod - IPC made simple.'
   body onload="sh_highlightDocument();"
+  
+    a href="#{{asset_url 'tutorial/pipes.html'}}" IO.pipes
+    
+    #toc
+    
     == yield
+    
+    coffee: 
+      toc = $('#toc')
+
+      create_list= (level, where, scope) ->
+        ul = where.append('<ol></ol>')
+        $("h#{level}", scope).each (el, idx) ->
+          li = ul.append("<li>#{$(this).text()}</li>")
+          create_list(level+1, li, el)
+      
+      create_list(1, toc)    

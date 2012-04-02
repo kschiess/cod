@@ -1,9 +1,18 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><title>Pipes</title>
+    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>Pipes</title>
   </head>
-  <body onload="sh_highlightDocument();"><h1>Pipes</h1>
+  <body onload="sh_highlightDocument();">
+    <a href="/cod/tutorial/pipes.html">IO.pipes</a>
+    <script type="text/javascript">(function() { 
+        $('h1').each(function(el) {
+          return document.writeln(el);
+        });
+      
+      }).call(this);
+      
+    </script><h1>Pipes</h1>
 <p>A pipe is a descriptor pair for interprocess communication.<sup class="footnote" id="fnr1"><a href="#fn1">1</a></sup> It allows data
 to flow in one direction, from its read end to the write end. In a way, a 
 pipe is the prototypical <em>cod</em> channel; they have been standing model for how
@@ -92,7 +101,7 @@ other work, please look at <a href="select.html">Cod.select</a></p>
 </code></pre>
 <p>One could even raise the error returned in the parent process, simulating a 
 single process executing.</p>
-<h2>N:M patterns</h2>
+<h1>N:M patterns</h1>
 <p>Want to distribute work to a few workers and gather their results? <em>cod</em> works
 for that as well. Here&#8217;s an example of N message producers, one consumer:</p>
 <pre class="sh_ruby"><code title="n producers">
@@ -155,7 +164,7 @@ as thread scheduling is. The number of cores of the system you&#8217;re on and t
 operating system that you&#8217;re running this under will dramatically effect these
 results. Sometimes it is hard to get more than one processor to read from 
 a single pipe.</p>
-<h2>The Self Pipe</h2>
+<h1>The Self Pipe</h1>
 <p>When using processes instead of threads, you will sooner or later have to
 handle signals using <code>Kernel.trap</code>.<sup class="footnote" id="fnr4"><a href="#fn4">4</a></sup> To be able to integrate this
 nicely with the rest of your code that probably blocks in
