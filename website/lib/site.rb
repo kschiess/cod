@@ -13,9 +13,9 @@ class Site
   
   def to_instrumented_line
     "begin "+
-      "(#@code).tap { |o| $instrumentation.put [#{id}, [:ok, o]] }; "+
+      "(#@code).tap { |o| $instrumentation.put [#{id}, [:ok, o.inspect]] }; "+
     "rescue Exception => exception; "+
-      "$instrumentation.put [#{id}, [:raised, exception]];"+
+      "$instrumentation.put [#{id}, [:raised, exception.inspect]];"+
       "raise;"+
     "end"
   end
@@ -27,8 +27,8 @@ class Site
   def format_values
     return 'NOT REACHED!' if @values.empty?
     
-    v = @values.size == 1 ? @values.first : @values
-    s = v.inspect
+    v = @values.size == 1 ? @values.first : "["+@values.join(', ')+"]"
+    s = v
     
     max_len = 40 - 3
     s.size > max_len ? s[0,max_len] + '...' : s

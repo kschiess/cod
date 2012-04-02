@@ -16,9 +16,9 @@ html
     title = data.page.title || 'cod - IPC made simple.'
   body onload="sh_highlightDocument();"
   
-    a href="#{{asset_url 'tutorial/pipes.html'}}" IO.pipes
-    | -
-    a href="#{{asset_url 'tutorial/pipes.html'}}" TCP streams
+    a href="#{{asset_url 'tutorial/pipes.html'}}" IO.pipe
+    |  - 
+    a href="#{{asset_url 'tutorial/tcp.html'}}" TCP/IP
     | -
     a href="#{{asset_url 'tutorial/pipes.html'}}" Beanstalkd tubes
     

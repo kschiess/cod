@@ -1,7 +1,51 @@
 ---
 title: Pipes
+toc: true
 ---
 
+h1. TCP/IP
 
-h1. TCP channels
+TCP/IP channels come in two varieties: client-side channels and server-side
+channels. Let me show you how to create both: 
+
+<pre class="sh_ruby"><code title="Basic tcp">
+  client = Cod.tcp('localhost:12345')
+  server = Cod.tcp_server('localhost:12345')
+  
+  client.put 'tcp channels!'
+  server.get # => "tcp channels!"
+  
+  client.close
+  server.close
+</code></pre>
+
+To do simple communication across machines, this will be all you need. But that's only where things start, not where they end. In the following sections, 
+I'll explain more about tcp clients and servers. (using _cod_)
+
+h1. client-side
+
+The channel returned by <code>Cod.tcp</code> really acts in two phases:
+
+* Connection Phase: During this phase, the channel will buffer messages sent
+  through it. No server could be contacted, so nothing goes over the wire. 
+* Established Phase: Once the connection could be established, all messages 
+  that have been buffered are now sent. From now on, everything gets 
+  transmitted immediately. 
+
+This two-phase connect is the reason why _cod_ programs can send stuff to a 
+server that might not even be listening yet. Typically, you'll encounter this
+kind of code in every example here. 
+
+If you want to force a connection, try to read from the client channel. It
+will block forever until data comes in. Look at this example, which tries to
+read from the channel until a timeout occurs: 
+
+<pre class="sh_ruby"><code title="Timeout">
+  channel = Cod.tcp('localhost:12345')
+  
+  require 'timeout'
+  value = timeout(0.1){ channel.get } # raises <Timeout::Error: execution expired>
+</code></pre>
+
+
 

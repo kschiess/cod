@@ -8,8 +8,7 @@ class FailSite < Site
   def format_values
     return 'NOT REACHED!' if @values.empty?
     
-    v = @values.last
-    s = v.inspect
+    s = @values.last
     
     s = s[1..-1]
     
