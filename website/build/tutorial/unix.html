@@ -4,10 +4,7 @@
     <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>Tricks and Gotchas to be aware of</title>
   </head>
   <body onload="sh_highlightDocument();">
-    <a href="/cod/tutorial/pipes.html">IO.pipes</a>
-    <div id="toc">
-      <h1>Table of Contents</h1>
-    </div><h1>Tricks and Gotchas</h1>
+    <a href="/cod/tutorial/pipes.html">IO.pipes</a>-<a href="/cod/tutorial/pipes.html">TCP streams</a>-<a href="/cod/tutorial/pipes.html">Beanstalkd tubes</a><h1>Tricks and Gotchas</h1>
     <p>When you start using <em>cod</em> for your own projects, I assume you want to cross
     over to the unixy, using-forks-instead-of-threads side of things. This is fine
     with me, and one of the reasons I created cod.</p>
@@ -25,24 +22,23 @@
         var toc, ul; 
         toc = $('#toc');
       
-        document.anchor_id = 0;
-      
-        ul = document.createElement('ul');
-      
-        toc.append(ul);
-      
-        $('body > h1,h2,h3').each(function() {
-          var a, anchor_name, li;
-          anchor_name = "a" + document.anchor_id;
-          document.anchor_id += 1;
-          $(this).attr('id', anchor_name);
-          li = document.createElement('li');
-          $(li).addClass(this.tagName);
-          a = document.createElement('a');
-          $(a).attr('href', "#" + anchor_name).text($(this).text());
-          $(li).append(a);
-          return $(ul).append(li);
-        });
+        if (toc) {
+          document.anchor_id = 0;
+          ul = document.createElement('ul');
+          toc.append(ul);
+          $('body > h1,h2,h3').each(function() {
+            var a, anchor_name, li;
+            anchor_name = "a" + document.anchor_id;
+            document.anchor_id += 1;
+            $(this).attr('id', anchor_name);
+            li = document.createElement('li');
+            $(li).addClass(this.tagName);
+            a = document.createElement('a');
+            $(a).attr('href', "#" + anchor_name).text($(this).text());
+            $(li).append(a);
+            return $(ul).append(li);
+          });
+        }
       
       }).call(this);
       
