@@ -5,14 +5,9 @@
   </head>
   <body onload="sh_highlightDocument();">
     <a href="/cod/tutorial/pipes.html">IO.pipes</a>
-    <script type="text/javascript">(function() { 
-        $('h1').each(function(el) {
-          return document.writeln(el);
-        });
-      
-      }).call(this);
-      
-    </script><h1>Pipes</h1>
+    <div id="toc">
+      <h1>Table of Contents</h1>
+    </div><h1>Pipes</h1>
 <p>A pipe is a descriptor pair for interprocess communication.<sup class="footnote" id="fnr1"><a href="#fn1">1</a></sup> It allows data
 to flow in one direction, from its read end to the write end. In a way, a 
 pipe is the prototypical <em>cod</em> channel; they have been standing model for how
@@ -199,5 +194,31 @@ come up with a name for both ends, as in the above example.</p>
 <a href="https://github.com/kschiess/procrastinate">procrastinate</a> by doing your work
 in child processes.</p>
 <p class="footnote" id="fn4"><a href="#fnr4"><sup>4</sup></a> This has pitfalls. Have a look at the section titled &#8220;Signal handling
-might mess up library X&#8221; in the <a href="unix.html">chapter on unix tricks</a>.</p></body>
+might mess up library X&#8221; in the <a href="unix.html">chapter on unix tricks</a>.</p><script type="text/javascript">(function() {
+        var toc, ul; 
+        toc = $('#toc');
+      
+        document.anchor_id = 0;
+      
+        ul = document.createElement('ul');
+      
+        toc.append(ul);
+      
+        $('body > h1,h2,h3').each(function() {
+          var a, anchor_name, li;
+          anchor_name = "a" + document.anchor_id;
+          document.anchor_id += 1;
+          $(this).attr('id', anchor_name);
+          li = document.createElement('li');
+          $(li).addClass(this.tagName);
+          a = document.createElement('a');
+          $(a).attr('href', "#" + anchor_name).text($(this).text());
+          $(li).append(a);
+          return $(ul).append(li);
+        });
+      
+      }).call(this);
+      
+    </script>
+  </body>
 </html>

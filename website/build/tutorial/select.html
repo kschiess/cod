@@ -5,12 +5,33 @@
   </head>
   <body onload="sh_highlightDocument();">
     <a href="/cod/tutorial/pipes.html">IO.pipes</a>
-    <script type="text/javascript">(function() { 
-        $('h1').each(function(el) {
-          return document.writeln(el);
+    <div id="toc">
+      <h1>Table of Contents</h1>
+    </div><h1>Selecting channels</h1><script type="text/javascript">(function() {
+        var toc, ul; 
+        toc = $('#toc');
+      
+        document.anchor_id = 0;
+      
+        ul = document.createElement('ul');
+      
+        toc.append(ul);
+      
+        $('body > h1,h2,h3').each(function() {
+          var a, anchor_name, li;
+          anchor_name = "a" + document.anchor_id;
+          document.anchor_id += 1;
+          $(this).attr('id', anchor_name);
+          li = document.createElement('li');
+          $(li).addClass(this.tagName);
+          a = document.createElement('a');
+          $(a).attr('href', "#" + anchor_name).text($(this).text());
+          $(li).append(a);
+          return $(ul).append(li);
         });
       
       }).call(this);
       
-    </script><h1>Selecting channels</h1></body>
+    </script>
+  </body>
 </html>
