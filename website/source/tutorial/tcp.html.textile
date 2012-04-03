@@ -96,7 +96,7 @@ The easy answer to solving this problem is of course to send the server the
 channel to answer to. Here's a working example of this:[1]
 
 <pre class="sh_ruby"><code title="A more realistic server">
-  client do 
+  client do
     channel = Cod.tcp('127.0.0.1:12345')
     version = channel.interact [:ehlo, channel]
     version # => [:version, 1]
@@ -117,7 +117,6 @@ channel to answer to. Here's a working example of this:[1]
         when :ehlo
           client.put [:version, 1]
         when :shutdown
-          p :shutting_down
           break
       else
         client.put :unknown_command
@@ -129,15 +128,72 @@ channel to answer to. Here's a working example of this:[1]
   Process.wait pid
 </code></pre>
 
-<pre class="output">
-:shutting_down
-</pre>
+Of course, in your code, server and client would be on different machines.
+Otherwise what is the point. Right?
 
 h2. Identifying the Client
 
-h3. Send it Over
+As you could see above, one method for the server to identify the clients
+that connect to it is for the clients to send the channel to answer to 
+as part of the message. 
 
-h3. Implicit Identification
+But sending the back-channel along has a few downsides: 
+
+* Your code gets more complicated
+* TCP has connection built in
+
+There is a better method to handle client connections in _cod_:
+
+<pre class="sh_ruby"><code>
+  # Just the innermost server-side loop again
+  msg, back_channel = channel.get_ext
+  case msg
+    when ...
+      back_channel.put :answer
+  end
+</code></pre>
+
+Using <code>#get_ext</code>[2] allows you to retrieve both the message that
+was sent and the back channel in one command. If you close that channel, you
+will terminate the clients connection. 
+
+Here's the revised example from above: 
+
+<pre class="sh_ruby"><code title="A more realistic server">
+  client do
+    channel = Cod.tcp('127.0.0.1:12345')
+    version = channel.interact :ehlo
+    version # => [:version, 1]
+
+    other = channel.interact :bark
+    other # => :unknown_command
+
+    # Tell the server to shut down.
+    channel.put :shutdown
+  end
+  
+  pid = server do
+    channel = Cod.tcp_server('127.0.0.1:12345')
+    
+    loop do
+      msg, client = channel.get_ext
+      case msg
+        when :ehlo
+          client.put [:version, 1]
+        when :shutdown
+          break
+      else
+        client.put :unknown_command
+      end
+    end
+  end
+  
+  # Wait for the server to terminate
+  Process.wait pid
+</code></pre>
+
+Note that the servers complexity remained the same, while the client got
+simpler. This is good, right?
 
 h2. Waiting for Data
 
@@ -163,3 +219,5 @@ way of expressing your needs. Make your choice.
 fn1. <code>#client</code> and <code>#server</code> are helper methods that
   fork a client or a server process respectively. Treat them as synonymous to
   <code>Kernel.fork</code>.
+
+fn2. @code_link(Cod::TcpServer#get_ext)
