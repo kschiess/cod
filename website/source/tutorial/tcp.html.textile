@@ -22,7 +22,7 @@ channels. Let me show you how to create both:
 To do simple communication across machines, this will be all you need. But that's only where things start, not where they end. In the following sections, 
 I'll explain more about tcp clients and servers. 
 
-h1. Client-side
+h1. Client-side TCP
 
 The channel returned by <code>Cod.tcp</code> really acts in two phases:
 
@@ -75,7 +75,38 @@ error you have to expect and handle.
 </code></pre>
 
 
-h1. Server-side
+h1. Server-side TCP
+
+Writing a server with cod involves a few more concerns and tricks than writing
+a client. We've tried to address all obvious needs. Here's what a more typical
+server would look like:[1]
+
+<pre class="sh_ruby"><code title="A more realistic server">
+  client do 
+    channel = Cod.tcp('127.0.0.1:12345')
+    channel.interact :ehlo # => 
+    channel.interact :bark # => 
+
+    # Tell the server to shut down.
+    channel.put :shutdown
+  end
+  
+  server do
+    channel = Cod.tcp_server('127.0.0.1:12345')
+    
+    loop do
+      case channel.get
+        when :ehlo
+          channel.put [:version, 1]
+        when :shutdown
+          break
+      else
+        channel.put :unknown_command
+      end
+    end
+  end
+</code></pre>
+
 
 h2. Identifying the Client
 
@@ -84,6 +115,12 @@ h3. Send it Over
 h3. Implicit Identification
 
 h2. Waiting for Data
+
+h2. Dispatch Ideas
+
+h3. The case Gem
+
+h3. A clever Hash
 
 h1. Competitive Comparison
 
@@ -95,3 +132,9 @@ _cod_ to a program tuned for IO will not be a fair comparison.
 Evented IO is mostly overkill in day to day programming. Threading can be and
 often is actually harmful. What _cod_ proposes is a saner and less convoluted
 way of expressing your needs. Make your choice. 
+
+!/images/fish.png!
+
+fn1. <code>#client</code> and <code>#server</code> are helper methods that
+  fork a client or a server process respectively. Treat them as synonymous to
+  <code>Kernel.fork</code>.
