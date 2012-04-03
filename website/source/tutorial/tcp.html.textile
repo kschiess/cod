@@ -78,33 +78,50 @@ error you have to expect and handle.
 h1. Server-side TCP
 
 Writing a server with cod involves a few more concerns and tricks than writing
-a client. We've tried to address all obvious needs. Here's what a more typical
-server would look like:[1]
+a client. We've tried to address all obvious needs. Let's look at what the 
+innermost interaction with cod looks like naively: 
+
+<pre class="sh_ruby"><code>
+  # Get request
+  channel.get 
+  # Put answer
+  channel.put     # XXX doesn't exist
+</code></pre>
+
+But there is no <code>Channel#put</code> for tcp server channels! A tcp server
+can of course have more than one client. There would be no way to tell which
+client should receive the answer. 
+
+The easy answer to solving this problem is of course to send the server the
+channel to answer to. Here's a working example of this:[1]
 
 <pre class="sh_ruby"><code title="A more realistic server">
-  client do 
+  pid = client do 
     channel = Cod.tcp('127.0.0.1:12345')
-    channel.interact :ehlo # => 
-    channel.interact :bark # => 
+    channel.interact [:ehlo, channel] # => [:version, 1]
+    channel.interact [:bark, channel] # => :unknown_command
 
     # Tell the server to shut down.
-    channel.put :shutdown
+    channel.put [:shutdown, nil]
   end
   
   server do
     channel = Cod.tcp_server('127.0.0.1:12345')
     
     loop do
-      case channel.get
+      msg, client = channel.get
+      case msg
         when :ehlo
-          channel.put [:version, 1]
+          client.put [:version, 1]
         when :shutdown
           break
       else
-        channel.put :unknown_command
+        client.put :unknown_command
       end
     end
   end
+  
+  Process.wait pid
 </code></pre>
 
 
