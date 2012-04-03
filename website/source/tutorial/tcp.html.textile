@@ -98,8 +98,11 @@ channel to answer to. Here's a working example of this:[1]
 <pre class="sh_ruby"><code title="A more realistic server">
   pid = client do 
     channel = Cod.tcp('127.0.0.1:12345')
-    channel.interact [:ehlo, channel] # => [:version, 1]
-    channel.interact [:bark, channel] # => :unknown_command
+    version = channel.interact [:ehlo, channel]
+    version # => [:version, 1]
+
+    other = channel.interact [:bark, channel]
+    other # => :unknown_command
 
     # Tell the server to shut down.
     channel.put [:shutdown, nil]
@@ -123,7 +126,6 @@ channel to answer to. Here's a working example of this:[1]
   
   Process.wait pid
 </code></pre>
-
 
 h2. Identifying the Client
 
