@@ -96,7 +96,7 @@ The easy answer to solving this problem is of course to send the server the
 channel to answer to. Here's a working example of this:[1]
 
 <pre class="sh_ruby"><code title="A more realistic server">
-  pid = client do 
+  client do 
     channel = Cod.tcp('127.0.0.1:12345')
     version = channel.interact [:ehlo, channel]
     version # => [:version, 1]
@@ -108,7 +108,7 @@ channel to answer to. Here's a working example of this:[1]
     channel.put [:shutdown, nil]
   end
   
-  server do
+  pid = server do
     channel = Cod.tcp_server('127.0.0.1:12345')
     
     loop do
@@ -117,6 +117,7 @@ channel to answer to. Here's a working example of this:[1]
         when :ehlo
           client.put [:version, 1]
         when :shutdown
+          p :shutting_down
           break
       else
         client.put :unknown_command
@@ -124,8 +125,13 @@ channel to answer to. Here's a working example of this:[1]
     end
   end
   
+  # Wait for the server to terminate
   Process.wait pid
 </code></pre>
+
+<pre class="output">
+:shutting_down
+</pre>
 
 h2. Identifying the Client
 
