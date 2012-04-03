@@ -20,9 +20,9 @@ channels. Let me show you how to create both:
 </code></pre>
 
 To do simple communication across machines, this will be all you need. But that's only where things start, not where they end. In the following sections, 
-I'll explain more about tcp clients and servers. (using _cod_)
+I'll explain more about tcp clients and servers. 
 
-h1. client-side
+h1. Client-side
 
 The channel returned by <code>Cod.tcp</code> really acts in two phases:
 
@@ -33,8 +33,9 @@ The channel returned by <code>Cod.tcp</code> really acts in two phases:
   transmitted immediately. 
 
 This two-phase connect is the reason why _cod_ programs can send stuff to a 
-server that might not even be listening yet. Typically, you'll encounter this
-kind of code in every example here. 
+server that might not even be listening yet. This is very useful in practice.
+
+h2. Read Timeouts
 
 If you want to force a connection, try to read from the client channel. It
 will block forever until data comes in. Look at this example, which tries to
@@ -44,8 +45,53 @@ read from the channel until a timeout occurs:
   channel = Cod.tcp('localhost:12345')
   
   require 'timeout'
-  value = timeout(0.1){ channel.get } # raises <Timeout::Error: execution expired>
+  begin
+    value = timeout(0.1){ channel.get } 
+  rescue Timeout::Error
+  end
+</code></pre>
+
+Since there is normally no server on localhost:12345, the code will just block
+and wait, trying to make a connection. After 0.1 seconds, the timeout 
+occurs and we abort processing. 
+
+We have chosen not to handle timeouts in _cod_ at all. A connection that did
+not deliver the data in time will often need to be reset; the data might still
+come later, and the client might not be in a condition to handle it. Use
+<code>timeout.rb</code>, it is your friend.
+
+h2. Connection lost
+
+When the server terminates the connection to our client, we'll eventually get
+a <code>Cod::ConnectionLost</code> error raised. This is pretty much the only
+error you have to expect and handle. 
+
+<pre class="sh_ruby"><code>
+  # Read until the connection breaks.
+  begin
+    loop { client.get }
+  rescue Cod::ConnectionLost
+  end
 </code></pre>
 
 
+h1. Server-side
 
+h2. Identifying the Client
+
+h3. Send it Over
+
+h3. Implicit Identification
+
+h2. Waiting for Data
+
+h1. Competitive Comparison
+
+Although we're pretty sure that cod doesn't perform badly, it probably will
+not quite match your evented/fiberthreaded/control-inversed server. Writing
+such a server is still hard. Comparing something you wrote in 5 minutes using
+_cod_ to a program tuned for IO will not be a fair comparison.
+
+Evented IO is mostly overkill in day to day programming. Threading can be and
+often is actually harmful. What _cod_ proposes is a saner and less convoluted
+way of expressing your needs. Make your choice. 
