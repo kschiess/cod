@@ -38,8 +38,8 @@ server that might not even be listening yet. This is very useful in practice.
 h2. Read Timeouts
 
 If you want to force a connection, try to read from the client channel. It
-will block forever until data comes in. Look at this example, which tries to
-read from the channel until a timeout occurs: 
+will block forever until data comes in. The next example blocks until a
+timeout occurs:
 
 <pre class="sh_ruby"><code title="Timeout">
   channel = Cod.tcp('localhost:12345')
@@ -57,8 +57,7 @@ occurs and we abort processing.
 
 We have chosen not to handle timeouts in _cod_ at all. A connection that did
 not deliver the data in time will often need to be reset; the data might still
-come later, and the client might not be in a condition to handle it. Use
-<code>timeout.rb</code>, it is your friend.
+come later, and the client might not be in a condition to handle it. We recommend using <code>timeout.rb</code> for all your outtiming needs.
 
 h2. Connection lost
 
@@ -77,9 +76,8 @@ error you have to expect and handle.
 
 h1. Server-side TCP
 
-Writing a server with cod involves a few more concerns and tricks than writing
-a client. We've tried to address all obvious needs. Let's look at what the 
-innermost interaction with cod looks like naively: 
+Servers are a little more complex to write. Here's how the inner loop might 
+look like: 
 
 <pre class="sh_ruby"><code>
   # Get request
@@ -92,8 +90,8 @@ But there is no <code>Channel#put</code> for tcp server channels! A tcp server
 can of course have more than one client. There would be no way to tell which
 client should receive the answer. 
 
-The easy answer to solving this problem is of course to send the server the
-channel to answer to. Here's a working example of this:[1]
+The easy answer to solving this problem is to tell the server where to send
+its answers. Here's a working example of this:[1]
 
 <pre class="sh_ruby"><code title="A more realistic server">
   client do
@@ -128,19 +126,39 @@ channel to answer to. Here's a working example of this:[1]
   Process.wait pid
 </code></pre>
 
+In the client code (<code>client do ... end</code>) you might notice the
+<code>#interact</code> method, which hasn't been introduced yet. It is defined
+as: 
+
+<pre class="sh_ruby"><code>
+  def interact(*args)
+    channel.put *args
+    return channel.get
+  end
+</code></pre>
+
+
+The server code <code>server do ... end</code> retrieves both the message and
+the back-channel from the its <code>channel.get</code>. It then uses list 
+comprehension to split that tuple into its components. 
+
 Of course, in your code, server and client would be on different machines.
 Otherwise what is the point. Right?
 
 h2. Identifying the Client
 
-As you could see above, one method for the server to identify the clients
-that connect to it is for the clients to send the channel to answer to 
-as part of the message. 
+As shown above, the clients can simply send their connection handle through
+itself. Like so: 
 
-But sending the back-channel along has a few downsides: 
+<pre class="sh_ruby"><code>
+  channel.put channel
+</code></pre>
 
-* Your code gets more complicated
-* TCP has connection built in
+
+But sending the back-channel along as part of the message has a few downsides: 
+
+* Your code gets more complicated (especially server-side)
+* You're not using the built in connection state of TCP
 
 There is a better method to handle client connections in _cod_:
 
