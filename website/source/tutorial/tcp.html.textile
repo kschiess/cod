@@ -210,8 +210,7 @@ Here's the revised example from above:
   Process.wait pid
 </code></pre>
 
-Note that the servers complexity remained the same, while the client got
-simpler. This is good, right?
+
 
 h2. Waiting for Data
 
@@ -220,6 +219,8 @@ h2. Dispatch Ideas
 h3. The case Gem
 
 h3. A clever Hash
+
+h2. On Back-Channels
 
 h1. Competitive Comparison
 
