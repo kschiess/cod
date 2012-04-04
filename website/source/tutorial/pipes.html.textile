@@ -200,8 +200,8 @@ trick.
 Rather than cover what a self-pipe is again, I refer you to the
 "extensive":http://cr.yp.to/docs/selfpipe.html
 "documentation":http://osiris.978.org/~alex/safesignalhandling.html
-"online":news://gmane.org:119/20120326222500.GA20806@dcvr.yhbt.net. 'cause
-this is an old trick!
+"online":http://blog.rubybestpractices.com/posts/ewong/016-Implementing-Signal-Handlers.html.
+'cause this is an old trick!
 
 Using _cod_, it boils down to this: 
 
