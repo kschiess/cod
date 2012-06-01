@@ -3,3 +3,7 @@ title: Pipes
 ---
 
 h1. Selecting channels
+
+h1. Current limitations
+
+* Beanstalk channels

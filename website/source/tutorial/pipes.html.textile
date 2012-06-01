@@ -185,7 +185,7 @@ Output will look like this:
 
 ... in best case. Be warned, process scheduling is not as fine in granularity
 as thread scheduling is. The number of cores of the system you're on and the
-operating system that you're running this under will dramatically effect these
+operating system that you're running this under will dramatically affect these
 results. Sometimes it is hard to get more than one processor to read from 
 a single pipe.
 

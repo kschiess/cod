@@ -210,9 +210,33 @@ Here's the revised example from above:
   Process.wait pid
 </code></pre>
 
-
-
 h2. Waiting for Data
+
+Most of the time, your server will have to lurk around, waiting for clients
+to connect and waiting for data. As we have shown above, waiting for new 
+connections is implicit with _cod_. Let's look at how to wait for data to 
+arrive. 
+
+In the simplest case, you just call <code>#get</code> and have _cod_ block: 
+
+<pre class="sh_ruby"><code>
+  channel.get # Blocks until data arrives
+</code></pre>
+
+But in some cases, you'll want to wait on several sockets. _cod_ features an
+extended "select":/docs/Cod.select: This example assumes that you have two
+channels you want to wait on, <code>hodge</code> and <code>podge</code>, and
+that podge becomes available first:
+
+<pre class="sh_ruby"><code>
+  Cod.select(1, [hodge, podge]) # => [podge] (timeout 1 second)
+</code></pre>
+
+In the "chapter on select":/tutorial/select.html you'll find more on this 
+special select syntax. Reading up on this is worth your while - select 
+helps test which selectors have become available, something the plain old
+<code>IO.select</code> doesn't do.
+
 
 h2. Dispatch Ideas
 
@@ -232,6 +256,15 @@ _cod_ to a program tuned for IO will not be a fair comparison.
 Evented IO is mostly overkill in day to day programming. Threading can be and
 often is actually harmful. What _cod_ proposes is a saner and less convoluted
 way of expressing your needs. Make your choice. 
+
+h1. Other things to look at
+
+In the chapter on "serialisation":tutorial/serialisation.html you'll find all
+about _cods_ wire format. Turns out, beanstalkd channels are really just tcp
+with the proper serialisation on top! Almost, at least.
+
+If you need <code>selects</code>, be sure to point your mouse at "the chapter
+on select":/tutorial/select.html. It 
 
 !/images/fish.png!
 
