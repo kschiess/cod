@@ -1,19 +1,47 @@
 ---
-title: cod - ipc, not beards
+title: 'cod - IPC made simple.'
+toc: true
 ---
 
-This is a work in progress...
+h1. SYNOPSIS
 
-Want to watch this happen? Here's a list of things I've worked on recently
-and what I changed: 
+Here's a time server implementation that you can know by heart: 
 
-h2. 2012-04-02
+<pre class="sh_ruby"><code>
+  time_server_channel = Cod.tcp_server('10.0.0.2:4444')
   
-* Style changes, added a fish image courtesy of "Norwegian Institute of Marine Research":http://www.fisheries.no/ecosystems-and-stocks/marine_stocks/fish_stocks/cod/. (Thanks!)
+  loop do
+    request, client_channel = time_server_channel.get_ext
+    case request
+      when :time
+        client_channel.put Time.now
+      when :date
+        client_channel.put Date.today
+    else
+      client_channel.put 'Unknown request!'
+    end
+    
+    client_channel.close
+  end
+</code></pre>
 
-h2. 2012-03-30
+Here's the client: 
 
-* "tutorial/unix":tutorial/unix.html Headlines only; stuff that you need to
-  be aware of in this mode of programming.
-* "tutorial/pipe":tutorial/pipes.html A few examples and the example runner.
-  Examples for a lot of the pattern you'd need in reality.
+<pre class="sh_ruby"><code>
+  time_chan = Cod.tcp('10.0.0.2:4444')
+  time = time_chan.interact(:time)
+  
+  puts "At the next clock cycle, it is #{time}."
+</code></pre>
+
+h1. DOCUMENTATION
+
+h1. CONTRIBUTE
+
+h1. CODE
+
+h1. CREW
+
+h1. ABOUT
+
+!/images/fish.png!
