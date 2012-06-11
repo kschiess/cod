@@ -1,17 +1,84 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><title>cod - IPC made simple.</title>
+    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>cod - cod - IPC made simple.</title>
   </head>
-  <body onload="sh_highlightDocument();"><p>This is a work in progress&#8230;</p>
-    <p>Want to watch this happen? Here&#8217;s a list of things I&#8217;ve worked on recently
-    and what I changed:</p>
-    <h2>2012-03-30</h2>
-    <ul>
-    	<li><a href="tutorial/unix.html">tutorial/unix</a> Headlines only; stuff that you need to
-      be aware of in this mode of programming.</li>
-    	<li><a href="tutorial/pipes.html">tutorial/pipe</a> A few examples and the example runner.
-      Examples for a lot of the pattern you&#8217;d need in reality.</li>
-    </ul>
-    <p>Come back later &#8211; this is undergoing frequent changes.</p></body>
+  <body onload="sh_highlightDocument();">
+    <a href="/cod/index.html">Intro</a> - <a href="/cod/tutorial/pipes.html">IO.pipe</a> - <a href="/cod/tutorial/tcp.html">TCP/IP</a> - <a href="/cod/tutorial/serialisation.html">Serialisation</a> - <a href="/cod/tutorial/builtins.html">Builtins</a> - <a href="/cod/tutorial/unix.html">Unix</a> - <a href="/cod/tutorial/conventions.html">OTTK</a>
+    <div id="toc">
+      <img src="/cod/images/fish.png" />
+      <h1>Table of Contents</h1>
+    </div><h1><span class="caps">SYNOPSIS</span></h1>
+<p>Here&#8217;s a time server implementation that you can know by heart:</p>
+<pre class="sh_ruby"><code>
+  time_server_channel = Cod.tcp_server('10.0.0.2:4444')
+  
+  loop do
+    request, client_channel = time_server_channel.get_ext
+    case request
+      when :time
+        client_channel.put Time.now
+      when :date
+        client_channel.put Date.today
+    else
+      client_channel.put 'Unknown request!'
+    end
+    
+    client_channel.close
+  end
+</code></pre>
+<p>Here&#8217;s the client:</p>
+<pre class="sh_ruby"><code>
+  time_chan = Cod.tcp('10.0.0.2:4444')
+  time = time_chan.interact(:time)
+  
+  puts "At the next clock cycle, it is #{time}."
+</code></pre>
+<h1><span class="caps">DOCUMENTATION</span></h1>
+<p>Some. </p>
+<p>Here&#8217;s the <a href="tutorial/pipes.html">who&#8217;s who</a> of the <em>cod</em> universe. This is
+what you see in the navigation bar as well.</p>
+<p>Here, have some <a href="http://rubydoc.org/gems/cod"><span class="caps">YARD</span> documentation</a> as a side dish.</p>
+<p>Don&#8217;t read the source code. There, I&#8217;ve warned you.</p>
+<h1><span class="caps">CONTRIBUTE</span></h1>
+<p>Please:</p>
+<ul>
+	<li>Create issues: <a href="https://github.com/kschiess/cod/issues">cod/issues @ github</a></li>
+	<li>Github project: <a href="https://github.com/kschiess/cod">Fork? Request a pull?</a></li>
+</ul>
+<p>Remember: I test my code, so you should too. Please include relevant rspec
+tests in <em>all</em> pull requests.</p>
+<h1><span class="caps">ABOUT</span></h1>
+<p>Thanks to all <a href="https://github.com/kschiess/cod/graphs/contributors">contributors</a>!</p>
+<p><em>cod</em> and associated products (this website) are under an <span class="caps">MIT</span> license (see 
+<span class="caps">LICENSE</span> file). The cod image is copyright by the <a href="http://www.fisheries.no/ecosystems-and-stocks/marine_stocks/fish_stocks/cod/">Norwegian Institute of Marine Research</a> &#8211; thanks for letting us use it!</p>
+<p>Need help with some hairy Ruby problems? Maybe an
+<a href="http://www.technologyastronauts.ch">astronaut</a> can show you how to get on safe
+ground.</p>
+<p><img src="/images/fish.png" alt="" /></p><script type="text/javascript">(function() {
+        var toc, ul; 
+        toc = $('#toc');
+      
+        if (toc) {
+          document.anchor_id = 0;
+          ul = document.createElement('ul');
+          toc.append(ul);
+          $('body > h1,h2,h3').each(function() {
+            var a, anchor_name, li;
+            anchor_name = "a" + document.anchor_id;
+            document.anchor_id += 1;
+            $(this).attr('id', anchor_name);
+            li = document.createElement('li');
+            $(li).addClass(this.tagName);
+            a = document.createElement('a');
+            $(a).attr('href', "#" + anchor_name).text($(this).text());
+            $(li).append(a);
+            return $(ul).append(li);
+          });
+        }
+      
+      }).call(this);
+      
+    </script>
+  </body>
 </html>

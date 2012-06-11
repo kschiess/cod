@@ -1,21 +1,125 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><title>Tricks and Gotchas to be aware of</title>
+    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>cod - Unix: Things to be aware of</title>
   </head>
-  <body onload="sh_highlightDocument();"><h1>Tricks and Gotchas</h1>
-    <p>When you start using <em>cod</em> for your own projects, I assume you want to cross
-    over to the unixy, using-forks-instead-of-threads side of things. This is fine
-    with me, and one of the reasons I created cod.</p>
-    <p>But all is not butter and honey in the land of forks. As it is the case with 
-    every style of programming, there are a number of things to be aware of. 
-    This section of the tutorial strives to give you a heads-up to most of them. 
-    Please tell me if something is missing.</p>
-    <h2>Forks flush io streams</h2>
-    <h2>Signal handling might mess up library X</h2>
-    <h2><span class="caps">COW</span>-friendliness of various Rubies</h2>
-    <ul>
-    	<li>Enterprise Ruby</li>
-    	<li>Ruby 2.0</li>
-    </ul></body>
+  <body onload="sh_highlightDocument();">
+    <a href="/cod/index.html">Intro</a> - <a href="/cod/tutorial/pipes.html">IO.pipe</a> - <a href="/cod/tutorial/tcp.html">TCP/IP</a> - <a href="/cod/tutorial/serialisation.html">Serialisation</a> - <a href="/cod/tutorial/builtins.html">Builtins</a> - <a href="/cod/tutorial/unix.html">Unix</a> - <a href="/cod/tutorial/conventions.html">OTTK</a>
+    <div id="toc">
+      <img src="/cod/images/fish.png" />
+      <h1>Table of Contents</h1>
+    </div><h1>Tricks</h1>
+<p>This is a collection of tricks for handling the offspring your processes fork
+and related topics.</p>
+<h2>The Self Pipe</h2>
+<p>When using processes instead of threads, you will sooner or later have to
+handle signals using <code>Kernel.trap</code>.<sup class="footnote" id="fnr4"><a href="#fn4">4</a></sup> To be able to integrate this
+nicely with the rest of your code that probably blocks in
+<code>Cod.select</code> as much as possible, you can use the self-pipe
+trick.</p>
+<p>Rather than cover what a self-pipe is again, I refer you to the
+<a href="http://cr.yp.to/docs/selfpipe.html">extensive</a>
+<a href="http://osiris.978.org/~alex/safesignalhandling.html">documentation</a>
+<a href="http://blog.rubybestpractices.com/posts/ewong/016-Implementing-Signal-Handlers.html">online</a>.
+&#8217;cause this is an old trick!</p>
+<p>Using <em>cod</em>, it boils down to this:</p>
+<pre class="sh_ruby"><code title="Self Pipe trick">
+  self_pipe = Cod.pipe.split
+  # Register a handler for USR1
+  trap(:USR1) { self_pipe.write.put :USR1 }
+
+  Process.kill(:USR1, 
+    Process.pid)
+  
+  # Do something without worrying about signals
+  
+  # Here's the advantage of self-pipe: You can 
+  # decide when to listen for signals. Otherwise 
+  # trap is very preemptive.
+  self_pipe.read.get # =&gt; :USR1
+</code></pre>
+<p>Did you notice that a split pipe returns an array that also answers to 
+<code>#read</code> and <code>#write</code>? This is useful for when you cannot
+come up with a name for both ends, as in the above example.</p>
+<h1>Gotchas</h1>
+<p>All is not butter and honey in the land of forks. As it is the case with 
+every style of programming, there are a number of things to be aware of. 
+This section of the tutorial strives to give you a heads-up to most of them. 
+Please tell me if something is missing.</p>
+<h2>Forks flush io streams</h2>
+<p>Ruby buffers output sent to IO streams for a while. So does the operating 
+system. When you fork a new process, the OS buffers get flushed to disk while
+the Ruby buffers get duplicated into the new process. (Along with the open file descriptor)</p>
+<p>Ruby buffers get flushed at other moments, like when you write more output to
+the IO stream or when a child process exits. And the drama unfolds: Your child
+processes will write the unflushed Ruby buffers to the open IO stream upon
+exit. Their master process will write the same buffer to the same stream on
+its next write. And you&#8217;ll end up with duplicated file contents.</p>
+<p>To prevent this from happening: Either flush the streams before you fork</p>
+<pre class="sh_ruby"><code>
+  stream.flush
+</code></pre>
+<p>or have them synch to OS buffers immediately on write</p>
+<pre class="sh_ruby"><code>
+  stream.sync = true
+</code></pre>
+<p>or even better &#8211; don&#8217;t let the child inherit the stream in the first place. 
+This can only be achieved by opening the stream after the fork.</p>
+<h2>Signal handling might mess up library X</h2>
+<p>While the previous gotcha was more of a Ruby bug, this is a unix problem: 
+When you use signals in your Ruby program, you might mess up C extensions 
+you use. Without signal handling, someone might write the following C code:</p>
+<pre class="sh_c"><code>
+   size = recv(socket, &amp;buffer, 1024, 0);
+   assert(size &gt; 0);
+   // Do something with the data in buffer
+</code></pre>
+<p>But once you register a trap for a signal (<code>man 2 sigaction</code>),
+signals might have to be delivered to your process during the blocking call to
+<code>recv</code>. What your OS will do in this case is really simple and
+never happens until you register a <code>sigaction</code>: It returns from the
+<code>recv</code> call with an exit code of -1. (and an <code>_errno</code> of
+<span class="caps">EAGAIN</span>)</p>
+<p>You could not care less. This marks the precise spot where that library
+becomes useless to you, since you&#8217;d have to read all the code back and fix all
+instances where calls are made to the operating system with the wrong set of
+assumptions. Now you know at least where that assertion fault (or <span class="caps">EAGAIN</span> error) all over sudden comes from.</p>
+<h2><span class="caps">COW</span>-friendliness of various Rubies</h2>
+<p>Your average Ruby is not copy-on-write friendly. This means that even though
+right after a fork, you don&#8217;t use double the memory you used in that parent
+process, some time afterwards you will, since the garbage collector Ruby uses
+will touch all that memory, creating a child copy of it.</p>
+<p>If you create short-lived processes, this is not a problem. And if you create
+long-lived server processes &#8211; just thought I&#8217;d give you the heads-up. 
+Try to google for Ruby and &#8216;Copy on Write&#8217; &#8211; you&#8217;ll find prior art.</p>
+<h1>Other things to look at</h1>
+<p>Some excellent books have been written about Unix. I personally did enjoy
+reading &#8216;Advanced Programming in the <span class="caps">UNIX</span> environment&#8217; (Stevens, Rago). But
+hey, <a href="http://dilbert.com/strips/comic/1995-06-24/">who am I</a> to tell you that you should read a book.</p>
+<p><img src="/images/fish.png" alt="" /></p><script type="text/javascript">(function() {
+        var toc, ul; 
+        toc = $('#toc');
+      
+        if (toc) {
+          document.anchor_id = 0;
+          ul = document.createElement('ul');
+          toc.append(ul);
+          $('body > h1,h2,h3').each(function() {
+            var a, anchor_name, li;
+            anchor_name = "a" + document.anchor_id;
+            document.anchor_id += 1;
+            $(this).attr('id', anchor_name);
+            li = document.createElement('li');
+            $(li).addClass(this.tagName);
+            a = document.createElement('a');
+            $(a).attr('href', "#" + anchor_name).text($(this).text());
+            $(li).append(a);
+            return $(ul).append(li);
+          });
+        }
+      
+      }).call(this);
+      
+    </script>
+  </body>
 </html>

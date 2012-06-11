@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><title>Pipes</title>
+    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>cod - Pipes</title>
   </head>
-  <body onload="sh_highlightDocument();"><h1>Pipes</h1>
+  <body onload="sh_highlightDocument();">
+    <a href="/cod/index.html">Intro</a> - <a href="/cod/tutorial/pipes.html">IO.pipe</a> - <a href="/cod/tutorial/tcp.html">TCP/IP</a> - <a href="/cod/tutorial/serialisation.html">Serialisation</a> - <a href="/cod/tutorial/builtins.html">Builtins</a> - <a href="/cod/tutorial/unix.html">Unix</a> - <a href="/cod/tutorial/conventions.html">OTTK</a>
+    <div id="toc">
+      <img src="/cod/images/fish.png" />
+      <h1>Table of Contents</h1>
+    </div><h1>Pipes</h1>
 <p>A pipe is a descriptor pair for interprocess communication.<sup class="footnote" id="fnr1"><a href="#fn1">1</a></sup> It allows data
 to flow in one direction, from its read end to the write end. In a way, a 
 pipe is the prototypical <em>cod</em> channel; they have been standing model for how
@@ -36,7 +41,7 @@ don&#8217;t access the pipes you create before you create the fork. This would c
 either end and render them useless:</p>
 <pre class="sh_ruby"><code title="Access before fork">
   chan = Cod.pipe
-  chan.put :smthng  # raises &lt;Errno::EPIPE: Broken pipe&gt;
+  chan.put :smthng # raises &lt;Errno::EPIPE: Broken pipe&gt;
   fork do
     chan.get
   end
@@ -88,11 +93,11 @@ other work, please look at <a href="select.html">Cod.select</a></p>
     end
   end
   
-  channel.get    # =&gt; #&lt;RuntimeError: Meanwhile, back at th...
+  channel.get # =&gt; #&lt;RuntimeError: Meanwhile, back at th...
 </code></pre>
 <p>One could even raise the error returned in the parent process, simulating a 
 single process executing.</p>
-<h2>N:M patterns</h2>
+<h1>N:M patterns</h1>
 <p>Want to distribute work to a few workers and gather their results? <em>cod</em> works
 for that as well. Here&#8217;s an example of N message producers, one consumer:</p>
 <pre class="sh_ruby"><code title="n producers">
@@ -120,8 +125,8 @@ for that as well. Here&#8217;s an example of N message producers, one consumer:<
     Worker.new(n)
   end
   
-  work = Cod.pipe   # for sending work to workers
-  result = Cod.pipe # for receiving results from workers
+  work = Cod.pipe   # for issuing work
+  result = Cod.pipe # for receiving results 
   
   # Set up ten worker processes
   pids = 10.times.map do |i| 
@@ -152,43 +157,40 @@ for that as well. Here&#8217;s an example of N message producers, one consumer:<
 </pre>
 <p>&#8230; in best case. Be warned, process scheduling is not as fine in granularity
 as thread scheduling is. The number of cores of the system you&#8217;re on and the
-operating system that you&#8217;re running this under will dramatically effect these
+operating system that you&#8217;re running this under will dramatically affect these
 results. Sometimes it is hard to get more than one processor to read from 
 a single pipe.</p>
-<h2>The Self Pipe</h2>
-<p>When using processes instead of threads, you will sooner or later have to
-handle signals using <code>Kernel.trap</code>.<sup class="footnote" id="fnr4"><a href="#fn4">4</a></sup> To be able to integrate this
-nicely with the rest of your code that probably blocks in
-<code>Cod.select</code> as much as possible, you can use the self-pipe
-trick.</p>
-<p>Rather than cover what a self-pipe is again, I refer you to the
-<a href="http://cr.yp.to/docs/selfpipe.html">extensive</a>
-<a href="http://osiris.978.org/~alex/safesignalhandling.html">documentation</a>
-<a href="news://gmane.org:119/20120326222500.GA20806@dcvr.yhbt.net">online</a>. &#8217;cause
-this is an old trick!</p>
-<p>Using <em>cod</em>, it boils down to this:</p>
-<pre class="sh_ruby"><code title="Self Pipe trick">
-  self_pipe = Cod.pipe.split
-  # Register a handler for USR1
-  trap(:USR1) { self_pipe.write.put :USR1 }
-
-  Process.kill(:USR1, 
-    Process.pid)
-  
-  # Do something without worrying about signals
-  
-  # Here's the advantage of self-pipe: You can decide when 
-  # to listen for signals. Otherwise trap is very preemptive.
-  self_pipe.read.get # =&gt; :USR1
-</code></pre>
-<p>Did you notice that a split pipe returns an array that also answers to 
-<code>#read</code> and <code>#write</code>? This is useful for when you cannot
-come up with a name for both ends, as in the above example.</p>
-<p class="footnote" id="fn1"><a href="#fnr1"><sup>1</sup></a> man 2 pipe</p>
-<p class="footnote" id="fn2"><a href="#fnr2"><sup>2</sup></a> @code_link(Cod::ConnectionLost)</p>
+<p><img src="/images/fish.png" alt="" /></p>
+<p class="footnote" id="fn1"><a href="#fnr1"><sup>1</sup></a> <code>$ man 2 pipe </code></p>
+<p class="footnote" id="fn2"><a href="#fnr2"><sup>2</sup></a> <code>Cod::ConnectionLost</code> in the <a href="http://rubydoc.org/gems/cod/Cod/ConnectionLost"><span class="caps">YARD</span> documentation</a>.</p>
 <p class="footnote" id="fn3"><a href="#fnr3"><sup>3</sup></a> Something that another library of mine could help you with:
 <a href="https://github.com/kschiess/procrastinate">procrastinate</a> by doing your work
 in child processes.</p>
 <p class="footnote" id="fn4"><a href="#fnr4"><sup>4</sup></a> This has pitfalls. Have a look at the section titled &#8220;Signal handling
-might mess up library X&#8221; in the <a href="unix.html">chapter on unix tricks</a>.</p></body>
+might mess up library X&#8221; in the <a href="unix.html">chapter on unix tricks</a>.</p><script type="text/javascript">(function() {
+        var toc, ul; 
+        toc = $('#toc');
+      
+        if (toc) {
+          document.anchor_id = 0;
+          ul = document.createElement('ul');
+          toc.append(ul);
+          $('body > h1,h2,h3').each(function() {
+            var a, anchor_name, li;
+            anchor_name = "a" + document.anchor_id;
+            document.anchor_id += 1;
+            $(this).attr('id', anchor_name);
+            li = document.createElement('li');
+            $(li).addClass(this.tagName);
+            a = document.createElement('a');
+            $(a).attr('href', "#" + anchor_name).text($(this).text());
+            $(li).append(a);
+            return $(ul).append(li);
+          });
+        }
+      
+      }).call(this);
+      
+    </script>
+  </body>
 </html>

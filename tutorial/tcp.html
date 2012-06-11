@@ -1,7 +1,247 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><title>Pipes</title>
+    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>cod - Pipes</title>
   </head>
-  <body onload="sh_highlightDocument();"><h1><span class="caps">TCP</span> channels</h1></body>
+  <body onload="sh_highlightDocument();">
+    <a href="/cod/index.html">Intro</a> - <a href="/cod/tutorial/pipes.html">IO.pipe</a> - <a href="/cod/tutorial/tcp.html">TCP/IP</a> - <a href="/cod/tutorial/serialisation.html">Serialisation</a> - <a href="/cod/tutorial/builtins.html">Builtins</a> - <a href="/cod/tutorial/unix.html">Unix</a> - <a href="/cod/tutorial/conventions.html">OTTK</a>
+    <div id="toc">
+      <img src="/cod/images/fish.png" />
+      <h1>Table of Contents</h1>
+    </div><h1><span class="caps">TCP</span>/IP</h1>
+<p><span class="caps">TCP</span>/IP channels come in two varieties: client-side channels and server-side
+channels. Let me show you how to create both:</p>
+<pre class="sh_ruby"><code title="Basic tcp">
+  client = Cod.tcp('localhost:12345')
+  server = Cod.tcp_server('localhost:12345')
+  
+  client.put 'tcp channels!'
+  server.get # =&gt; "tcp channels!"
+  
+  client.close
+  server.close
+</code></pre>
+<p>To do simple communication across machines, this will be all you need. But that&#8217;s only where things start, not where they end. In the following sections, 
+I&#8217;ll explain more about tcp clients and servers.</p>
+<h1>Client-side <span class="caps">TCP</span></h1>
+<p>The channel returned by <code>Cod.tcp</code> really acts in two phases:</p>
+<ul>
+	<li>Connection Phase: During this phase, the channel will buffer messages sent
+  through it. No server could be contacted, so nothing goes over the wire.</li>
+	<li>Established Phase: Once the connection could be established, all messages 
+  that have been buffered are now sent. From now on, everything gets 
+  transmitted immediately.</li>
+</ul>
+<p>This two-phase connect is the reason why <em>cod</em> programs can send stuff to a 
+server that might not even be listening yet. This is very useful in practice.</p>
+<h2>Read Timeouts</h2>
+<p>If you want to force a connection, try to read from the client channel. It
+will block forever until data comes in. The next example blocks until a
+timeout occurs:</p>
+<pre class="sh_ruby"><code title="Timeout">
+  channel = Cod.tcp('localhost:12345')
+  
+  require 'timeout'
+  begin
+    value = timeout(0.1){ channel.get } 
+  rescue Timeout::Error
+  end
+</code></pre>
+<p>Since there is normally no server on localhost:12345, the code will just block
+and wait, trying to make a connection. After 0.1 seconds, the timeout 
+occurs and we abort processing.</p>
+<p>We have chosen not to handle timeouts in <em>cod</em> at all. A connection that did
+not deliver the data in time will often need to be reset; the data might still
+come later, and the client might not be in a condition to handle it. We recommend using <code>timeout.rb</code> for all your outtiming needs.</p>
+<h2>Connection lost</h2>
+<p>When the server terminates the connection to our client, we&#8217;ll eventually get
+a <code>Cod::ConnectionLost</code> error raised. This is pretty much the only
+error you have to expect and handle.</p>
+<pre class="sh_ruby"><code>
+  # Read until the connection breaks.
+  begin
+    loop { client.get }
+  rescue Cod::ConnectionLost
+  end
+</code></pre>
+<h1>Server-side <span class="caps">TCP</span></h1>
+<p>Servers are a little more complex to write. Here&#8217;s how the inner loop might 
+look like:</p>
+<pre class="sh_ruby"><code>
+  # Get request
+  channel.get 
+  # Put answer
+  channel.put     # XXX doesn't exist
+</code></pre>
+<p>But there is no <code>Channel#put</code> for tcp server channels! A tcp server
+can of course have more than one client. There would be no way to tell which
+client should receive the answer.</p>
+<p>The easy answer to solving this problem is to tell the server where to send
+its answers. Here&#8217;s a working example of this:<sup class="footnote" id="fnr1"><a href="#fn1">1</a></sup></p>
+<pre class="sh_ruby"><code title="A more realistic server">
+  client do
+    channel = Cod.tcp('127.0.0.1:12345')
+    version = channel.interact [:ehlo, channel]
+    version # =&gt; [:version, 1]
+
+    other = channel.interact [:bark, channel]
+    other # =&gt; :unknown_command
+
+    # Tell the server to shut down.
+    channel.put [:shutdown, nil]
+  end
+  
+  pid = server do
+    channel = Cod.tcp_server('127.0.0.1:12345')
+    
+    loop do
+      msg, client = channel.get
+      case msg
+        when :ehlo
+          client.put [:version, 1]
+        when :shutdown
+          break
+      else
+        client.put :unknown_command
+      end
+    end
+  end
+  
+  # Wait for the server to terminate
+  Process.wait pid
+</code></pre>
+<p>In the client code (<code>client do ... end</code>) you might notice the
+<code>#interact</code> method, which hasn&#8217;t been introduced yet. It is defined
+as:</p>
+<pre class="sh_ruby"><code>
+  def interact(*args)
+    channel.put *args
+    return channel.get
+  end
+</code></pre>
+<p>The server code <code>server do ... end</code> retrieves both the message and
+the back-channel from the its <code>channel.get</code>. It then uses list 
+comprehension to split that tuple into its components.</p>
+<p>Of course, in your code, server and client would be on different machines.
+Otherwise what is the point. Right?</p>
+<h2>Identifying the Client</h2>
+<p>As shown above, the clients can simply send their connection handle through
+itself. Like so:</p>
+<pre class="sh_ruby"><code>
+  channel.put channel
+</code></pre>
+<p>But sending the back-channel along as part of the message has a few downsides:</p>
+<ul>
+	<li>Your code gets more complicated (especially server-side)</li>
+	<li>You&#8217;re not using the built in connection state of <span class="caps">TCP</span></li>
+</ul>
+<p>There is a better method to handle client connections in <em>cod</em>:</p>
+<pre class="sh_ruby"><code>
+  # Just the innermost server-side loop again
+  msg, back_channel = channel.get_ext
+  case msg
+    when ...
+      back_channel.put :answer
+  end
+</code></pre>
+<p>Using <code>#get_ext</code><sup class="footnote" id="fnr2"><a href="#fn2">2</a></sup> allows you to retrieve both the message that
+was sent and the back channel in one command. If you close that channel, you
+will terminate the clients connection.</p>
+<p>Here&#8217;s the revised example from above:</p>
+<pre class="sh_ruby"><code title="A more realistic server">
+  client do
+    channel = Cod.tcp('127.0.0.1:12345')
+    version = channel.interact :ehlo
+    version # =&gt; [:version, 1]
+
+    other = channel.interact :bark
+    other # =&gt; :unknown_command
+
+    # Tell the server to shut down.
+    channel.put :shutdown
+  end
+  
+  pid = server do
+    channel = Cod.tcp_server('127.0.0.1:12345')
+    
+    loop do
+      msg, client = channel.get_ext
+      case msg
+        when :ehlo
+          client.put [:version, 1]
+        when :shutdown
+          break
+      else
+        client.put :unknown_command
+      end
+    end
+  end
+  
+  # Wait for the server to terminate
+  Process.wait pid
+</code></pre>
+<h2>Waiting for Data</h2>
+<p>Most of the time, your server will have to lurk around, waiting for clients
+to connect and waiting for data. As we have shown above, waiting for new 
+connections is implicit with <em>cod</em>. Let&#8217;s look at how to wait for data to 
+arrive.</p>
+<p>In the simplest case, you just call <code>#get</code> and have <em>cod</em> block:</p>
+<pre class="sh_ruby"><code>
+  channel.get # Blocks until data arrives
+</code></pre>
+<p>But in some cases, you&#8217;ll want to wait on several sockets. <em>cod</em> features an
+extended <a href="/docs/Cod.select">select</a>: This example assumes that you have two
+channels you want to wait on, <code>hodge</code> and <code>podge</code>, and
+that podge becomes available first:</p>
+<pre class="sh_ruby"><code>
+  Cod.select(1, [hodge, podge]) # =&gt; [podge] (timeout 1 second)
+</code></pre>
+<p>In the <a href="/tutorial/select.html">chapter on select</a> you&#8217;ll find more on this 
+special select syntax. Reading up on this is worth your while &#8211; select 
+helps test which selectors have become available, something the plain old
+<code>IO.select</code> doesn&#8217;t do.</p>
+<h1>Competitive Comparison</h1>
+<p>Although we&#8217;re pretty sure that cod doesn&#8217;t perform badly, it probably will
+not quite match your evented/fiberthreaded/control-inversed server. Writing
+such a server is still hard. Comparing something you wrote in 5 minutes using
+<em>cod</em> to a program tuned for IO will not be a fair comparison.</p>
+<p>Evented IO is mostly overkill in day to day programming. Threading can be and
+often is actually harmful. What <em>cod</em> proposes is a saner and less convoluted
+way of expressing your needs. Make your choice.</p>
+<h1>Other things to look at</h1>
+<p>In the chapter on <a href="serialisation.html">serialisation</a> you&#8217;ll find all
+about <em>cods</em> wire format. Turns out, beanstalkd channels are really just tcp
+with the proper serialisation on top! Almost, at least.</p>
+<p>If you need <code>selects</code>, be sure to point your mouse at <a href="/tutorial/select.html">the chapter
+on select</a>. It</p>
+<p><img src="/images/fish.png" alt="" /></p>
+<p class="footnote" id="fn1"><a href="#fnr1"><sup>1</sup></a> <code>#client</code> and <code>#server</code> are helper methods that
+  fork a client or a server process respectively. Treat them as synonymous to
+  <code>Kernel.fork</code>.</p>
+<p class="footnote" id="fn2"><a href="#fnr2"><sup>2</sup></a> @code_link(Cod::TcpServer#get_ext)</p><script type="text/javascript">(function() {
+        var toc, ul; 
+        toc = $('#toc');
+      
+        if (toc) {
+          document.anchor_id = 0;
+          ul = document.createElement('ul');
+          toc.append(ul);
+          $('body > h1,h2,h3').each(function() {
+            var a, anchor_name, li;
+            anchor_name = "a" + document.anchor_id;
+            document.anchor_id += 1;
+            $(this).attr('id', anchor_name);
+            li = document.createElement('li');
+            $(li).addClass(this.tagName);
+            a = document.createElement('a');
+            $(a).attr('href', "#" + anchor_name).text($(this).text());
+            $(li).append(a);
+            return $(ul).append(li);
+          });
+        }
+      
+      }).call(this);
+      
+    </script>
+  </body>
 </html>
