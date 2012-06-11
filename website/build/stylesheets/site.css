@@ -33,7 +33,8 @@ code {
   color: #696969; }
 
 pre {
-  line-height: 1.4em; }
+  line-height: 1.4em;
+  font-size: 0.8em; }
   pre.sh_sourceCode {
     border-radius: 0.5em;
     background-color: #f8f8f8;

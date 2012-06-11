@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>cod - Builtins</title>
+  </head>
+  <body onload="sh_highlightDocument();">
+    <a href="/cod/index.html">Intro</a> - <a href="/cod/tutorial/pipes.html">IO.pipe</a> - <a href="/cod/tutorial/tcp.html">TCP/IP</a> - <a href="/cod/tutorial/serialisation.html">Serialisation</a> - <a href="/cod/tutorial/builtins.html">Builtins</a> - <a href="/cod/tutorial/unix.html">Unix</a> - <a href="/cod/tutorial/conventions.html">OTTK</a>
+    <div id="toc">
+      <img src="/cod/images/fish.png" />
+      <h1>Table of Contents</h1>
+    </div><h1>What?</h1>
+<p><em>cod</em> comes with a number of built-in special channels. For example, it can
+talk directly to <a href="http://kr.github.com/beanstalkd/">beanstalkd</a>.</p>
+<p>Look at this as an example of how easily <em>cod</em> can be extended to speak
+protocol X. And also, use these because they make <em>cod</em> useful!</p>
+<h1>Beanstalkd Channels</h1>
+<p>Beanstalkd channels work like other <em>cod</em> channels at their base:</p>
+<pre class="sh_ruby"><code title="basic beanstalk example">
+  # Connects to beanstalkd on localhost:11300 
+  # per default. 
+  beanstalk = Cod.beanstalk("my_tube")
+  
+  beanstalk.put :foo
+  beanstalk.get # =&gt; :foo
+</code></pre>
+<p>The symbol <code>:foo</code> is transformed into a message (using
+<a href="serialisation.html">serialisation</a>) and put into the tube named &#8216;my_tube&#8217;. It
+then waits for someone to come a long and ask beanstalkd for a message. Which
+happens in <code>#get</code>.</p>
+<p>Here&#8217;s a more extended example:</p>
+<pre class="sh_ruby"><code>
+  beanstalk.try_get do |msg, ctl|
+    case msg
+      when 1
+        ctl.release
+      when 2
+        ctl.bury
+      when 3
+        # Exit block without call to ctl - normal
+        # reserve/delete cycle that also happens 
+        # in #get
+    else
+      # Raising an exception will release the 
+      # message for someone else to fetch.
+      fail "Unknown message!"
+    end
+  end
+</code></pre>
+<p>Please also have a look at <code>Cod::Beanstalk::Channel::Control</code> (<code>ctl</code> above)- 
+almost all commands beanstalkd allows on messages are allowed on this object.</p>
+<p><img src="/images/fish.png" alt="" /></p><script type="text/javascript">(function() {
+        var toc, ul; 
+        toc = $('#toc');
+      
+        if (toc) {
+          document.anchor_id = 0;
+          ul = document.createElement('ul');
+          toc.append(ul);
+          $('body > h1,h2,h3').each(function() {
+            var a, anchor_name, li;
+            anchor_name = "a" + document.anchor_id;
+            document.anchor_id += 1;
+            $(this).attr('id', anchor_name);
+            li = document.createElement('li');
+            $(li).addClass(this.tagName);
+            a = document.createElement('a');
+            $(a).attr('href', "#" + anchor_name).text($(this).text());
+            $(li).append(a);
+            return $(ul).append(li);
+          });
+        }
+      
+      }).call(this);
+      
+    </script>
+  </body>
+</html>
