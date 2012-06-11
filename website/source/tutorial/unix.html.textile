@@ -119,3 +119,5 @@ h1. Other things to look at
 Some excellent books have been written about Unix. I personally did enjoy
 reading 'Advanced Programming in the UNIX environment' (Stevens, Rago). But
 hey, "who am I":http://dilbert.com/strips/comic/1995-06-24/ to tell you that you should read a book.
+
+!/images/fish.png!

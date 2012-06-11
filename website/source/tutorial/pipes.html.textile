@@ -189,7 +189,7 @@ operating system that you're running this under will dramatically affect these
 results. Sometimes it is hard to get more than one processor to read from 
 a single pipe.
 
-!/cod/images/fish.png!
+!/images/fish.png!
 
 fn1. man 2 pipe 
 
