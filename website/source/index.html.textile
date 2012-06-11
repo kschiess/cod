@@ -36,12 +36,33 @@ Here's the client:
 
 h1. DOCUMENTATION
 
+Some. 
+
+Here's the "who's who":tutorial/pipes.html of the _cod_ universe. This is
+what you see in the navigation bar as well.
+
+Here, have some "YARD documentation":http://rubydoc.org/gems/cod as a side dish. 
+
+Don't read the source code. There, I've warned you.
+
 h1. CONTRIBUTE
 
-h1. CODE
-
-h1. CREW
+Please: 
+  * Create issues: "cod/issues @ github":https://github.com/kschiess/cod/issues
+  * Github project: "Fork? Request a pull?":https://github.com/kschiess/cod
+  
+Remember: I test my code, so you should too. Please include relevant rspec
+tests in _all_ pull requests.
 
 h1. ABOUT
+
+Thanks to all "contributors":https://github.com/kschiess/cod/graphs/contributors! 
+
+_cod_ and associated products (this website) are under an MIT license (see 
+LICENSE file). The cod image is copyright by the "Norwegian Institute of Marine Research":http://www.fisheries.no/ecosystems-and-stocks/marine_stocks/fish_stocks/cod/ - thanks for letting us use it!
+
+Need help with some hairy Ruby problems? Maybe an
+"astronaut":http://www.technologyastronauts.ch can show you how to get on safe
+ground.
 
 !/images/fish.png!

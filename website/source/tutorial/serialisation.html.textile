@@ -1,6 +1,18 @@
 ---
 title: Pipes
+toc: true
 ---
 
 h1. Serialisation
 
+h2. Marshalling your objects
+
+h2. More efficient: Protobufs
+
+h2. Text protocols
+
+h1. Other things to look at
+
+panzer
+
+!/images/fish.png!

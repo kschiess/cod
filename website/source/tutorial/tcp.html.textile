@@ -250,7 +250,7 @@ way of expressing your needs. Make your choice.
 
 h1. Other things to look at
 
-In the chapter on "serialisation":tutorial/serialisation.html you'll find all
+In the chapter on "serialisation":serialisation.html you'll find all
 about _cods_ wire format. Turns out, beanstalkd channels are really just tcp
 with the proper serialisation on top! Almost, at least.
 

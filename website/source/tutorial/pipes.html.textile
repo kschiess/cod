@@ -191,9 +191,9 @@ a single pipe.
 
 !/images/fish.png!
 
-fn1. man 2 pipe 
+fn1. <code>$ man 2 pipe </code>
 
-fn2. @code_link(Cod::ConnectionLost)
+fn2. <code>Cod::ConnectionLost</code> in the "YARD documentation":http://rubydoc.org/gems/cod/Cod/ConnectionLost.
 
 fn3. Something that another library of mine could help you with:
 "procrastinate":https://github.com/kschiess/procrastinate by doing your work
