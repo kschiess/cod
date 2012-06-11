@@ -1,8 +1,35 @@
 ---
-title: Pipes
+title: Other things to know
 ---
 
-channel often means a cod channel
-cod is _cod_
-examples don't wait for children, but you should
-very often, examples don't close their channels, but you should
+h1. All these bad examples
+
+You might have noticed that almost all of our examples are somewhat badly behaved. They open communication channels to the rest of the world and then 
+just leave them open. Also they fork plenty of processes (<code>#client</code> and <code>#server</code>) and never wait for them. 
+
+This would have been extremely redundant in this tutorial. But here - for the 
+sake of completeness - pseudo-code for cleaning up, things you should also 
+worry about: 
+
+<pre class="sh_ruby"><code>
+  channels.each do |channel|
+    channel.close
+  end
+  
+  Process.waitall
+</code></pre>
+
+
+
+h1. Thread safety
+
+_Cod_ is NOT thread-safe. This means that you simply need one communication
+channel per thread that wants to do communication. Which "should be just a few":http://www.eecs.berkeley.edu/Pubs/TechRpts/2006/EECS-2006-1.html,
+anyway.
+
+The reason for this is plain when you look at the beanstalkd protocol - it is
+stateful. So even if _cod_ would be thread-safe, the connection it manages
+would still not be.
+
+So nothing to do with us being total haters of threaded programming. Nothing at all. These are not the threads you're looking for. 
+

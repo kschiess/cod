@@ -237,15 +237,6 @@ special select syntax. Reading up on this is worth your while - select
 helps test which selectors have become available, something the plain old
 <code>IO.select</code> doesn't do.
 
-
-h2. Dispatch Ideas
-
-h3. The case Gem
-
-h3. A clever Hash
-
-h2. On Back-Channels
-
 h1. Competitive Comparison
 
 Although we're pretty sure that cod doesn't perform badly, it probably will

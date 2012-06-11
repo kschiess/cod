@@ -189,42 +189,6 @@ operating system that you're running this under will dramatically affect these
 results. Sometimes it is hard to get more than one processor to read from 
 a single pipe.
 
-h1. The Self Pipe
-
-When using processes instead of threads, you will sooner or later have to
-handle signals using <code>Kernel.trap</code>.[4] To be able to integrate this
-nicely with the rest of your code that probably blocks in
-<code>Cod.select</code> as much as possible, you can use the self-pipe
-trick. 
-
-Rather than cover what a self-pipe is again, I refer you to the
-"extensive":http://cr.yp.to/docs/selfpipe.html
-"documentation":http://osiris.978.org/~alex/safesignalhandling.html
-"online":http://blog.rubybestpractices.com/posts/ewong/016-Implementing-Signal-Handlers.html.
-'cause this is an old trick!
-
-Using _cod_, it boils down to this: 
-
-<pre class="sh_ruby"><code title="Self Pipe trick">
-  self_pipe = Cod.pipe.split
-  # Register a handler for USR1
-  trap(:USR1) { self_pipe.write.put :USR1 }
-
-  Process.kill(:USR1, 
-    Process.pid)
-  
-  # Do something without worrying about signals
-  
-  # Here's the advantage of self-pipe: You can 
-  # decide when to listen for signals. Otherwise 
-  # trap is very preemptive.
-  self_pipe.read.get # => :USR1
-</code></pre>
-
-Did you notice that a split pipe returns an array that also answers to 
-<code>#read</code> and <code>#write</code>? This is useful for when you cannot
-come up with a name for both ends, as in the above example. 
-
 !/cod/images/fish.png!
 
 fn1. man 2 pipe 

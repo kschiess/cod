@@ -1,0 +1,56 @@
+---
+title: "Builtins"
+toc: true
+---
+
+h1. What?
+
+_cod_ comes with a number of built-in special channels. For example, it can
+talk directly to "beanstalkd":http://kr.github.com/beanstalkd/. 
+
+Look at this as an example of how easily _cod_ can be extended to speak
+protocol X. And also, use these because they make _cod_ useful!
+
+h1. Beanstalkd Channels
+
+Beanstalkd channels work like other _cod_ channels at their base:
+
+<pre class="sh_ruby"><code title="basic beanstalk example">
+  # Connects to beanstalkd on localhost:11300 
+  # per default. 
+  beanstalk = Cod.beanstalk("my_tube")
+  
+  beanstalk.put :foo
+  beanstalk.get # => :foo
+</code></pre>
+
+The symbol <code>:foo</code> is transformed into a message (using
+"serialisation":serialisation.html) and put into the tube named 'my_tube'. It
+then waits for someone to come a long and ask beanstalkd for a message. Which
+happens in <code>#get</code>.
+
+Here's a more extended example: 
+
+<pre class="sh_ruby"><code>
+  beanstalk.try_get do |msg, ctl|
+    case msg
+      when 1
+        ctl.release
+      when 2
+        ctl.bury
+      when 3
+        # Exit block without call to ctl - normal
+        # reserve/delete cycle that also happens 
+        # in #get
+    else
+      # Raising an exception will release the 
+      # message for someone else to fetch.
+      fail "Unknown message!"
+    end
+  end
+</code></pre>
+
+Please also have a look at <code>Cod::Beanstalk::Channel::Control</code> (<code>ctl</code> above)- 
+almost all commands beanstalkd allows on messages are allowed on this object. 
+
+<!-- !/cod/images/fish.png! -->

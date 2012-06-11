@@ -13,14 +13,18 @@ html
 
     == javascript_include_tag 'jquery-1.7.2.min'
     
-    title = data.page.title || 'cod - IPC made simple.'
+    title = "cod - " + data.page.title || 'cod - IPC made simple.'
   body onload="sh_highlightDocument();"
   
     a href="#{{asset_url 'tutorial/pipes.html'}}" IO.pipe
     |  - 
     a href="#{{asset_url 'tutorial/tcp.html'}}" TCP/IP
-    | -
-    a href="#{{asset_url 'tutorial/pipes.html'}}" Beanstalkd tubes
+    |  - 
+    a href="#{{asset_url 'tutorial/builtins.html'}}" Builtins
+    |  - 
+    a href="#{{asset_url 'tutorial/unix.html'}}" Unix
+    |  - 
+    a href="#{{asset_url 'tutorial/conventions.html'}}" OTTK
     
     - if data.page.toc
       #toc

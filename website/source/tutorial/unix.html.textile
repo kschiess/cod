@@ -1,23 +1,121 @@
 ---
-title: Tricks and Gotchas to be aware of
+title: "Unix: Things to be aware of"
+toc: true
 ---
 
-h1. Tricks and Gotchas
+h1. Tricks
 
-When you start using _cod_ for your own projects, I assume you want to cross
-over to the unixy, using-forks-instead-of-threads side of things. This is fine
-with me, and one of the reasons I created cod. 
+This is a collection of tricks for handling the offspring your processes fork
+and related topics. 
 
-But all is not butter and honey in the land of forks. As it is the case with 
+h2. The Self Pipe
+
+When using processes instead of threads, you will sooner or later have to
+handle signals using <code>Kernel.trap</code>.[4] To be able to integrate this
+nicely with the rest of your code that probably blocks in
+<code>Cod.select</code> as much as possible, you can use the self-pipe
+trick. 
+
+Rather than cover what a self-pipe is again, I refer you to the
+"extensive":http://cr.yp.to/docs/selfpipe.html
+"documentation":http://osiris.978.org/~alex/safesignalhandling.html
+"online":http://blog.rubybestpractices.com/posts/ewong/016-Implementing-Signal-Handlers.html.
+'cause this is an old trick!
+
+Using _cod_, it boils down to this: 
+
+<pre class="sh_ruby"><code title="Self Pipe trick">
+  self_pipe = Cod.pipe.split
+  # Register a handler for USR1
+  trap(:USR1) { self_pipe.write.put :USR1 }
+
+  Process.kill(:USR1, 
+    Process.pid)
+  
+  # Do something without worrying about signals
+  
+  # Here's the advantage of self-pipe: You can 
+  # decide when to listen for signals. Otherwise 
+  # trap is very preemptive.
+  self_pipe.read.get # => :USR1
+</code></pre>
+
+Did you notice that a split pipe returns an array that also answers to 
+<code>#read</code> and <code>#write</code>? This is useful for when you cannot
+come up with a name for both ends, as in the above example. 
+
+
+h1. Gotchas
+
+All is not butter and honey in the land of forks. As it is the case with 
 every style of programming, there are a number of things to be aware of. 
 This section of the tutorial strives to give you a heads-up to most of them. 
 Please tell me if something is missing. 
 
 h2. Forks flush io streams
 
+Ruby buffers output sent to IO streams for a while. So does the operating 
+system. When you fork a new process, the OS buffers get flushed to disk while
+the Ruby buffers get duplicated into the new process. (Along with the open file descriptor)
+
+Ruby buffers get flushed at other moments, like when you write more output to
+the IO stream or when a child process exits. And the drama unfolds: Your child
+processes will write the unflushed Ruby buffers to the open IO stream upon
+exit. Their master process will write the same buffer to the same stream on
+its next write. And you'll end up with duplicated file contents.
+
+To prevent this from happening: Either flush the streams before you fork
+
+<pre class="sh_ruby"><code>
+  stream.flush
+</code></pre>
+
+or have them synch to OS buffers immediately on write
+
+<pre class="sh_ruby"><code>
+  stream.sync = true
+</code></pre>
+
+or even better - don't let the child inherit the stream in the first place. 
+This can only be achieved by opening the stream after the fork. 
+
 h2. Signal handling might mess up library X
+
+While the previous gotcha was more of a Ruby bug, this is a unix problem: 
+When you use signals in your Ruby program, you might mess up C extensions 
+you use. Without signal handling, someone might write the following C code: 
+
+<pre class="sh_c"><code>
+   size = recv(socket, &buffer, 1024, 0);
+   assert(size > 0);
+   // Do something with the data in buffer
+</code></pre>
+
+But once you register a trap for a signal (<code>man 2 sigaction</code>),
+signals might have to be delivered to your process during the blocking call to
+<code>recv</code>. What your OS will do in this case is really simple and
+never happens until you register a <code>sigaction</code>: It returns from the
+<code>recv</code> call with an exit code of -1. (and an <code>_errno</code> of
+EAGAIN)
+
+You could not care less. This marks the precise spot where that library
+becomes useless to you, since you'd have to read all the code back and fix all
+instances where calls are made to the operating system with the wrong set of
+assumptions. Now you know at least where that assertion fault (or EAGAIN error) all over sudden comes from.
 
 h2. COW-friendliness of various Rubies
 
-* Enterprise Ruby
-* Ruby 2.0
+Your average Ruby is not copy-on-write friendly. This means that even though
+right after a fork, you don't use double the memory you used in that parent
+process, some time afterwards you will, since the garbage collector Ruby uses
+will touch all that memory, creating a child copy of it. 
+
+If you create short-lived processes, this is not a problem. And if you create
+long-lived server processes - just thought I'd give you the heads-up. 
+Try to google for Ruby and 'Copy on Write' - you'll find prior art. 
+
+h1. Other things to look at
+
+Some excellent books have been written about Unix. I personally did enjoy
+reading 'Advanced Programming in the UNIX environment' (Stevens, Rago). But
+hey, "who am I":http://dilbert.com/strips/comic/1995-06-24/ to tell you that you should read a book.
