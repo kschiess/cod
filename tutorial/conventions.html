@@ -11,7 +11,8 @@
     <div id="toc">
       <img src="/cod/images/fish.png" />
       <h1>Table of Contents</h1>
-    </div><h1>All these bad examples</h1>
+    </div><h1>Other things to know</h1>
+<h2>All these bad examples</h2>
 <p>You might have noticed that almost all of our examples are somewhat badly behaved. They open communication channels to the rest of the world and then 
 just leave them open. Also they fork plenty of processes (<code>#client</code> and <code>#server</code>) and never wait for them.</p>
 <p>This would have been extremely redundant in this tutorial. But here &#8211; for the 
@@ -24,7 +25,7 @@ worry about:</p>
   
   Process.waitall
 </code></pre>
-<h1>Thread safety</h1>
+<h2>Thread safety</h2>
 <p><em>Cod</em> is <span class="caps">NOT</span> thread-safe. This means that you simply need one communication
 channel per thread that wants to do communication. Which <a href="http://www.eecs.berkeley.edu/Pubs/TechRpts/2006/EECS-2006-1.html">should be just a few</a>,
 anyway.</p>
@@ -32,6 +33,12 @@ anyway.</p>
 stateful. So even if <em>cod</em> would be thread-safe, the connection it manages
 would still not be.</p>
 <p>So nothing to do with us being total haters of threaded programming. Nothing at all. These are not the threads you&#8217;re looking for.</p>
+<h1>Parting words</h1>
+<p>You&#8217;ve made it this far and read through my whole tutorial. Well, thanks, I guess. For all the fish.</p>
+<p>Let me know what you think of all this. If I mistyped or miswrote something, 
+let me know. Or better even, submit a pull request against the documentation.</p>
+<p>Let us, together, create a new world of interconnected machines, talking 
+day and night. And then go up in the mountains, and hide, and be quiet.</p>
 <p><img src="../images/fish.png" alt="" /></p><script type="text/javascript">(function() {
         var toc, ul; 
         toc = $('#toc');
