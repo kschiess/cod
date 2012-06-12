@@ -65,4 +65,4 @@ Need help with some hairy Ruby problems? Maybe an
 "astronaut":http://www.technologyastronauts.ch can show you how to get on safe
 ground.
 
-!/images/fish.png!
+!images/fish.png!
