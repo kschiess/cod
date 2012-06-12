@@ -62,7 +62,7 @@ _cod_ and associated products (this website) are under an MIT license (see
 LICENSE file). The cod image is copyright by the "Norwegian Institute of Marine Research":http://www.fisheries.no/ecosystems-and-stocks/marine_stocks/fish_stocks/cod/ - thanks for letting us use it!
 
 Need help with some hairy Ruby problems? Maybe an
-"astronaut":http://www.technologyastronauts.ch can show you how to get on safe
+"astronaut":http://www.technologyastronauts.ch can show you how to get to safe
 ground.
 
 !images/fish.png!
