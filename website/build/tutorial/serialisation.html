@@ -15,9 +15,9 @@
 <p><em>cod</em> does message oriented communication. Messages are entirely defined by 
 serializers.</p>
 <h2>Marshalling your objects</h2>
-<p>The default serializer in <em>cod</em> uses Ruby object marshaling as a form of on
-the wire communication that is both efficient and fast. The downside is that
-you cannot communicate with other versions of Ruby.</p>
+<p>The default serializer in <em>cod</em> uses Ruby object marshaling as a form of
+on-the-wire communication that is both efficient and fast. The downside is
+that you cannot communicate with other versions of Ruby.</p>
 <p>It is, on the other hand, nice to be able to transmit almost any Ruby object, with only a few exceptions:</p>
 <ul>
 	<li>Procs and Lambdas</li>
@@ -33,8 +33,7 @@ and will be extended as the need arises.</p>
   write.put read
   
   # Transmitted the read-end of the channel itself!
-  read.get.object_id    # =&gt; 70245822725860
-  read.object_id        # =&gt; 70245822725860
+  read.get.object_id == read.object_id   # =&gt; true
 </code></pre>
 <h2>Implementing a serializer</h2>
 <p>Let&#8217;s have a look at how the default serializer is implemented:</p>
@@ -64,12 +63,12 @@ into the decoded object graph. This is used for turning on-the-wire versions
 of objects that cannot otherwise be serialized into a corresponding object.</p>
 <h2>More efficient: Protobufs</h2>
 <p>As a proof of concept, <em>cod</em> also contains a (google) <a href="https://developers.google.com/protocol-buffers/">protobuf</a> serializer that
-transmits its messages as protobuf objects on the wire. The format chosen here
+transmits its messages as protobuf objects. The format chosen here
 is generic &#8211; class name is transmitted along with the actual object data. This
 method can be used to transmit <em>any</em> protobuf object.</p>
 <p>If you have only a few objects to transmit, I suggest you roll your own
-serializer. If you arrange your definitions so that you don&#8217;t have to transmit
-lengths and class name, communication can be very efficient.</p>
+serializer. Once you arrange your definitions so that you don&#8217;t have to
+transmit lengths and class name, communication can be very efficient.</p>
 <p>protobuf serialization is also useful for communication with servers <span class="caps">NOT</span>
 written in Ruby.</p>
 <p>Here&#8217;s how you use the protobuf serializer in your own code:</p>
@@ -93,11 +92,11 @@ messages and that only strings can be transmitted.</p>
 </code></pre>
 <p><code>Cod.beanstalk</code> internally uses a serializer called <code>Cod::Beanstalk::Serializer</code>, which is also line oriented.</p>
 <h1>Other things to look at</h1>
-<p>There is a proof of concept implementation called
-<a href="https://github.com/kschiess/panzer">panzer</a>. Using cod, it listens to <span class="caps">HTTP</span>
-traffic. Inside a <em>cod</em> serializer it turns that traffic into a
-<a href="http://rack.github.com/">rack</a> compatible request with the aid of
-<a href="github.com/postmodern/net-http-server">net-http-server</a>. (yes. a web server.)</p>
+<p><a href="https://github.com/kschiess/panzer">panzer</a> is a web server using <em>cod</em>. The
+whole <span class="caps">HTTP</span> protocol implementation lives inside a <em>cod</em> serializer, which
+turns <span class="caps">HTTP</span> traffic into a <a href="http://rack.github.com/">rack</a> compatible request
+with the aid of <a href="github.com/postmodern/net-http-server">net-http-server</a>. Ok,
+now I have a headache.</p>
 <p>A lot of serializers are waiting to be written. <span class="caps">YAML</span>, <span class="caps">JSON</span>, &#8230; who wants to
 be the first?</p>
 <p><img src="../images/fish.png" alt="" /></p><script type="text/javascript">(function() {

@@ -2,16 +2,58 @@
 <html>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>cod - Pipes</title>
+    <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>cod - Cod.select</title>
   </head>
   <body onload="sh_highlightDocument();">
     <div id="menu">
       <a href="/cod/index.html">Intro</a>&nbsp;-&nbsp;<a href="/cod/tutorial/pipes.html">IO.pipe</a>&nbsp;-&nbsp;<a href="/cod/tutorial/tcp.html">TCP/IP</a>&nbsp;-&nbsp;<a href="/cod/tutorial/serialisation.html">Serialisation</a>&nbsp;-&nbsp;<a href="/cod/tutorial/builtins.html">Builtins</a>&nbsp;-&nbsp;<a href="/cod/tutorial/select.html">Select</a>&nbsp;-&nbsp;<a href="/cod/tutorial/unix.html">Unix</a>&nbsp;-&nbsp;<a href="/cod/tutorial/conventions.html">OTTK</a>
-    </div><h1>Selecting channels</h1>
-    <h1>Current limitations</h1>
-    <ul>
-    	<li>Beanstalk channels</li>
-    </ul><script type="text/javascript">(function() {
+    </div>
+    <div id="toc">
+      <img src="/cod/images/fish.png" />
+      <h1>Table of Contents</h1>
+    </div><h1>Waiting for data</h1>
+<p>Always the same thing with these mail boxes. No one ever writes.</p>
+<pre class="sh_ruby"><code title="no one ever writes">
+  box = Cod.pipe
+  
+  Cod.select(0.1, box)  # =&gt; nil
+</code></pre>
+<p>Hey, maybe someone dropped us an email?</p>
+<pre class="sh_ruby"><code title="an email">
+  box = Cod.pipe
+  mail = Cod.pipe.split
+  
+  mail.write.put 'an email'
+  
+  ready = Cod.select(0.1, box: box, email: mail.read)  
+
+  ready.has_key?(:email)      # =&gt; true
+  ready[:email] == mail.read  # =&gt; true
+</code></pre>
+<h2>Server structure: a big loop</h2>
+<p>The real message here is that <em>cod</em> can do something almost like a
+<code>select(2)</code>, only better. It allows for freely mixing <em>cod</em>
+channels, common IO streams and implementors of the <code>#to_read_fds</code>
+message.</p>
+<p>This means that your server can be built around a big loop. At the top of the
+loop you have a select on all your important channels, like this:</p>
+<pre class="sh_ruby"><code>
+  loop do
+    ready = Cod.select(nil, channel_hash)
+    
+    process_channel1 if ready.has_key? :channel1
+    process_channel2 if ready.has_key? :channel2
+    process_channel3 if ready.has_key? :channel3
+    
+    # ...
+  end
+</code></pre>
+<p>The select facility only works for checking if data is available on a channel.
+This makes sense, since <em>cod</em> channels are always ready for writing.</p>
+<h2>Limitations</h2>
+<p>Currently, you cannot use beanstalk channels inside a <code>Cod.select</code>.
+We have ideas on how to change this and might get around to it sometime soon.</p>
+<p><img src="../images/fish.png" alt="" /></p><script type="text/javascript">(function() {
         var toc, ul; 
         toc = $('#toc');
       
