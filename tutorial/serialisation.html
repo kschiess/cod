@@ -5,17 +5,101 @@
     <link href="http://fonts.googleapis.com/css?family=Dosis" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/sh_whitengrey.css" media="screen" rel="stylesheet" type="text/css" /><link href="/cod/stylesheets/site.css" media="screen" rel="stylesheet" type="text/css" /><script src="/cod/javascripts/sh_main.min.js" type="text/javascript"></script><script src="/cod/javascripts/sh_ruby.min.js" type="text/javascript"></script><script src="/cod/javascripts/jquery-1.7.2.min.js" type="text/javascript"></script><title>cod - Pipes</title>
   </head>
   <body onload="sh_highlightDocument();">
-    <a href="/cod/index.html">Intro</a>&nbsp;-&nbsp;<a href="/cod/tutorial/pipes.html">IO.pipe</a>&nbsp;-&nbsp;<a href="/cod/tutorial/tcp.html">TCP/IP</a>&nbsp;-&nbsp;<a href="/cod/tutorial/serialisation.html">Serialisation</a>&nbsp;-&nbsp;<a href="/cod/tutorial/builtins.html">Builtins</a>&nbsp;-&nbsp;<a href="/cod/tutorial/unix.html">Unix</a>&nbsp;-&nbsp;<a href="/cod/tutorial/conventions.html">OTTK</a>
+    <div id="menu">
+      <a href="/cod/index.html">Intro</a>&nbsp;-&nbsp;<a href="/cod/tutorial/pipes.html">IO.pipe</a>&nbsp;-&nbsp;<a href="/cod/tutorial/tcp.html">TCP/IP</a>&nbsp;-&nbsp;<a href="/cod/tutorial/serialisation.html">Serialisation</a>&nbsp;-&nbsp;<a href="/cod/tutorial/builtins.html">Builtins</a>&nbsp;-&nbsp;<a href="/cod/tutorial/select.html">Select</a>&nbsp;-&nbsp;<a href="/cod/tutorial/unix.html">Unix</a>&nbsp;-&nbsp;<a href="/cod/tutorial/conventions.html">OTTK</a>
+    </div>
     <div id="toc">
       <img src="/cod/images/fish.png" />
       <h1>Table of Contents</h1>
     </div><h1>Serialisation</h1>
-    <h2>Marshalling your objects</h2>
-    <h2>More efficient: Protobufs</h2>
-    <h2>Text protocols</h2>
-    <h1>Other things to look at</h1>
-    <p>panzer</p>
-    <p><img src="../images/fish.png" alt="" /></p><script type="text/javascript">(function() {
+<p><em>cod</em> does message oriented communication. Messages are entirely defined by 
+serializers.</p>
+<h2>Marshalling your objects</h2>
+<p>The default serializer in <em>cod</em> uses Ruby object marshaling as a form of
+on-the-wire communication that is both efficient and fast. The downside is
+that you cannot communicate with other versions of Ruby.</p>
+<p>It is, on the other hand, nice to be able to transmit almost any Ruby object, with only a few exceptions:</p>
+<ul>
+	<li>Procs and Lambdas</li>
+	<li>File descriptors (with some exceptions, see below)</li>
+</ul>
+<p><em>cod</em> has a mechanism built in where you can transmit <em>cod</em> channels via
+almost any other <em>cod</em> channel. This mechanism mostly does what you&#8217;d expect -
+give you access to a channel on the other side. Some cases don&#8217;t work yet -
+and will be extended as the need arises.</p>
+<p>So this works:</p>
+<pre class="sh_ruby"><code title="transmission of cod channels">
+  read, write = Cod.pipe.split
+  write.put read
+  
+  # Transmitted the read-end of the channel itself!
+  read.get.object_id == read.object_id   # =&gt; true
+</code></pre>
+<h2>Implementing a serializer</h2>
+<p>Let&#8217;s have a look at how the default serializer is implemented:</p>
+<pre class="sh_ruby"><code>
+  class DefaultSerializer
+    def en(obj)         # (1)
+      Marshal.dump(obj)
+    end
+
+    def de(io)          # (2)
+      if block_given?   # (3)
+        Marshal.load(io, Proc.new)
+      else
+        Marshal.load(io)
+      end
+    end
+  end
+</code></pre>
+<p>Message encoding (1) is really simple. You get the message to encode passed as
+parameter and you return a string that should be sent through the
+communication channel. You have to worry about delimiting the message
+yourself.</p>
+<p>Message decoding (2) operates directly on the channels IO stream. It should read one message and return the message object to its caller.</p>
+<p>If a block is given (3) to the decoding mechanism, it should call that block
+for each object that it decodes. The block then returns the object to insert
+into the decoded object graph. This is used for turning on-the-wire versions
+of objects that cannot otherwise be serialized into a corresponding object.</p>
+<h2>More efficient: Protobufs</h2>
+<p>As a proof of concept, <em>cod</em> also contains a (google) <a href="https://developers.google.com/protocol-buffers/">protobuf</a> serializer that
+transmits its messages as protobuf objects. The format chosen here
+is generic &#8211; class name is transmitted along with the actual object data. This
+method can be used to transmit <em>any</em> protobuf object.</p>
+<p>If you have only a few objects to transmit, I suggest you roll your own
+serializer. Once you arrange your definitions so that you don&#8217;t have to
+transmit lengths and class name, communication can be very efficient.</p>
+<p>protobuf serialization is also useful for communication with servers <span class="caps">NOT</span>
+written in Ruby.</p>
+<p>Here&#8217;s how you use the protobuf serializer in your own code:</p>
+<pre class="sh_ruby"><code>
+  # gem install protobuf...
+  
+  serializer = Cod::ProtocolBuffersSerializer.new
+  
+  pipe = Cod.pipe(serializer)
+  tcp  = Cod.tcp('foo:1234', serializer)
+  # .. and so on.
+</code></pre>
+<h2>Text protocols</h2>
+<p>Cod also implements various text protocols. This means that line ends delimit
+messages and that only strings can be transmitted.</p>
+<p>For simple line by line serialization you can use <code>LineSerializer</code>.</p>
+<pre class="sh_ruby"><code>
+  out = Cod.stdio(Cod::LineSerializer.new)
+  
+  out.put 'holler'    # puts 'holler' to stdout
+</code></pre>
+<p><code>Cod.beanstalk</code> internally uses a serializer called <code>Cod::Beanstalk::Serializer</code>, which is also line oriented.</p>
+<h1>Other things to look at</h1>
+<p><a href="https://github.com/kschiess/panzer">panzer</a> is a web server using <em>cod</em>. The
+whole <span class="caps">HTTP</span> protocol implementation lives inside a <em>cod</em> serializer, which
+turns <span class="caps">HTTP</span> traffic into a <a href="http://rack.github.com/">rack</a> compatible request
+with the aid of <a href="github.com/postmodern/net-http-server">net-http-server</a>. Ok,
+now I have a headache.</p>
+<p>A lot of serializers are waiting to be written. <span class="caps">YAML</span>, <span class="caps">JSON</span>, &#8230; who wants to
+be the first?</p>
+<p><img src="../images/fish.png" alt="" /></p><script type="text/javascript">(function() {
         var toc, ul; 
         toc = $('#toc');
       
