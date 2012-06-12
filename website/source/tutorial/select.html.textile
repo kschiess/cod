@@ -27,25 +27,34 @@ Hey, maybe someone dropped us an email?
   ready[:email] == mail.read  # => true
 </code></pre>
 
-Yes, they did. Now go check on those other accounts. 
+h2. Server structure: a big loop
 
-<pre class="sh_ruby"><code title="and those other accounts">
-  r,w = IO.pipe
-  w.write('.')
+The real message here is that _cod_ can do something almost like a
+<code>select(2)</code>, only better. It allows for freely mixing _cod_
+channels, common IO streams and implementors of the <code>#to_read_fds</code>
+message.
 
-  server = Cod.tcp_server('localhost:1234')
-  tcp = Cod.tcp('localhost:1234')
-  io  = Cod.stdio
-  
-  ready = Cod.select(0.1, [r, tcp, io])
-  ready == [r]                # => NOT REACHED!
+This means that your server can be built around a big loop. At the top of the
+loop you have a select on all your important channels, like this: 
+
+<pre class="sh_ruby"><code>
+  loop do
+    ready = Cod.select(nil, channel_hash)
+    
+    process_channel1 if ready.has_key? :channel1
+    process_channel2 if ready.has_key? :channel2
+    process_channel3 if ready.has_key? :channel3
+    
+    # ...
+  end
 </code></pre>
 
+The select facility only works for checking if data is available on a channel.
+This makes sense, since _cod_ channels are always ready for writing. 
 
-h2. Current limitations
+h2. Limitations
 
-* Beanstalk channels
-
-h1. Other things to look at
+Currently, you cannot use beanstalk channels inside a <code>Cod.select</code>.
+We have ideas on how to change this and might get around to it sometime soon.
 
 !../images/fish.png!
