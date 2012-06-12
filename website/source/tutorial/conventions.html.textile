@@ -34,4 +34,4 @@ would still not be.
 
 So nothing to do with us being total haters of threaded programming. Nothing at all. These are not the threads you're looking for. 
 
-!/images/fish.png!
+!../images/fish.png!

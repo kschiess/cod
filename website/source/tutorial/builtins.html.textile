@@ -53,5 +53,5 @@ Here's a more extended example:
 Please also have a look at <code>Cod::Beanstalk::Channel::Control</code> (<code>ctl</code> above)- 
 almost all commands beanstalkd allows on messages are allowed on this object. 
 
-!/images/fish.png!
+!../images/fish.png!
 

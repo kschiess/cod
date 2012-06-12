@@ -15,4 +15,4 @@ h1. Other things to look at
 
 panzer
 
-!/images/fish.png!
+!../images/fish.png!

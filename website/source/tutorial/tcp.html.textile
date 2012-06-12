@@ -257,7 +257,7 @@ with the proper serialisation on top! Almost, at least.
 If you need <code>selects</code>, be sure to point your mouse at "the chapter
 on select":/tutorial/select.html. It 
 
-!/images/fish.png!
+!../images/fish.png!
 
 fn1. <code>#client</code> and <code>#server</code> are helper methods that
   fork a client or a server process respectively. Treat them as synonymous to
