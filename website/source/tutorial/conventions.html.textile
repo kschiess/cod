@@ -3,7 +3,9 @@ title: Other things to know
 toc: true
 ---
 
-h1. All these bad examples
+h1. Other things to know
+
+h2. All these bad examples
 
 You might have noticed that almost all of our examples are somewhat badly behaved. They open communication channels to the rest of the world and then 
 just leave them open. Also they fork plenty of processes (<code>#client</code> and <code>#server</code>) and never wait for them. 
@@ -22,7 +24,7 @@ worry about:
 
 
 
-h1. Thread safety
+h2. Thread safety
 
 _Cod_ is NOT thread-safe. This means that you simply need one communication
 channel per thread that wants to do communication. Which "should be just a few":http://www.eecs.berkeley.edu/Pubs/TechRpts/2006/EECS-2006-1.html,
@@ -33,5 +35,15 @@ stateful. So even if _cod_ would be thread-safe, the connection it manages
 would still not be.
 
 So nothing to do with us being total haters of threaded programming. Nothing at all. These are not the threads you're looking for. 
+
+h1. Parting words
+
+You've made it this far and read through my whole tutorial. Well, thanks, I guess. For all the fish. 
+
+Let me know what you think of all this. If I mistyped or miswrote something, 
+let me know. Or better even, submit a pull request against the documentation. 
+
+Let us, together, create a new world of interconnected machines, talking 
+day and night. And then go up in the mountains, and hide, and be quiet. 
 
 !../images/fish.png!

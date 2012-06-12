@@ -34,7 +34,7 @@ So this works:
   read.get.object_id == read.object_id   # => true
 </code></pre>
 
-h2. Implementing a serializer
+h2. Roll your own
 
 Let's have a look at how the default serializer is implemented: 
 
