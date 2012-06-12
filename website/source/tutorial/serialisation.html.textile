@@ -10,9 +10,9 @@ serializers.
 
 h2. Marshalling your objects
 
-The default serializer in _cod_ uses Ruby object marshaling as a form of on
-the wire communication that is both efficient and fast. The downside is that
-you cannot communicate with other versions of Ruby.
+The default serializer in _cod_ uses Ruby object marshaling as a form of
+on-the-wire communication that is both efficient and fast. The downside is
+that you cannot communicate with other versions of Ruby.
 
 It is, on the other hand, nice to be able to transmit almost any Ruby object, with only a few exceptions: 
 
@@ -70,13 +70,13 @@ of objects that cannot otherwise be serialized into a corresponding object.
 h2. More efficient: Protobufs
 
 As a proof of concept, _cod_ also contains a (google) "protobuf":https://developers.google.com/protocol-buffers/ serializer that
-transmits its messages as protobuf objects on the wire. The format chosen here
+transmits its messages as protobuf objects. The format chosen here
 is generic - class name is transmitted along with the actual object data. This
 method can be used to transmit _any_ protobuf object.
 
 If you have only a few objects to transmit, I suggest you roll your own
-serializer. If you arrange your definitions so that you don't have to transmit
-lengths and class name, communication can be very efficient.
+serializer. Once you arrange your definitions so that you don't have to
+transmit lengths and class name, communication can be very efficient.
 
 protobuf serialization is also useful for communication with servers NOT
 written in Ruby.
@@ -112,11 +112,11 @@ For simple line by line serialization you can use <code>LineSerializer</code>.
 
 h1. Other things to look at
 
-There is a proof of concept implementation called
-"panzer":https://github.com/kschiess/panzer. Using cod, it listens to HTTP
-traffic. Inside a _cod_ serializer it turns that traffic into a
-"rack":http://rack.github.com/ compatible request with the aid of
-"net-http-server":github.com/postmodern/net-http-server. (yes. a web server.)
+"panzer":https://github.com/kschiess/panzer is a web server using _cod_. The
+whole HTTP protocol implementation lives inside a _cod_ serializer, which
+turns HTTP traffic into a "rack":http://rack.github.com/ compatible request
+with the aid of "net-http-server":github.com/postmodern/net-http-server. Ok,
+now I have a headache.
 
 A lot of serializers are waiting to be written. YAML, JSON, ... who wants to
 be the first?
