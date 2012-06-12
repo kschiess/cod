@@ -131,6 +131,12 @@ module Cod
       # with a valid client later on. (hopefully)
       OtherEnd.new(params)
     end
+
+    # @private
+    #
+    def to_read_fds
+      @connection.socket if @connection
+    end
   private
     # Checks to see in which of the three connection phases we're in. If we're
     # past 1), shuts down the background worker thread.

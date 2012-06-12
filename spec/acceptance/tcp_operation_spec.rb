@@ -111,6 +111,9 @@ describe 'Cod TCP' do
           server.get.should == :test
         }
       end
+      it "still may be selected" do
+        Cod.select(0.01, client).should be_nil
+      end 
     end
     describe 'TCP connection closed before answer is read' do
       let(:client) { Cod.tcp('localhost:12345') }

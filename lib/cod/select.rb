@@ -35,7 +35,7 @@ module Cod
     # @return [Hash,Array,Cod::Channel,IO]
     #
     def do
-      fds = groups.values { |e| to_read_fd(e) }
+      fds = groups.values { |e| to_read_fd(e) }.compact
       
       # Perform select  
       r,w,e = IO.select(fds, nil, nil, timeout)
