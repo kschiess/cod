@@ -5,14 +5,120 @@ toc: true
 
 h1. Serialisation
 
+_cod_ does message oriented communication. Messages are entirely defined by 
+serializers.
+
 h2. Marshalling your objects
+
+The default serializer in _cod_ uses Ruby object marshaling as a form of on
+the wire communication that is both efficient and fast. The downside is that
+you cannot communicate with other versions of Ruby.
+
+It is, on the other hand, nice to be able to transmit almost any Ruby object, with only a few exceptions: 
+
+* Procs and Lambdas
+* File descriptors (with some exceptions, see below)
+
+_cod_ has a mechanism built in where you can transmit _cod_ channels via
+almost any other _cod_ channel. This mechanism mostly does what you'd expect -
+give you access to a channel on the other side. Some cases don't work yet -
+and will be extended as the need arises.
+
+So this works: 
+
+<pre class="sh_ruby"><code title="transmission of cod channels">
+  read, write = Cod.pipe.split
+  write.put read
+  
+  # Transmitted the read-end of the channel itself!
+  read.get.object_id    # => 70245822725860
+  read.object_id        # => 70245822725860
+</code></pre>
+
+h2. Implementing a serializer
+
+Let's have a look at how the default serializer is implemented: 
+
+<pre class="sh_ruby"><code>
+  class DefaultSerializer
+    def en(obj)         # (1)
+      Marshal.dump(obj)
+    end
+
+    def de(io)          # (2)
+      if block_given?   # (3)
+        Marshal.load(io, Proc.new)
+      else
+        Marshal.load(io)
+      end
+    end
+  end
+</code></pre>
+
+Message encoding (1) is really simple. You get the message to encode passed as
+parameter and you return a string that should be sent through the
+communication channel. You have to worry about delimiting the message
+yourself.
+
+Message decoding (2) operates directly on the channels IO stream. It should read one message and return the message object to its caller.
+
+If a block is given (3) to the decoding mechanism, it should call that block
+for each object that it decodes. The block then returns the object to insert
+into the decoded object graph. This is used for turning on-the-wire versions
+of objects that cannot otherwise be serialized into a corresponding object.
 
 h2. More efficient: Protobufs
 
+As a proof of concept, _cod_ also contains a (google) "protobuf":https://developers.google.com/protocol-buffers/ serializer that
+transmits its messages as protobuf objects on the wire. The format chosen here
+is generic - class name is transmitted along with the actual object data. This
+method can be used to transmit _any_ protobuf object.
+
+If you have only a few objects to transmit, I suggest you roll your own
+serializer. If you arrange your definitions so that you don't have to transmit
+lengths and class name, communication can be very efficient.
+
+protobuf serialization is also useful for communication with servers NOT
+written in Ruby.
+
+Here's how you use the protobuf serializer in your own code: 
+
+<pre class="sh_ruby"><code>
+  # gem install protobuf...
+  
+  serializer = Cod::ProtocolBuffersSerializer.new
+  
+  pipe = Cod.pipe(serializer)
+  tcp  = Cod.tcp('foo:1234', serializer)
+  # .. and so on.
+</code></pre>
+
+
 h2. Text protocols
+
+Cod also implements various text protocols. This means that line ends delimit
+messages and that only strings can be transmitted.
+
+For simple line by line serialization you can use <code>LineSerializer</code>.
+
+<pre class="sh_ruby"><code>
+  out = Cod.stdio(Cod::LineSerializer.new)
+  
+  out.put 'holler'    # puts 'holler' to stdout
+</code></pre>
+
+
+<code>Cod.beanstalk</code> internally uses a serializer called <code>Cod::Beanstalk::Serializer</code>, which is also line oriented. 
 
 h1. Other things to look at
 
-panzer
+There is a proof of concept implementation called
+"panzer":https://github.com/kschiess/panzer. Using cod, it listens to HTTP
+traffic. Inside a _cod_ serializer it turns that traffic into a
+"rack":http://rack.github.com/ compatible request with the aid of
+"net-http-server":github.com/postmodern/net-http-server. (yes. a web server.)
+
+A lot of serializers are waiting to be written. YAML, JSON, ... who wants to
+be the first?
 
 !../images/fish.png!

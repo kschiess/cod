@@ -20,19 +20,22 @@ html
     title = "cod - " + data.page.title || 'cod - IPC made simple.'
   body onload="sh_highlightDocument();"
   
-    a href="#{{asset_url 'index.html'}}" Intro
-    | &nbsp;-&nbsp;
-    a href="#{{asset_url 'tutorial/pipes.html'}}" IO.pipe
-    | &nbsp;-&nbsp;
-    a href="#{{asset_url 'tutorial/tcp.html'}}" TCP/IP
-    | &nbsp;-&nbsp;
-    a href="#{{asset_url 'tutorial/serialisation.html'}}" Serialisation
-    | &nbsp;-&nbsp;
-    a href="#{{asset_url 'tutorial/builtins.html'}}" Builtins
-    | &nbsp;-&nbsp;
-    a href="#{{asset_url 'tutorial/unix.html'}}" Unix
-    | &nbsp;-&nbsp;
-    a href="#{{asset_url 'tutorial/conventions.html'}}" OTTK
+    #menu
+      a href="#{{asset_url 'index.html'}}" Intro
+      | &nbsp;-&nbsp;
+      a href="#{{asset_url 'tutorial/pipes.html'}}" IO.pipe
+      | &nbsp;-&nbsp;
+      a href="#{{asset_url 'tutorial/tcp.html'}}" TCP/IP
+      | &nbsp;-&nbsp;
+      a href="#{{asset_url 'tutorial/serialisation.html'}}" Serialisation
+      | &nbsp;-&nbsp;
+      a href="#{{asset_url 'tutorial/builtins.html'}}" Builtins
+      | &nbsp;-&nbsp;
+      a href="#{{asset_url 'tutorial/select.html'}}" Select
+      | &nbsp;-&nbsp;
+      a href="#{{asset_url 'tutorial/unix.html'}}" Unix
+      | &nbsp;-&nbsp;
+      a href="#{{asset_url 'tutorial/conventions.html'}}" OTTK
     
     - if data.page.toc
       #toc
