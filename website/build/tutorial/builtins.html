@@ -16,7 +16,7 @@
 talk directly to <a href="http://kr.github.com/beanstalkd/">beanstalkd</a>.</p>
 <p>Look at this as an example of how easily <em>cod</em> can be extended to speak
 protocol X. And also, use these because they make <em>cod</em> useful!</p>
-<h1>Beanstalkd Channels</h1>
+<h2>Beanstalkd Channels</h2>
 <p>Beanstalkd channels work like other <em>cod</em> channels at their base:</p>
 <pre class="sh_ruby"><code title="basic beanstalk example">
   # Connects to beanstalkd on localhost:11300 
@@ -51,6 +51,37 @@ happens in <code>#get</code>.</p>
 </code></pre>
 <p>Please also have a look at <code>Cod::Beanstalk::Channel::Control</code> (<code>ctl</code> above)- 
 almost all commands beanstalkd allows on messages are allowed on this object.</p>
+<p><img src="../images/fish.png" alt="" /></p>
+<h2>Spawning processes</h2>
+<p>A lot of server implementations have an <em>inetd</em> mode where you launch the 
+server binary and communicate via stdin/stdout with it. <em>cod</em> captures that
+pattern in <code>Cod.process</code>:</p>
+<pre class="sh_ruby"><code title="cod process">
+  proc = Cod.process('uname', Cod::LineSerializer.new)
+  uname = proc.channel
+  
+  uname.get # =&gt; "Darwin"
+  
+  # Wait for the process to terminate
+  proc.wait
+</code></pre>
+<p>Note that we use the line serializer here. This makes <em>cod</em> expect and speak
+the unix convention where each element of output is terminated by a &#8220;\n&#8221;.</p>
+<p>Note that you can also implement such &#8216;stdin/stdout&#8217; servers using <em>cod</em> &#8211; 
+but only if you are careful not to use these streams for other things:</p>
+<pre class="sh_ruby"><code title="stdio process">
+  stdio = Cod.stdio(Cod::LineSerializer.new)
+  stdio.put 'test'
+</code></pre>
+<p>This will output</p>
+<pre class="output">
+test
+</pre>
+<p>followed by a newline.</p>
+<h1>Other things to look at</h1>
+<p>Be sure to also check out <code>Cod.bidir_pipe</code> and the examples in the
+source tree (examples/) that illustrate some of these concepts.</p>
+<p><em>Cod</em> is the clay in your hands. Go build something.</p>
 <p><img src="../images/fish.png" alt="" /></p><script type="text/javascript">(function() {
         var toc, ul; 
         toc = $('#toc');
