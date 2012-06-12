@@ -31,8 +31,7 @@ So this works:
   write.put read
   
   # Transmitted the read-end of the channel itself!
-  read.get.object_id    # => 70245822725860
-  read.object_id        # => 70245822725860
+  read.get.object_id == read.object_id   # => true
 </code></pre>
 
 h2. Implementing a serializer

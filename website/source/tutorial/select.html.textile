@@ -1,9 +1,51 @@
 ---
-title: Pipes
+title: Cod.select
+toc: true
 ---
 
-h1. Selecting channels
+h1. Waiting for data
 
-h1. Current limitations
+Always the same thing with these mail boxes. No one ever writes.
+
+<pre class="sh_ruby"><code title="no one ever writes">
+  box = Cod.pipe
+  
+  Cod.select(0.1, box)  # => nil
+</code></pre>
+
+Hey, maybe someone dropped us an email?
+
+<pre class="sh_ruby"><code title="an email">
+  box = Cod.pipe
+  mail = Cod.pipe.split
+  
+  mail.write.put 'an email'
+  
+  ready = Cod.select(0.1, box: box, email: mail.read)  
+
+  ready.has_key?(:email)      # => true
+  ready[:email] == mail.read  # => true
+</code></pre>
+
+Yes, they did. Now go check on those other accounts. 
+
+<pre class="sh_ruby"><code title="and those other accounts">
+  r,w = IO.pipe
+  w.write('.')
+
+  server = Cod.tcp_server('localhost:1234')
+  tcp = Cod.tcp('localhost:1234')
+  io  = Cod.stdio
+  
+  ready = Cod.select(0.1, [r, tcp, io])
+  ready == [r]                # => NOT REACHED!
+</code></pre>
+
+
+h2. Current limitations
 
 * Beanstalk channels
+
+h1. Other things to look at
+
+!../images/fish.png!

@@ -1,0 +1,3 @@
+To run all code inside the examples and verify the results, run
+
+  ./example_runner source/tutorial
