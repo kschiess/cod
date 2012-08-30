@@ -46,7 +46,6 @@ module Cod
       # Prepare a return value: The original hash, where the fds are ready.
       groups.
         keep_if { |e| to_read_fds(e).
-          tap { |fds| p fds }.
           any? { |fd| r.include?(fd) } }.
         unpack
     end
