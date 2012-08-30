@@ -80,7 +80,7 @@ module Cod
     # Returns an array of IOs that Cod.select should select on. 
     #
     def to_read_fds
-      @client_sockets
+      @client_sockets + [@socket]
     end
     
     # Returns the number of clients that are connected to this server

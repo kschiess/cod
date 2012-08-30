@@ -17,6 +17,10 @@ describe 'Cod TCP' do
       client.put :test
       server.get.should == :test
     end 
+    it "allows Cod.select for server" do
+      client.put :test
+      Cod.select(0.1, server).should == server
+    end 
     it "correctly shuts down the background thread" do
       client.put :test
 
