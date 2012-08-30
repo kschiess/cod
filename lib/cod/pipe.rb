@@ -145,7 +145,7 @@ module Cod
     # @private
     #
     def to_read_fds
-      r
+      [r]
     end
     
     # Returns true if you can read from this pipe. 

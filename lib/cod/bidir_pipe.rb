@@ -28,5 +28,11 @@ module Cod
     def swap!
       @r, @w = w, r
     end
+    
+    # @private
+    #
+    def to_read_fds
+      [@r.to_read_fds, @w.to_read_fds].flatten
+    end
   end
 end

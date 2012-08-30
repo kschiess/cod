@@ -35,7 +35,7 @@ module Cod
     # @return [Hash,Array,Cod::Channel,IO]
     #
     def do
-      fds = groups.values { |e| to_read_fd(e) }.compact
+      fds = groups.values { |e| to_read_fds(e) }.compact
       
       # Perform select  
       r,w,e = IO.select(fds, nil, nil, timeout)
@@ -45,13 +45,15 @@ module Cod
       
       # Prepare a return value: The original hash, where the fds are ready.
       groups.
-        keep_if { |e| r.include?(to_read_fd(e)) }.
+        keep_if { |e| to_read_fds(e).
+          tap { |fds| p fds }.
+          any? { |fd| r.include?(fd) } }.
         unpack
     end
   private
-    def to_read_fd(single)
-      return single.to_read_fds if single.respond_to?(:to_read_fds)
-      return single
+    def to_read_fds(channel)
+      return channel.to_read_fds if channel.respond_to?(:to_read_fds)
+      return [channel]
     end
   end
 end

@@ -135,7 +135,11 @@ module Cod
     # @private
     #
     def to_read_fds
-      @connection.socket if @connection
+      if @connection
+        [@connection.socket] 
+      else
+        []
+      end
     end
   private
     # Checks to see in which of the three connection phases we're in. If we're

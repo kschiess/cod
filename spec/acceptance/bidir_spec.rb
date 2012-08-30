@@ -11,6 +11,7 @@ describe "Bidirectional Pipes" do
       bidir.put :test
     end
     
+    Cod.select(0.1, bidir)
     bidir.get.should == :test
     Process.waitall
   end 
