@@ -1,3 +1,7 @@
+= 0.5.1 / 30Aug2012
+
+  + Cod.bidir_pipe is now selectable.
+
 = 0.5.0 / 12Jun2012
 
   + Process#wait will not throw Errno::ECHILD anymore.
