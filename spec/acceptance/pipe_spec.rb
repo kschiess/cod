@@ -70,6 +70,10 @@ describe Cod::Pipe do
       pipe.put :another_test
       duplicate.get
     end
+    it "allows select" do
+      pipe.put :another_test
+      Cod.select(0.01, duplicate).should == duplicate
+    end 
   end 
   describe 'write use' do
     let!(:pipe) { described_class.new }
