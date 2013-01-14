@@ -35,7 +35,7 @@ module Cod
     attr_reader :thread
 
     def try_work
-      @try_work_exclusive_section.enter {
+      exclusive {
         # NOTE if predicate is nil or not set, no work will be accomplished. 
         # This is the way I need it. 
         while !@queue.empty? && predicate?
@@ -73,7 +73,9 @@ module Cod
     #   work_queue.schedule { a_piece_of_work }
     #
     def schedule(&work)
-      @queue << work
+      exclusive {
+        @queue << work
+      }
     end
 
     # Shuts down the queue properly, without waiting for work to be completed.
@@ -89,7 +91,9 @@ module Cod
     # Returns the size of the queue. 
     #
     def size
-      @queue.size
+      exclusive {
+        @queue.size
+      }
     end
 
     def clear_thread_semaphore

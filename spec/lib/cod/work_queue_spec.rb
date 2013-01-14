@@ -145,10 +145,9 @@ describe Cod::WorkQueue do
         evaluating_threads[Thread.current] = true
         false }
       
-      sleep 0.01
       queue.try_work
-      
-      evaluating_threads.size.should <= 1
+
+      evaluating_threads.size.should == 1
     end 
   end
 end
