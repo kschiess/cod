@@ -15,12 +15,10 @@ module Cod
       self.w = other.w.dup if other.w
     end
     def write(buf)
-      close_r
       raise Cod::ReadOnlyChannel unless w
       w.write(buf)
     end
     def read(serializer)
-      close_w
       raise Cod::WriteOnlyChannel unless r
       serializer.de(r)
     end

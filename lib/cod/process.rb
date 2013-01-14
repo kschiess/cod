@@ -32,16 +32,21 @@ module Cod
       @pipe = Cod.bidir_pipe(@serializer)
       
       @pid = ::Process.spawn(command, 
-        :in => @pipe.w.r, 
-        :out => @pipe.r.w)
+        :in => @pipe.other, 
+        :out => @pipe.other)
+        
+      # Close the end we just dedicated to the process we've spawned. 
+      # As a consequence, when the process exists, we'll get a read error
+      # on our side of the pipe (@pipe.socket, #put, #get)
+      @pipe.other.close
     end
     
     # Returns the cod channel associated with this process. The channel will
     # have the process' standard output bound to its #get (input), and the
     # process' standard input will be bound to #put (output).
     #
-    # Note that when the process exits and all communication has been read from
-    # the channel, it will probably raise a Cod::ConnectionLost error. 
+    # Note that when the process exits and all communication has been read
+    # from the channel, it will probably raise a Cod::ConnectionLost error. 
     #
     # @example
     #   process = Cod.process('uname', LineSerializer.new)
@@ -62,13 +67,13 @@ module Cod
       ::Process.kill :TERM, @pid
     end
     
-    # Asks the process to terminate by closing its stanard input. This normally
-    # closes down the process, but no guarantees are made. 
+    # Asks the process to terminate by closing its stanard input. This
+    # normally closes down the process, but no guarantees are made. 
     #
     # @return [void]
     #
     def terminate
-      @pipe.w.close
+      @pipe.socket.close_write
     end
     
     # Waits for the process to terminate and returns its exit value. May

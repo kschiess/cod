@@ -57,17 +57,11 @@ describe "StdIO channels" do
 
     def redirected_child
       fork do
-        o = child_chan.r.w
-        i = child_chan.w.r
-        
-        child_chan.r.r.close
-        child_chan.w.w.close
+        o = child_chan.other
         
         STDOUT.reopen(o)
+        STDIN.reopen(o)
         o.close
-        
-        STDIN.reopen(i)
-        i.close
         
         yield
       end

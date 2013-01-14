@@ -7,7 +7,6 @@ describe "Bidirectional Pipes" do
   it "is intended for forks" do
     fork do
       bidir.swap!
-      
       bidir.put :test
     end
     

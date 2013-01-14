@@ -1,38 +1,53 @@
 module Cod
+  
+  # A bidirectional pipe, also called a socket pair. 
+  #
   class BidirPipe < Channel
-    # The Cod::Pipe instance we're currently #put'ting to. 
-    attr_reader :w
-    # The Cod::Pipe instance we're currently #get'ting from. 
-    attr_reader :r
     
-    def initialize(serializer=nil, pipe_pair=nil)
+    # Serializer to use for messages on this transport. 
+    attr_reader :serializer
+    
+    # This process' end of the pipe, can be used for both reading and writing. 
+    attr_reader :socket
+    
+    # The other side of the pipe. 
+    attr_reader :other
+    
+    def initialize(serializer=nil)
       @serializer = serializer || SimpleSerializer.new
-      @r, @w = pipe_pair || [Cod.pipe(@serializer), Cod.pipe(@serializer)]
+      @socket, @other = UNIXSocket.pair
     end
     
-    def put(msg)
-      w.put(msg)
+    def put(obj)
+      socket.write(
+        serializer.en(obj))
     end
     
     def get
-      r.get
+      serializer.de(socket)
+    rescue EOFError, IOError
+      raise Cod::ConnectionLost, 
+        "All pipe ends seem to be closed. Reading from this pipe will not "+
+        "return any data."
     end
     
     def close
-      r.close
-      w.close
+      socket.close; other.close
+    rescue IOError
+      # One code path through Cod::Process will close other prematurely. This
+      # is to avoid an error. 
     end
     
     # Swaps the end of this pipe around. 
     #
     def swap!
-      @r, @w = w, r
+      @socket, @other = @other, @socket
     end
-    
+
     # @private
     #
     def to_read_fds
-      [@r.to_read_fds, @w.to_read_fds].flatten
+      [socket]
     end
   end
 end

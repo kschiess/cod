@@ -65,16 +65,15 @@ module Cod
   end
   module_function :pipe
   
-  # Creates two channels based on {Cod.pipe} (unidirectional IO.pipe) and links
-  # things up so that you communication is bidirectional. Writes go to 
-  # #out and reads come from #in. 
+  # Creates a channel based on socketpair (UNIXSocket.pair). This is a
+  # IPC-kind of channel that can be used to exchange messages both ways. 
   #
   # @overload bidir_pipe(serializer=nil)
   #   @param serializer [#en,#de] optional serializer to use
   #   @return [Cod::BidirPipe]
   #
-  def bidir_pipe(serializer=nil, pipe_pair=nil)
-    Cod::BidirPipe.new(serializer, pipe_pair)
+  def bidir_pipe(serializer=nil)
+    Cod::BidirPipe.new(serializer)
   end
   module_function :bidir_pipe
   

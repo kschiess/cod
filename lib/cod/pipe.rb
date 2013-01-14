@@ -104,6 +104,7 @@ module Cod
     #
     def put(obj)
       raise Cod::ReadOnlyChannel unless can_write?
+      pipe.close_r
       
       pipe.write(
         serializer.en(obj))
