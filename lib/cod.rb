@@ -183,6 +183,8 @@ module Cod
   end
 end
 
+require 'cod/callbacks'
+
 require 'cod/select_group'
 require 'cod/select'
 

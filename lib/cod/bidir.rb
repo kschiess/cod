@@ -4,11 +4,13 @@ module Cod
   #
   class Bidir < Channel
     
+    include Callbacks
+    
     # Serializer to use for messages on this transport. 
     attr_reader :serializer
     
     # This process' end of the pipe, can be used for both reading and writing. 
-    attr_reader :socket
+    attr_accessor :socket
     
     # The other side of the pipe. 
     attr_reader :other
@@ -39,8 +41,10 @@ module Cod
     end
     
     def put(obj)
-      socket.write(
-        serializer.en(obj))
+      using_callbacks(socket) do
+        socket.write(
+          serializer.en(obj))
+      end
     end
     
     def get
@@ -74,8 +78,12 @@ module Cod
     # @private
     #
     OtherEnd = Struct.new(:path) # :nodoc:
-
+    
     def _dump(level) # :nodoc:
+      if !path && callbacks_enabled?
+        register_callback { |conn| conn.send_io(other) }
+      end
+      
       Marshal.dump(path)
     end
     def self._load(params) # :nodoc:

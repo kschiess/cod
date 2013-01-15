@@ -142,7 +142,9 @@ module Cod
     # construction of back channels from replacement tokens, for example.
     #
     def deserialize(io)
-      @serializer.de(io) { |obj| deserialize_special(io, obj) }
+      using_callbacks(io) do
+        @serializer.de(io) { |obj| deserialize_special(io, obj) }
+      end
     end
     
     def round_robin(list)

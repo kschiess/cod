@@ -63,7 +63,6 @@ describe "Bidirectional Pipes" do
       waitall_assert
     end 
     it 'allow transmission of other channels' do
-      pending 'a good idea'
       fork do
         server = Cod.bidir_server(path)
 

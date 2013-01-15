@@ -1,5 +1,7 @@
 module Cod
   class BidirServer < SocketServer
+    include Callbacks
+    
     attr_reader :path
     
     def initialize(path, serializer)
@@ -15,7 +17,11 @@ module Cod
           if obj.path == self.path
             return back_channel(socket)
           end
-          fail
+          
+          channel = Bidir.new(serializer, nil, nil, nil)
+          register_callback { |conn| 
+            channel.socket= conn.recv_io(UNIXSocket) }
+          return channel
       end
       
       obj
