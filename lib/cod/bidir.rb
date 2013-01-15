@@ -46,7 +46,8 @@ module Cod
     end
     
     def close
-      socket.close; other.close
+      socket.close; 
+      other.close if other
     rescue IOError
       # One code path through Cod::Process will close other prematurely. This
       # is to avoid an error. 
@@ -56,6 +57,26 @@ module Cod
     #
     def swap!
       @socket, @other = @other, @socket
+    end
+    
+    # ---------------------------------------------------------- serialization 
+    
+    # A small structure that is constructed for a serialized tcp client on 
+    # the other end (the deserializing end). What the deserializing code does
+    # with this is his problem. 
+    #
+    # @private
+    #
+    OtherEnd = Class.new() # :nodoc:
+
+    def _dump(level) # :nodoc:
+      ''
+    end
+    def self._load(params) # :nodoc:
+      # Instead of a tcp client (no way to construct one at this point), we'll
+      # insert a kind of marker in the object stream that will be replaced 
+      # with a valid client later on. (hopefully)
+      OtherEnd.new
     end
 
     # @private

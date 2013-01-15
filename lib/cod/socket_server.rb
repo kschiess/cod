@@ -1,6 +1,6 @@
 require 'socket'
 
-module Cod       
+module Cod
   
   # Abstract base class for all kinds of socket based servers. Useful for all
   # types of channels that know an #accept. 
@@ -136,12 +136,12 @@ module Cod
       end
     end
     
+    # Hooks deserialisation (if the programmer provided for this) and calls
+    # #deserialize_special for each object in the object stream. This allows
+    # construction of back channels from replacement tokens, for example.
+    #
     def deserialize(io)
-      @serializer.de(io) { |obj|
-        obj.kind_of?(TcpClient::OtherEnd) ? 
-          produce_back_channel(io) : 
-          obj
-      }
+      @serializer.de(io) { |obj| deserialize_special(io, obj) }
     end
     
     def round_robin(list)
@@ -162,12 +162,6 @@ module Cod
       end
     rescue Errno::EAGAIN
       # This means that there are no sockets to accept. Continue.
-    end
-
-    def produce_back_channel(socket)
-      TcpClient.new(
-        TcpClient::Connection.new(socket, self), 
-        @serializer)
     end
   end
 end
