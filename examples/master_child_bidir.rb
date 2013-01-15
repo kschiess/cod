@@ -1,7 +1,7 @@
 $:.unshift File.expand_path(File.dirname(__FILE__) + "/../lib")
 require 'cod'
 
-pipe = Cod.bidir_pipe
+pipe = Cod.bidir
 
 child_pid = fork do
   pipe.swap!

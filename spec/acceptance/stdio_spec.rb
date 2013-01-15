@@ -53,7 +53,7 @@ describe "StdIO channels" do
     end 
   end
   describe 'Cod.stdio' do
-    let!(:child_chan) { Cod.bidir_pipe(LineSerializer.new) }
+    let!(:child_chan) { Cod.bidir(LineSerializer.new) }
 
     def redirected_child
       fork do

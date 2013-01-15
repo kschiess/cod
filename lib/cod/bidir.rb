@@ -2,7 +2,7 @@ module Cod
   
   # A bidirectional pipe, also called a socket pair. 
   #
-  class BidirPipe < Channel
+  class Bidir < Channel
     
     # Serializer to use for messages on this transport. 
     attr_reader :serializer
@@ -13,9 +13,23 @@ module Cod
     # The other side of the pipe. 
     attr_reader :other
     
-    def initialize(serializer=nil)
-      @serializer = serializer || SimpleSerializer.new
-      @socket, @other = UNIXSocket.pair
+    def self.named(name, serializer=nil)
+      new(serializer || SimpleSerializer.new, 
+        UNIXSocket.new(name), nil)
+    end
+    def self.pair(serializer=nil)
+      new(serializer || SimpleSerializer.new, 
+        *UNIXSocket.pair)
+    end
+    
+    # Initializes a Bidir channel given two or alternatively one end of a 
+    # bidirectional pipe. (socketpair)
+    # 
+    #   socket ---- other
+    #
+    def initialize(serializer, socket, other)
+      @serializer = serializer
+      @socket, @other = socket, other
     end
     
     def put(obj)

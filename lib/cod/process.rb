@@ -29,7 +29,7 @@ module Cod
     
     # @private
     def run(command)
-      @pipe = Cod.bidir_pipe(@serializer)
+      @pipe = Cod.bidir(@serializer)
       
       @pid = ::Process.spawn(command, 
         :in => @pipe.other, 

@@ -92,7 +92,7 @@ followed by a newline.
 
 h1. Other things to look at
 
-Be sure to also check out <code>Cod.bidir_pipe</code> and the examples in the
+Be sure to also check out <code>Cod.bidir</code> and the examples in the
 source tree (examples/) that illustrate some of these concepts. 
 
 _Cod_ is the clay in your hands. Go build something.

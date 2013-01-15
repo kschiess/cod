@@ -68,14 +68,29 @@ module Cod
   # Creates a channel based on socketpair (UNIXSocket.pair). This is a
   # IPC-kind of channel that can be used to exchange messages both ways. 
   #
-  # @overload bidir_pipe(serializer=nil)
+  # @overload bidir(serializer=nil)
   #   @param serializer [#en,#de] optional serializer to use
-  #   @return [Cod::BidirPipe]
+  #   @return [Cod::Bidir]
   #
-  def bidir_pipe(serializer=nil)
-    Cod::BidirPipe.new(serializer)
+  def bidir(serializer=nil)
+    Cod::Bidir.pair(serializer)
   end
-  module_function :bidir_pipe
+  module_function :bidir
+  
+  # Creates a named bidirectional channel. Only one end of this will be 
+  # connected to the unix socket in the file system identified by path. 
+  #
+  def bidir_named(name, serializer=nil)
+    Cod::Bidir.named(name, serializer)
+  end
+  module_function :bidir_named
+  
+  # Creates the server side for a named unix socket connection. 
+  #
+  def bidir_server(name, serializer=nil)
+    Cod::BidirServer.new(name, serializer)
+  end
+  module_function :bidir_server
   
   # Creates a tcp connection to the destination and returns a channel for it.
   # 
@@ -171,6 +186,8 @@ end
 require 'cod/select_group'
 require 'cod/select'
 
+require 'cod/socket_server'
+
 require 'cod/iopair'
 
 require 'cod/channel'
@@ -179,7 +196,9 @@ require 'cod/simple_serializer'
 require 'cod/line_serializer'
 
 require 'cod/pipe'
-require 'cod/bidir_pipe'
+
+require 'cod/bidir'
+require 'cod/bidir_server'
 
 require 'cod/process'
 

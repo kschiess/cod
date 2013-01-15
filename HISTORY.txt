@@ -1,6 +1,7 @@
 = 0.6.0 / ???
 
-  + Cod.bidir_pipe is now based on UNIXSocket.pair (socketpair).
+  + Cod.bidir is now based on UNIXSocket.pair (socketpair) and is called just
+    #bidir. Thanks to Yves Senn (senny) for the idea and the pairing sessions!
 
 = 0.5.1 / 30Aug2012
 
