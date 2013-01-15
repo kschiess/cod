@@ -7,6 +7,7 @@ module Cod
   #
   class SocketServer
     attr_reader :socket
+    attr_reader :serializer
     
     def initialize(serializer, socket)
       @socket = socket
@@ -48,7 +49,7 @@ module Cod
       msg, socket = _get(opts)
       return [
         msg, 
-        produce_back_channel(socket)]
+        back_channel(socket)]
     end
     
     # Closes the channel. 

@@ -26,7 +26,13 @@ describe "Bidirectional Pipes" do
     end
     
     let!(:path) { gen_tmp_socket_path }
-    after(:each) { FileUtils.rm path }
+    after(:each) { FileUtils.rm path rescue nil }
+    
+    def waitall_assert
+      Process.waitall.each do |pid, status|
+        status.exitstatus.should == 0
+      end
+    end
     
     it 'allow transmission of channels trough channels (self)' do
       # This server is no different from any other ping/pong server in the
@@ -54,9 +60,29 @@ describe "Bidirectional Pipes" do
       client.put [:ping, client]
       client.get.should == :pong
 
-      Process.waitall.each do |pid, status|
-        status.exitstatus.should == 0
+      waitall_assert
+    end 
+    it 'allow transmission of other channels' do
+      pending 'a good idea'
+      fork do
+        server = Cod.bidir_server(path)
+
+        # other will contain the channel we send through the named channel.
+        other, back = server.get_ext
+        other.put :test
+        
+        back.close
       end
+      
+      sleep 0.01 until File.exist?(path)
+
+      client = Cod.bidir_named(path)
+      other = Cod.bidir
+      
+      client.put other
+      other.get.should == :test
+
+      waitall_assert
     end 
   end
 end

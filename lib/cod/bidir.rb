@@ -13,12 +13,17 @@ module Cod
     # The other side of the pipe. 
     attr_reader :other
     
+    # Path of the socket (.named), if based on a file system FIFO.
+    attr_reader :path
+    
     def self.named(name, serializer=nil)
       new(serializer || SimpleSerializer.new, 
+        name, 
         UNIXSocket.new(name), nil)
     end
     def self.pair(serializer=nil)
       new(serializer || SimpleSerializer.new, 
+        nil, 
         *UNIXSocket.pair)
     end
     
@@ -27,9 +32,10 @@ module Cod
     # 
     #   socket ---- other
     #
-    def initialize(serializer, socket, other)
+    def initialize(serializer, path, socket, other)
       @serializer = serializer
       @socket, @other = socket, other
+      @path = path
     end
     
     def put(obj)
@@ -67,16 +73,16 @@ module Cod
     #
     # @private
     #
-    OtherEnd = Class.new() # :nodoc:
+    OtherEnd = Struct.new(:path) # :nodoc:
 
     def _dump(level) # :nodoc:
-      ''
+      Marshal.dump(path)
     end
     def self._load(params) # :nodoc:
       # Instead of a tcp client (no way to construct one at this point), we'll
       # insert a kind of marker in the object stream that will be replaced 
       # with a valid client later on. (hopefully)
-      OtherEnd.new
+      OtherEnd.new(Marshal.load(params))
     end
 
     # @private
