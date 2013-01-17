@@ -2,3 +2,4 @@ website/.sass-cache
 .yardoc
 doc
 pkg
+Gemfile.lock
