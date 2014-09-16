@@ -173,7 +173,6 @@ module Cod
       @connection.write(
         @serializer.en(msg))
     rescue Exception => e
-      warn e
       raise
     end
 
