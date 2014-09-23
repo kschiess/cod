@@ -8,13 +8,12 @@ Gem::Specification.new do |s|
   s.email = 'kaspar.schiess@absurd.li'
 
   s.extra_rdoc_files = ['README']
-  s.files = %w(HISTORY.txt LICENSE Rakefile README) + Dir.glob("{lib,examples}/**/*")
+  s.files = %w(HISTORY.txt LICENSE README) + Dir.glob("{lib,examples}/**/*")
   s.homepage = 'http://kschiess.github.com/cod'
   s.rdoc_options = ['--main', 'README']
   s.require_paths = ['lib']
   s.summary = %Q(Really simple IPC. Pipes, TCP sockets, beanstalkd, ...)
   
-  s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'flexmock'
   s.add_development_dependency 'yard'
