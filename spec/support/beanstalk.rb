@@ -1,3 +1,6 @@
+
+require 'yaml'
+
 module BeanstalkHelper
   # Ok, this is a mess, I admit it. I wrote it, and I will fix it, ok?
   #

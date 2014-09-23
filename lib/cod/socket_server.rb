@@ -6,6 +6,8 @@ module Cod
   # types of channels that know an #accept. 
   #
   class SocketServer
+    include Callbacks 
+    
     attr_reader :socket
     attr_reader :serializer
     

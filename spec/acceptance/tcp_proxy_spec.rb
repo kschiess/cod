@@ -19,7 +19,7 @@ describe TCPProxy do
       msg, chan = server.get_ext 
       msg.should == :test
       
-      proxy.should have(1).connections
+      proxy.connections.size.should == 1
       
       chan.put :antwoord
       client.get.should == :antwoord

@@ -2,6 +2,9 @@
 
   + Cod.bidir is now based on UNIXSocket.pair (socketpair) and is called just
     #bidir. Thanks to Yves Senn (senny) for the idea and the pairing sessions!
+  ! Eliminated some warnings for exceptions that were reraised anyway. Thanks 
+    to Chris Schmich (schmich). 
+  ! Updates project to work with modern rubies.
 
 = 0.5.1 / 30Aug2012
 
