@@ -1,1 +1,2 @@
 script: bundle exec rspec
+sudo: false
