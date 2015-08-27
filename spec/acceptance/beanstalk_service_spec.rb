@@ -16,14 +16,14 @@ describe Cod::Beanstalk::Service, beanstalk: true do
   describe 'control parameter' do
     it "has a msg_id accessor" do
       client.notify(:request)
-      service.one { |rq, control| control.msg_id.should > 0 }
+      service.one { |rq, control| control.msg_id.assert > 0 }
     end
     it "has a command_issued? method" do
       client.notify(:request)
       service.one { |rq, control| 
-        control.command_issued?.should == false
+        control.command_issued?.assert == false
         control.delete
-        control.command_issued?.should == true }
+        control.command_issued?.assert == true }
     end  
   end
   
@@ -34,7 +34,7 @@ describe Cod::Beanstalk::Service, beanstalk: true do
         
         begin
           service.one { |request, control| control.retry_in(1) }
-          service.one { |request| request.should == :request }
+          service.one { |request| request.assert == :request }
         rescue Timeout::Error
           fail "Test took too long."
         end
@@ -46,7 +46,7 @@ describe Cod::Beanstalk::Service, beanstalk: true do
         
         begin
           service.one { |request, control| control.retry }
-          service.one { |request| request.should == :request }
+          service.one { |request| request.assert == :request }
         rescue Timeout::Error
           fail "Test took too long."
         end

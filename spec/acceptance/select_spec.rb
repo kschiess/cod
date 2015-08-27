@@ -26,14 +26,14 @@ describe "Cod.select" do
         write.put :test
         result = Cod.select(nil, my_group: [read])
         
-        result.assert have_key(:my_group)
+        result.assert.has_key?(:my_group)
         result[:my_group].assert == [read]
       end
       it "(single)" do
         write.put :test
         result = Cod.select(nil, my_group: read)
 
-        result.assert have_key(:my_group)
+        result.assert.has_key?(:my_group)
         result[:my_group].assert == read
       end 
     end

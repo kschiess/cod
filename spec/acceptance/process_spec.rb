@@ -9,9 +9,9 @@ describe "Cod.process" do
     let(:process) { Cod.process('true') }
 
     it "throws ConnectionLost if the process goes away" do
-      expect {
+      Cod::ConnectionLost.assert.raised? do
         channel.get
-      }.to raise_error(Cod::ConnectionLost)
+      end
     end 
   end
   describe "when starting 'ls'" do

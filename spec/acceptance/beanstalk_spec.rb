@@ -22,12 +22,12 @@ describe "Beanstalk transport", beanstalk: true do
 
     it "does simple messaging" do
       channel.put :test
-      channel.get.should == :test
+      channel.get.assert == :test
     end
     it "transmits line ends properly" do
       channel.put "\r\n"
 
-      channel.get.should == "\r\n"
+      channel.get.assert == "\r\n"
     end
     it "handles concurrency after being dupped with #dup" do
       # NOTE If this spec hangs, you just encountered the bug it is here to
@@ -46,46 +46,46 @@ describe "Beanstalk transport", beanstalk: true do
       before(:each) { channel.put :test; channel.put :other }
       it "reserves messages tentatively (control.release)" do
         channel.try_get { |msg, control|
-          msg.should == :test
+          msg.assert == :test
           # Releases the message, not consuming it.
           control.release
         }
-        channel.get.should == :test
+        channel.get.assert == :test
       end 
       it "consumes messages at the end of the block" do
         m = channel.try_get { |msg, control| msg }
-        m.should == :test
-        channel.get.should == :other
+        m.assert == :test
+        channel.get.assert == :other
       end 
       it "allows release with delay" do
         channel.try_get { |msg, control|
-          msg.should == :test
+          msg.assert == :test
           # Releases the message, not consuming it.
           control.release_with_delay(1)
         }
-        channel.get.should == :other
-        channel.get.should == :test
+        channel.get.assert == :other
+        channel.get.assert == :test
       end
       it "releases the message when an exception occurs" do
-        expect {
+        Exception.assert.raised? do
           channel.try_get { |msg, control| 
             raise Exception }
-        }.to raise_error
-        channel.get.should == :test
-        channel.get.should == :other
+        end
+        channel.get.assert == :test
+        channel.get.assert == :other
       end  
       it "doesn't release when it cannot (command already issued)" do
-        expect {
+        Exception.assert.raised? do
           channel.try_get { |msg, control| 
             control.delete
             raise Exception }
-        }.to raise_error
-        channel.get.should == :other
+        end
+        channel.get.assert == :other
       end  
       it "buries messages" do
         channel.try_get { |msg, control| control.bury }
         # Currently no way to look at buried jobs: 
-        channel.get.should == :other
+        channel.get.assert == :other
       end 
     end
     
@@ -98,8 +98,8 @@ describe "Beanstalk transport", beanstalk: true do
       it "transmits via named tubes" do
         other.put :foo
         channel.put :test
-        channel.get.should == :test
-        other.get.should == :foo
+        channel.get.assert == :test
+        other.get.assert == :foo
       end 
       it "allows transmission of beanstalk channels via beanstalk channels" do
         channel.put :test
@@ -107,7 +107,7 @@ describe "Beanstalk transport", beanstalk: true do
         other.put channel
         clone = other.get
         
-        clone.get.should == :test
+        clone.get.assert == :test
       end 
     end
   end
@@ -124,17 +124,17 @@ describe "Beanstalk transport", beanstalk: true do
     # Test the connection before testing error behaviour
     before(:each) { 
       beanstalk.put :test
-      beanstalk.get.should == :test
+      beanstalk.get.assert == :test
     }
     
     describe 'when the connection to beanstalkd gets interrupted' do
       before(:each) { proxy.block }
       
       it "should throw a ConnectionLost error" do
-        expect {
+        Cod::ConnectionLost.assert.raised? do
           proxy.drop_all
           beanstalk.get
-        }.to raise_error(Cod::ConnectionLost)
+        end
       end 
     end 
   end
@@ -145,7 +145,9 @@ describe "Beanstalk transport", beanstalk: true do
     let(:predicate) { lambda { Cod.select(0.1, channel) } }
 
     it "raises an error" do
-      expect(&predicate).to raise_error
+      Exception.assert.raised? do
+        predicate.call
+      end
     end 
     # NOTE: The 'problem' appears to be the following: Let's assume that we 
     # issue a RESERVE command with a timeout to beanstalk. Then select on the
@@ -167,7 +169,7 @@ describe "Beanstalk transport", beanstalk: true do
       begin
         predicate.call
       rescue => e
-        e.message.should == "Cod.select not supported with beanstalkd channels.\n"+
+        e.message.assert == "Cod.select not supported with beanstalkd channels.\n"+
           "To support this, we will have to extend the beanstalkd protocol."
       end
     end 

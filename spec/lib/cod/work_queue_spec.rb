@@ -94,17 +94,17 @@ describe Cod::WorkQueue do
     before(:each) { queue.predicate { false } }
     
     it "adds a work item to the queue" do
-      expect {
+      lambda {
         queue.schedule { work }
-      }.to change { queue.size }.by(1)
+      }.assert.change? { queue.size }
     end 
   end
   describe '#shutdown' do
     it "shuts down the background thread" do
       queue.schedule { work }
-      expect {
+      lambda {
         queue.shutdown
-      }.to change { Thread.list.size }.by(-1)
+      }.assert.change? { Thread.list.size }
     end
   end
   describe '#exclusive' do

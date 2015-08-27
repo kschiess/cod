@@ -12,34 +12,34 @@ describe Cod::Beanstalk::Serializer, beanstalk: true do
   
   describe '#en' do
     it "encodes things simply to string" do
-      en(:cmd, 1, "a_string").should == "cmd 1 a_string\r\n"
+      en(:cmd, 1, "a_string").assert == "cmd 1 a_string\r\n"
     end 
     it "encodes :put correctly" do
-      en(:put, 1, 2, "A message").should == "put 1 2 9\r\nA message\r\n"
+      en(:put, 1, 2, "A message").assert == "put 1 2 9\r\nA message\r\n"
     end
   end
   describe '#de' do
     it "decodes simple one-line messages" do
-      de("INSERTED 123\r\n").should == [:inserted, 123]
-      de("EXPECTED_CRLF\r\n").should == [:expected_crlf]
+      de("INSERTED 123\r\n").assert == [:inserted, 123]
+      de("EXPECTED_CRLF\r\n").assert == [:expected_crlf]
     end 
     it "decodes RESERVED id bytes data" do
       de("RESERVED 123 9\r\nA message\r\n").
-        should == [:reserved, 123, "A message"]
+        assert == [:reserved, 123, "A message"]
     end
     it "decodes OK bytes data" do
-      de("OK 9\r\nA message\r\n").should == [:ok, 'A message']
+      de("OK 9\r\nA message\r\n").assert == [:ok, 'A message']
     end 
     it "decodes arguments that contain numbers" do
       de("FUU fu123").
-        should == [:fuu, 'fu123']
+        assert == [:fuu, 'fu123']
     end 
     
     describe 'when the io is eof?' do
       it "raises ConnectionLost" do
-        expect {
+        Cod::ConnectionLost.assert.raised? do
           serializer.de(flexmock(:gets => nil))
-        }.to raise_error(Cod::ConnectionLost)
+        end
       end
     end
   end

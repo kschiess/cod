@@ -62,9 +62,9 @@ describe Cod::Pipe do
       duplicate.get }
     
     it 'closes the write part, raising when written to' do
-      expect {
+      Cod::ReadOnlyChannel.assert.raised? do
         duplicate.put :answer
-      }.to raise_error(Cod::ReadOnlyChannel)
+      end
     end
     it 'allows further reading' do
       pipe.put :another_test
@@ -83,9 +83,9 @@ describe Cod::Pipe do
       duplicate.get }
 
     it 'closes the read part, raising when read from' do
-      expect {
+      Cod::WriteOnlyChannel.assert.raised? do
         pipe.get
-      }.to raise_error(Cod::WriteOnlyChannel)
+      end
     end
     it 'allows further writing' do
       pipe.put :another_test

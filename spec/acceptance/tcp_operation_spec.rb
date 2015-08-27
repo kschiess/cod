@@ -24,9 +24,9 @@ describe 'Cod TCP' do
     it "correctly shuts down the background thread" do
       client.put :test
 
-      expect {
+      lambda {
         client.close
-      }.to change { Thread.list.size }.by(-1)
+      }.assert.change? { Thread.list.size }
     end 
 
     describe 'server#get_ext' do
@@ -58,10 +58,10 @@ describe 'Cod TCP' do
         client.put :test
         server.get.assert == :test
         
-        expect { 
+        lambda {
           client.close
           timeout(0.1) { server.get } rescue TimeoutError
-        }.to change { server.connections }.by(-1)
+        }.assert.change? { server.connections }
       end 
     end
     describe 'when the connection goes down and comes back up' do
@@ -77,10 +77,10 @@ describe 'Cod TCP' do
         
         proxy.drop_all
         
-        expect { 
+        Cod::ConnectionLost.assert.raised? do
           client.put :test2 
           client.get
-        }.to raise_error(Cod::ConnectionLost)
+        end
       end
       it "throws a ConnectionLost error (EOFError)" do
         client.put :test1
@@ -88,9 +88,9 @@ describe 'Cod TCP' do
         
         proxy.drop_all
         
-        expect { 
+        Cod::ConnectionLost.assert.raised? do
           client.get
-        }.to raise_error(Cod::ConnectionLost)
+        end
       end
     end
     describe "when there is someone listening on the socket already" do
@@ -98,9 +98,9 @@ describe 'Cod TCP' do
       after(:each) { server.close }
       
       it "errors out in the constructor" do
-        expect {
+        Errno::EADDRINUSE.assert.raised? do
           Cod.tcp_server('127.0.0.1:54321')
-        }.to raise_error(Errno::EADDRINUSE)
+        end
       end 
     end
     describe "when the server isn't listening" do
@@ -116,7 +116,7 @@ describe 'Cod TCP' do
         }
       end
       it "still may be selected" do
-        Cod.select(0.01, client).assert be_nil
+        Cod.select(0.01, client).assert.nil?
       end 
     end
     describe 'TCP connection closed before answer is read' do
