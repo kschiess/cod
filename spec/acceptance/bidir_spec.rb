@@ -1,3 +1,4 @@
+
 require 'spec_helper'
 
 require 'tempfile'
@@ -13,7 +14,7 @@ describe "Bidirectional Pipes" do
     end
     
     Cod.select(0.1, bidir)
-    bidir.get.should == :test
+    fail "AF: return is not == :test" unless bidir.get == :test
     Process.waitall
   end 
   
@@ -30,7 +31,7 @@ describe "Bidirectional Pipes" do
     
     def waitall_assert
       Process.waitall.each do |pid, status|
-        status.exitstatus.should == 0
+        fail "AF: exitstatus is not 0" unless status.exitstatus == 0
       end
     end
     
@@ -58,7 +59,7 @@ describe "Bidirectional Pipes" do
 
       client = Cod.bidir_named(path)
       client.put [:ping, client]
-      client.get.should == :pong
+      client.get.assert == :pong
 
       waitall_assert
     end 
@@ -79,7 +80,7 @@ describe "Bidirectional Pipes" do
       other = Cod.bidir
       
       client.put other
-      other.get.should == :test
+      other.get.assert == :test
 
       waitall_assert
     end 

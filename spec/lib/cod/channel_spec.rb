@@ -10,7 +10,7 @@ describe Cod::Channel do
         should_receive(:put).with(:msg).once.ordered.
         should_receive(:get).and_return(:result).once.ordered
       
-      channel.interact(:msg).should == :result
+      channel.interact(:msg).assert == :result
     end 
   end
 end

@@ -14,10 +14,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   s.summary = %Q(Really simple IPC. Pipes, TCP sockets, beanstalkd, ...)
   
-  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'rspec-core'
   s.add_development_dependency 'flexmock'
-  s.add_development_dependency 'yard'
-
-  s.add_development_dependency 'guard'
-  s.add_development_dependency 'growl'
+  s.add_development_dependency 'ae'
 end

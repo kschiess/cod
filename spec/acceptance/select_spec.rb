@@ -7,10 +7,10 @@ describe "Cod.select" do
     let(:write) { split.write }
       
     it "returns simply true / false" do
-      read.select(0.01).should == false
+      read.select(0.01).assert == false
       
       write.put :test
-      read.select(0.01).should == true
+      read.select(0.01).assert == true
     end 
   end 
   describe '(timeout, groups)' do
@@ -26,15 +26,15 @@ describe "Cod.select" do
         write.put :test
         result = Cod.select(nil, my_group: [read])
         
-        result.should have_key(:my_group)
-        result[:my_group].should =~ [read]
+        result.assert have_key(:my_group)
+        result[:my_group].assert == [read]
       end
       it "(single)" do
         write.put :test
         result = Cod.select(nil, my_group: read)
 
-        result.should have_key(:my_group)
-        result[:my_group].should == read
+        result.assert have_key(:my_group)
+        result[:my_group].assert == read
       end 
     end
 
@@ -53,12 +53,12 @@ describe "Cod.select" do
 
       it "allows Cod channels" do
         write.put :test
-        Cod.select(0.1, foo: read).keys.should == [:foo]
+        Cod.select(0.1, foo: read).keys.assert == [:foo]
       end
       it "allows IO descendants" do
         r,w = IO.pipe
         w.write('.')
-        Cod.select(0.1, foo: r).keys.should == [:foo]
+        Cod.select(0.1, foo: r).keys.assert == [:foo]
         r.close; w.close
       end
     end

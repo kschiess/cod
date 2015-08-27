@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Cod::Beanstalk::Service do
+describe Cod::Beanstalk::Service, beanstalk: true do
   include BeanstalkHelper
   
   before(:each) { clear_tube('service'); clear_tube('client') }

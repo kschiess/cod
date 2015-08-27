@@ -25,7 +25,7 @@ describe "StdIO channels" do
       channel = process.channel
       
       channel.put :test
-      channel.get.should == :test
+      channel.get.assert == :test
 
       process.terminate
       process.wait
@@ -40,7 +40,7 @@ describe "StdIO channels" do
       
       process.terminate
       
-      Integer(channel.get).should == 3
+      Integer(channel.get).assert == 3
       channel.close
       
       process.wait
@@ -75,7 +75,7 @@ describe "StdIO channels" do
         puts Marshal.dump(:test)
       end
       
-      child_chan.get.should == :test
+      child_chan.get.assert == :test
     end
     it "links a process' stdin/stdout to a channel" do
       redirected_child do
@@ -84,12 +84,12 @@ describe "StdIO channels" do
         stdio.put :test
       end
       
-      child_chan.get.should == :test
+      child_chan.get.assert == :test
     end
     it "links the channel up correctly" do
       stdio = Cod.stdio
-      stdio.r.should == $stdin
-      stdio.w.should == $stdout
+      stdio.r.assert == $stdin
+      stdio.w.assert == $stdout
     end 
   end
 end

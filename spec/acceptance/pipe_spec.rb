@@ -11,7 +11,7 @@ describe Cod::Pipe do
 
     it "allows sending and receiving of message objects" do
       write.put [:an, :object]
-      read.get.should == [:an, :object]
+      read.get.assert == [:an, :object]
     end
     it 'transmits pipe objects intact' do
       other = described_class.new
@@ -19,7 +19,7 @@ describe Cod::Pipe do
       write.put other
       transmitted = read.get 
 
-      transmitted.should == other
+      transmitted.assert == other
     end 
     it "doesn't raise on double close"  do
       pipe.close # already closed by split
@@ -32,12 +32,12 @@ describe Cod::Pipe do
     describe 'splitting' do
       it 'returns the pipes ends' do
         write.pipe.w.write('.')
-        read.pipe.r.read(1).should == '.'
+        read.pipe.r.read(1).assert == '.'
       end
       it 'closes the pipe' do
         fds = pipe.pipe
-        fds.r.should == nil
-        fds.w.should == nil
+        fds.r.assert == nil
+        fds.w.assert == nil
       end
     end
   end
@@ -108,7 +108,7 @@ describe Cod::Pipe do
       r,w = pipe.split
       begin
         w.put :the_man
-        r.get.should == :return 
+        r.get.assert == :return 
       ensure
         r.close; w.close
       end

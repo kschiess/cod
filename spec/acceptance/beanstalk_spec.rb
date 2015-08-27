@@ -2,7 +2,7 @@ require 'spec_helper'
 
 require 'tcp_proxy'
 
-describe "Beanstalk transport" do
+describe "Beanstalk transport", beanstalk: true do
   include BeanstalkHelper
   
   describe 'construction through the Cod module' do

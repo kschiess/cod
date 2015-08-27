@@ -17,17 +17,17 @@ describe TCPProxy do
     timeout(5) do
       client.put :test
       msg, chan = server.get_ext 
-      msg.should == :test
+      msg.assert == :test
       
-      proxy.connections.size.should == 1
+      proxy.connections.size.assert == 1
       
       chan.put :antwoord
-      client.get.should == :antwoord
+      client.get.assert == :antwoord
     end
   end 
   it "allows dropping connections" do
     client.put :test1
-    server.get.should == :test1
+    server.get.assert == :test1
     
     proxy.block
     proxy.drop_all
@@ -41,6 +41,6 @@ describe TCPProxy do
     proxy.allow
     
     client2.put :test3
-    server.get.should == :test3
+    server.get.assert == :test3
   end 
 end

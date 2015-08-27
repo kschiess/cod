@@ -9,7 +9,7 @@ describe Cod::LineSerializer do
     end
     
     it "should encode by appending newlines" do
-      en('foo').should == "foo\n"
+      en('foo').assert == "foo\n"
     end 
   end
   describe '#de(io)' do
@@ -29,7 +29,7 @@ describe Cod::LineSerializer do
     end
     
     it "should decode one line at a time" do
-      de("foo\nbar\n").should == ['foo', 'bar']
+      de("foo\nbar\n").assert == ['foo', 'bar']
     end 
   end
 end

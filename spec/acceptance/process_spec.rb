@@ -26,7 +26,7 @@ describe "Cod.process" do
         messages << msg
       end
       
-      messages.should =~ `ls`.lines.map(&:chomp)
+      messages.assert == `ls`.lines.map(&:chomp)
     end 
   end 
 end

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Cod::Beanstalk::Serializer do
+describe Cod::Beanstalk::Serializer, beanstalk: true do
   let(:serializer) { described_class.new }
 
   def en(*args)

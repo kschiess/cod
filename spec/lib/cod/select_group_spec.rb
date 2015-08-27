@@ -13,27 +13,27 @@ describe Cod::SelectGroup do
       values = []
       group.keep_if { |e| values << e }
       
-      values.should =~ [1,2,1,1,2,3,0]
+      values.sort.assert == [0, 1, 1, 1, 2, 2, 3]
     end
     it "keeps keys and values where the block returns true (e>2)" do
-      group.keep_if { |e| e>2 }.keys.should == [:three]
+      group.keep_if { |e| e>2 }.keys.assert == [:three]
     end
     it "keeps keys and values where the block returns true (e>1)" do
-      group.keep_if { |e| e>1 }.keys.should == [:three, :two]
+      group.keep_if { |e| e>1 }.keys.assert == [:three, :two]
     end
     it "keeps keys and values where the block returns true (e>0)" do
-      group.keep_if { |e| e>0 }.keys.should == [:three, :two, :one]
+      group.keep_if { |e| e>0 }.keys.assert == [:three, :two, :one]
     end
     it "keeps keys and values where the block returns true (true)" do
-      group.keep_if { |e| true }.keys.should == [:three, :two, :one, :naught]
+      group.keep_if { |e| true }.keys.assert == [:three, :two, :one, :naught]
     end 
   end
   describe '#values' do
     it "returns all values" do
-      group.values.should =~ [1,2,1,1,2,3,0]
+      group.values.sort.assert == [0, 1, 1, 1, 2, 2, 3]
     end 
     it "allows transforming the values" do
-      group.values { |e| e**2 }.should =~ [0, 1, 1, 1, 4, 4, 9]
+      group.values { |e| e**2 }.sort.assert == [0, 1, 1, 1, 4, 4, 9]
     end 
   end
 end

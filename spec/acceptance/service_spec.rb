@@ -45,7 +45,7 @@ describe "Cod::Service" do
       close { server_chan.close; client_chan.close }
     },
   ].each do |transport|
-    describe "using #{transport.name}s" do
+    describe "using #{transport.name}s", transport.name => true do
       before(:each) { transport.init }
       after(:each) { transport.call_close }
 
@@ -59,7 +59,7 @@ describe "Cod::Service" do
         }
 
         it "adds 2 with minimal ceremony" do
-          service.call(1).should == 3
+          service.call(1).assert == 3
         end 
       end
       context "#notify" do
@@ -72,7 +72,7 @@ describe "Cod::Service" do
         
         it "sends an asynch notification" do
           service.notify(true)
-          done.get.should == :yes
+          done.get.assert == :yes
         end 
       end
     end

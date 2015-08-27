@@ -18,14 +18,14 @@ describe Cod::WorkQueue do
       it "is false after #clear_thread_semaphore" do
         queue.thread.kill
         queue.clear_thread_semaphore
-        queue.thread_semaphore_set?.should == false
+        queue.thread_semaphore_set?.assert == false
       end 
       it "becomes true again after a while" do
         queue.clear_thread_semaphore
         try_for_a_while {
           Thread.pass until queue.thread_semaphore_set?
         }
-        queue.thread_semaphore_set?.should == true
+        queue.thread_semaphore_set?.assert == true
       end
     end
     
@@ -37,7 +37,7 @@ describe Cod::WorkQueue do
       try_for_a_while {
         Thread.pass until ran
       }
-      ran.should == true
+      ran.assert == true
     end 
     it "should not reenter the try_work" do
       executed_in_thread = false
@@ -58,7 +58,7 @@ describe Cod::WorkQueue do
       queue.clear_thread_semaphore
       queue.try_work
     
-      executed_in_thread.should == false
+      executed_in_thread.assert == false
     end 
   end
   describe '#predicate' do
@@ -85,7 +85,7 @@ describe Cod::WorkQueue do
         queue.schedule { n += 1 }
         @running = true
         queue.try_work
-        n.should == 1
+        n.assert == 1
       end 
     end
   end
@@ -114,7 +114,7 @@ describe Cod::WorkQueue do
       queue.exclusive {
         queue.predicate { true }
         sleep 0.1
-        n.should == 0
+        n.assert == 0
       }
     end 
   end
@@ -128,7 +128,7 @@ describe Cod::WorkQueue do
       queue.schedule { answer = :yes }
       
       queue.try_work
-      answer.should == :yes
+      answer.assert == :yes
     end
     it "ignores further shutdowns" do
       queue.shutdown
@@ -147,7 +147,7 @@ describe Cod::WorkQueue do
       
       queue.try_work
 
-      evaluating_threads.size.should == 1
+      evaluating_threads.size.assert == 1
     end 
   end
 end
