@@ -6,6 +6,8 @@ module Cod
       else
         super(*IO.pipe)
       end
+      self.r.binmode
+      self.w.binmode
     end
     
     # Performs a deep copy of the structure. 
